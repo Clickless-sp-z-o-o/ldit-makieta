@@ -1,0 +1,48 @@
+/* ============================================================================
+   Ekrany po uwagach z arkusza oceny 08.10.2026: dashboard (kolejka Wymaga
+   dzialania jako lista linkow, skutecznosc na telefonie), sygnaly i terminy.
+   Ladowane po style-interfejs.css na stronach 01, 08 - 16 i 20.
+   ============================================================================ */
+
+/* ------------------------------ Wymaga dzialania ------------------------------ */
+/* Cala pozycja jest linkiem: na komputerze wiersz jak w tabeli, na telefonie karta */
+.kolejki { display: flex; flex-direction: column; }
+.kolejka {
+  display: grid; grid-template-columns: minmax(0, 1fr) 3.5rem 9rem 1rem; align-items: center; gap: 12px;
+  padding: 10px 16px; border-bottom: 1px solid var(--line); color: var(--ink); text-decoration: none;
+}
+.kolejka:last-child { border-bottom: 0; }
+.kolejka:hover { background: var(--surface-2); text-decoration: none; }
+.kolejka-co { font-weight: 600; min-width: 0; }
+.kolejka-ctx { display: block; font-weight: 400; font-size: 0.8125rem; color: var(--ink-3); overflow-wrap: anywhere; }
+.kolejka-n { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.kolejka .tag { justify-self: start; }
+.kolejka-strzalka { color: var(--ink-3); font-size: 1.25rem; line-height: 1; }
+
+@media (max-width: 700px) {
+  .kolejka { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "co n" "tag strz"; row-gap: 6px; }
+  .kolejka-co { grid-area: co; }
+  .kolejka-n { grid-area: n; font-size: 1.125rem; }
+  .kolejka .tag { grid-area: tag; }
+  .kolejka-strzalka { grid-area: strz; justify-self: end; }
+
+  /* Skutecznosc pracownikow na telefonie: imie, procent i pasek */
+  #skutecznosc th:nth-child(2), #skutecznosc td:nth-child(2),
+  #skutecznosc th:nth-child(3), #skutecznosc td:nth-child(3),
+  #skutecznosc th:nth-child(4), #skutecznosc td:nth-child(4) { display: none; }
+}
+
+/* ------------------------------ sygnaly i przekroczenia ------------------------------ */
+/* Kolor zawsze z tekstem obok: zielony tylko dla stanu w porzadku */
+.sygnal { display: inline-flex; align-items: center; gap: 6px; }
+.sygnal::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex: 0 0 8px; }
+.sygnal.ok { color: var(--pos-ink); }
+.sygnal.ostrzezenie { color: var(--warn-ink); }
+.sygnal.problem { color: var(--neg-ink); }
+.przekroczenie { color: var(--neg-ink); font-weight: 600; }
+.tl-item.problem::before { background: var(--neg-ink); border-color: var(--neg-ink); }
+.tl-item.ostrzezenie::before { background: var(--warn-ink); border-color: var(--warn-ink); }
+.tl-item .sygnal { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 4px; }
+.progress.neg i { background: var(--neg-ink); }
+.cal .ev.kolor.przekroczony { box-shadow: inset 0 0 0 1px var(--neg-ink); }
+.tl-item .sygnal::before { display: none; }

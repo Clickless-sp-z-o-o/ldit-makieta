@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Baza danych</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/style-sesja.css">
+<link rel="stylesheet" href="../assets/style-listy.css">
+<link rel="stylesheet" href="../assets/style-interfejs.css">
+<link rel="stylesheet" href="../assets/style-listy-0810.css">
+<style>
+  /* Wiersze klientow bez naboru wygaszone */
+  tr.dim td { color: var(--ink-3); }
+  /* Rozwiniete wnioski klienta */
+  td.exp-cell { text-align:center; }
+  .exp-btn { width:22px; height:22px; padding:0; font-weight:700; line-height:1; }
+  tr.wn-detail > td { background: var(--surface-2); padding: 0 0 0 36px; }
+  tr.wn-detail table.tbl { margin: 6px 24px 8px 0; background:#fff; border:1px solid var(--line); border-radius:var(--radius); }
+  tr.wn-detail table.tbl th { background: var(--surface-3); position: static; }
+  /* Podsumowanie naborow w jednej linii, kazda liczba ustawia filtr */
+  .podsum { display:flex; gap:14px; align-items:center; font-size:12.5px; color:var(--ink-2); }
+  .podsum a { color:inherit; text-decoration:none; }
+  .podsum a b { font-size:14px; }
+  .podsum a:hover b { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="page lista">
+
+  <div class="page-head">
+    <h1 class="page-title">Baza danych</h1>
+    <span class="tip-mark" data-tip="Wszyscy klienci, jeden klient to jeden wiersz. Plus rozwija wnioski klienta, a Szczegóły otwierają kartę klienta.">i</span>
+    <div class="podsum" id="kpi"></div>
+    <div class="ph-actions">
+      <button class="btn sm atrapa" data-tip="W aplikacji docelowej">Eksport</button>
+      <button class="btn sm" id="btnImportKlienta" data-tip="Klient z pliku eksportu trafia do wybranej instytucji jako nowy klient (D-282).">Importuj klienta</button>
+      <button class="btn primary sm" id="btnNowyKlient">+ Nowy klient</button>
+    </div>
+  </div>
+
+  <div class="card" style="padding:0">
+    <div class="toolbar">
+      <input class="inp search" id="q" type="search" aria-label="Szukaj klientów" placeholder="Szukaj: klient, NIP, osoba, telefon, e-mail...">
+      <button type="button" class="btn sm" id="btnSzukaj">Wyszukaj</button>
+      <select class="inp" id="fIS" data-wielo><option value="">Wszystkie instytucje</option></select>
+      <select class="inp" id="fPUP" data-wielo><option value="">Wszystkie urzędy</option></select>
+      <select class="inp" id="fNab" data-wielo>
+        <option value="">Nabór: dowolny</option>
+        <option value="trwa">Nabór trwa</option>
+        <option value="oczekuje">Nabór oczekuje na start</option>
+        <option value="prognozowany">Prognoza</option>
+        <option value="zakończony">Nabór zakończony</option>
+      </select>
+      <select class="inp" id="fStatusWn" data-wielo data-tip="Filtr po statusie wniosków klienta, można zaznaczyć kilka. Domyślnie klienci przed złożeniem wniosku: bez wniosku albo z wnioskiem Niezłożony lub NW. Wyczyść wybór, żeby zobaczyć wszystkich klientów.">
+        <option value="">Wszyscy klienci</option>
+        <option value="przed" selected>Przed złożeniem wniosku</option>
+        <option value="aktywne">Z wnioskiem aktywnym (bez rozliczonych)</option>
+        <option value="Czekamy">Wniosek: czekamy na decyzję</option>
+        <option value="Pozytywna">Wniosek: pozytywna</option>
+        <option value="Negatywna">Wniosek: negatywna</option>
+        <option value="Rezygnacja">Wniosek: rezygnacja</option>
+        <option value="Rozliczone">Wniosek: rozliczony</option>
+      </select>
+      <button type="button" class="btn xs" id="btnWyczysc" title="Czyści wyszukiwarkę i wszystkie filtry">Wyczyść filtry</button>
+      <span class="sp"></span>
+      <div class="legend">
+        <span><i style="background:var(--pos-bg);border-color:#86efac"></i>nabór trwa</span>
+        <span><i style="background:var(--warn-bg);border-color:#fcd34d"></i>prognoza</span>
+      </div>
+      <span class="small muted" id="licz"></span>
+    </div>
+
+    <div id="klientForm" class="card-body" style="display:none;border-bottom:1px solid var(--line)"></div>
+
+    <div class="lista-tabela">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th style="width:28px"></th>
+            <th style="width:36px">Nr<span class="tip-mark" data-tip="Numer klienta nadawany kolejno. Kolejność listy wyznacza koniec naboru, nie numer.">i</span></th>
+            <th>Klient</th>
+            <th>Wielk.<span class="tip-mark" data-tip="Wielkość przedsiębiorstwa decyduje o progu dofinansowania (D-131). Mikro to do 9 osób na umowie o pracę.">i</span></th>
+            <th>Instytucja</th>
+            <th>Urząd</th>
+            <th>Nabór<span class="tip-mark" data-tip="Stan naboru w urzędzie klienta (D-90).">i</span></th>
+            <th class="nowrap">Koniec naboru<span class="tip-mark" data-tip="Ostatni dzień naboru i ile dni zostało. Wyznacza priorytet, lista sortowana rosnąco (D-130). Do 3 dni czerwony, do 10 żółty.">i</span></th>
+            <th class="c">Kolejny<span class="tip-mark" data-tip="Czy klient jest zainteresowany kolejnym naborem (D-130). Tylko odczyt, zmiana w edycji klienta (D-265).">i</span></th>
+            <th class="c">Wnioski</th>
+            <th>Kontakt</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="body"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- kfs:skrypty -->
+<script src="../db/sql-wasm.js"></script>
+<script src="../db/sql-wasm-data.js"></script>
+<script src="../db/seed-db.js"></script>
+<script src="../assets/sqlite.js"></script>
+<script src="../assets/store.js"></script>
+<script src="../assets/haslo.js"></script>
+<script src="../assets/funkcje.js"></script>
+<script src="../assets/auth.js"></script>
+<script src="../assets/walidacja.js"></script>
+<script src="../assets/straznik-wlasnosc.js"></script>
+<script src="../assets/straznik.js"></script>
+<script src="../assets/zakres.js"></script>
+<script src="../assets/prowizja.js"></script>
+<script src="../assets/db-format.js"></script>
+<script src="../assets/db-klienci.js"></script>
+<script src="../assets/db-instytucje.js"></script>
+<script src="../assets/db-nabory.js"></script>
+<script src="../assets/db.js"></script>
+<script src="../assets/lata.js"></script>
+<script src="../assets/nabory-import.js"></script>
+<script src="../assets/html.js"></script>
+<script src="../assets/statusy.js"></script>
+<script src="../assets/akceptacje.js"></script>
+<script src="../assets/wielowybor.js"></script>
+<script src="../assets/nawigacja.js"></script>
+<script src="../assets/podglad-roli.js"></script>
+<script src="../assets/interfejs.js"></script>
+<script src="../assets/tips.js"></script>
+<script src="../assets/boot.js" data-modul="baza"></script>
+<script src="js/19-klient-logika.js"></script>
+<script src="js/19-klient-eksport.js"></script>
+<script src="js/04-baza-klientow-import.js"></script>
+<script src="js/19-klient-pola.js"></script>
+<script src="js/19-klient-formularz.js"></script>
+<script src="js/04-baza-klientow-dane.js"></script>
+<script src="js/04-baza-klientow-wiersze.js"></script>
+<script src="js/04-baza-klientow-lista.js"></script>
+<script src="js/04-baza-klientow-formularz.js"></script>
+<script type="text/kfs-strona">
+inicjuj04();
+</script>
+</body>
+</html>

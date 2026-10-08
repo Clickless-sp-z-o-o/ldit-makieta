@@ -1,0 +1,61 @@
+/* ============================================================================
+   Style powloki makiety (index.html): podpowiedz roli, okruszek, licznik
+   akceptacji, przycisk Wstecz i podmenu Dofinansowan (lata, pod nimi instytucje).
+   ============================================================================ */
+
+.role-hint {
+  position: fixed; right: 18px; bottom: 18px; z-index: 50;
+  background: var(--brand-900); color: #cbd5e1;
+  border-radius: var(--radius); padding: 10px 13px;
+  font-size: 0.75rem; max-width: 320px; box-shadow: var(--shadow-lg);
+  line-height: 1.5; display: none;
+}
+.role-hint.show { display: block; }
+.role-hint b { color: #fff; }
+.role-hint .x { float: right; cursor: pointer; color: #64748b; margin-left: 10px; }
+.crumb .sep { margin: 0 6px; }
+.akceptacje {
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line);
+  background: #fff; cursor: pointer; font-size: 0.9375rem; color: var(--ink-2);
+}
+.akceptacje .n {
+  position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px; padding: 0 5px;
+  border-radius: 9px; background: var(--neg-ink); color: #fff; font-size: 0.75rem; font-weight: 700;
+  line-height: 18px; text-align: center;
+}
+
+/* Podmenu Dofinansowan: lata (poziom 2) i instytucje roku (poziom 3) */
+.nav-sub .nav-item.sub-rok { padding-left: 34px; gap: 6px; color: #cbd5e1; }
+.nav-sub .nav-item.sub-rok .chev,
+.nav-sub .nav-item.sub-rok .chev-miejsce { margin-left: 0; width: 10px; flex: 0 0 10px; }
+.nav-sub .nav-item.sub-rok .n {
+  margin-left: auto; font-size: 0.75rem; color: #94a3b8; font-variant-numeric: tabular-nums;
+}
+.nav-sub2 { display: none; }
+.nav-sub2.open { display: block; }
+.nav-sub .nav-sub2 .nav-item { padding-left: 56px; font-size: 0.7813rem; }
+
+/* Wstecz: historia ekranow w ramce, prowadzona przez powloke */
+.wstecz { margin-right: 10px; }
+.wstecz[disabled] { opacity: .45; cursor: default; }
+
+/* Zwijanie lewego menu: zostaja same ikony (assets/powloka-zwijanie.js) */
+.zwin-menu {
+  margin-left: auto; flex: 0 0 26px; width: 26px; height: 26px; border-radius: 6px;
+  border: 1px solid rgba(255,255,255,.14); background: transparent; color: #cbd5e1;
+  cursor: pointer; font-size: 0.875rem; line-height: 1;
+}
+.zwin-menu:hover { background: rgba(255,255,255,.08); color: #fff; }
+.sidebar { transition: width .15s, flex-basis .15s; }
+.app.menu-zwiniete { --sidebar-w: 60px; }
+.app.menu-zwiniete .sidebar-brand { padding: 0; justify-content: center; }
+.app.menu-zwiniete .sidebar-brand .logo-ldit,
+.app.menu-zwiniete .sidebar-brand > div,
+.app.menu-zwiniete .nav-group-label,
+.app.menu-zwiniete .nav-sub,
+.app.menu-zwiniete .sidebar-foot,
+.app.menu-zwiniete .nav-item > :not(.ico) { display: none; }
+.app.menu-zwiniete .zwin-menu { margin-left: 0; }
+.app.menu-zwiniete .nav-item { justify-content: center; padding: 10px 0; }
+.app.menu-zwiniete .nav-item .ico { font-size: 1rem; opacity: 1; }

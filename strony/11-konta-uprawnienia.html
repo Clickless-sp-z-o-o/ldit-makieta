@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Konta i uprawnienia</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/style-sesja.css">
+<link rel="stylesheet" href="../assets/style-interfejs.css">
+<link rel="stylesheet" href="../assets/style-ekrany-0810.css">
+<style>
+  /* Drobne uzupelnienia lokalne, reszta z assets/style.css */
+  tr.no2fa td { background: #fffbeb; }
+  tr.no2fa:hover td { background: #fef3c7; }
+  .role-item {
+    padding: 9px 12px; border: 1px solid var(--line); border-radius: var(--radius);
+    margin-bottom: 6px; cursor: pointer; font-size: 13px; background: #fff;
+  }
+  .role-item:hover { border-color: var(--line-strong); }
+  .role-item.on { border-color: var(--accent); background: var(--accent-soft); font-weight: 650; }
+  .role-item .rd { font-size:12px; color: var(--ink-3); font-weight: 400; margin-top: 2px; }
+  .menu-prev { background: var(--brand-900); border-radius: var(--radius); padding: 9px 0; max-width: 300px; }
+  .menu-prev .mi { display: flex; align-items: center; gap: 8px; padding: 6px 16px; color: #cbd5e1; font-size: 13px; }
+  .menu-prev .mi b { margin-left: auto; font-size:12px; color: #93c5fd; letter-spacing: .05em; text-transform: uppercase; }
+  .menu-prev .nic { color: #64748b; font-style: italic; padding: 10px 16px; font-size: 12.5px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <h1 class="page-title">Konta i uprawnienia<span class="tip-mark" data-tip="Modul zarzadzania dostepem: lista kont, konfigurator rol, macierz widocznosci i przypisanie pracownikow do instytucji. Uprawnienia sa nadawane per rola, nie per osoba (D-35). Admin LDIT ma pelna kontrole (usuwanie i blokowanie kont, filtrowanie po instytucji), a administrator instytucji zarzadza wlasnymi pracownikami w granicach swoich uprawnien (D-126). Progi dofinansowania sa konfigurowalne (D-131).">i</span></h1>
+      <p class="page-desc">Użytkownicy, role, uprawnienia i słowniki.</p>
+    </div>
+    <div class="ph-actions">
+      <button class="btn" onclick="alert('Eksport listy kont do Excela.')">Eksport kont</button>
+      <button class="btn primary" id="btnDodajUsera">+ Dodaj użytkownika</button>
+    </div>
+  </div>
+
+  <nav class="mod-tabs">
+    <a href="11-konta-uprawnienia.html" class="on">Konta i role</a>
+    <a href="12-rejestr-aktywnosci.html">Rejestr aktywności</a>
+  </nav>
+
+
+  <div class="card">
+    <div class="tabs">
+      <div class="tab on" data-t="t1">Użytkownicy</div>
+      <div class="tab" data-t="t2">Konfigurator ról</div>
+      <div class="tab" data-t="t3">Macierz uprawnień</div>
+      <div class="tab" data-t="t4">Przypisanie do instytucji</div>
+      <div class="tab" data-t="t5">Podgląd konta</div>
+      <div class="tab" data-t="t6">Słowniki</div>
+    </div>
+
+    <!-- ============ ZAKLADKA 1: UZYTKOWNICY ============ -->
+    <div class="tab-pane on" id="t1">
+      <div class="toolbar">
+        <input class="inp search" id="qU" placeholder="Szukaj: imię, login, instytucja...">
+        <select class="inp" id="fRola" data-wielo><option value="">Wszystkie role</option></select>
+        <button class="chip" id="chip2fa">Tylko konta bez 2FA</button>
+        <span class="sp"></span>
+        <span class="small muted" id="liczU"></span>
+      </div>
+
+      <div class="card-body" style="padding:0 16px 4px">
+        <div class="note warn mb0" style="margin:14px 0" id="alert2fa"></div>
+      </div>
+
+      <div id="userForm" class="card-body" style="display:none"></div>
+
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Użytkownik<span class="tip-mark" data-tip="Imie i nazwisko oraz login (e-mail) konta. Login sluzy do logowania i nie zmienia sie po utworzeniu konta.">i</span></th>
+              <th>Rola<span class="tip-mark" data-tip="Rola okresla, ktore zakladki (moduly) uzytkownik widzi. Uprawnienia nadawane sa per rola, nie per osoba (D-35).">i</span></th>
+              <th>Przypisane instytucje<span class="tip-mark" data-tip="Drugi, niezalezny wymiar uprawnien (D-113): czyje dane widzi pracownik. Admin LDIT moze filtrowac i przypisywac pracownikow do konkretnych instytucji (D-126). Wartosc wszystkie instytucje ma tylko administrator.">i</span></th>
+              <th class="c">2FA<span class="tip-mark" data-tip="Dwuskladnikowe uwierzytelnianie. Wymaganie MUST z warsztatu mowi o 2FA wymuszonym. Konta bez 2FA sa wyroznione zoltym tlem.">i</span></th>
+              <th>Ostatnie logowanie<span class="tip-mark" data-tip="Data ostatniej aktywnosci konta. Pomaga wykryc nieuzywane konta do zablokowania.">i</span></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="bodyU"></tbody>
+        </table>
+      </div>
+
+      <div class="card-body">
+        <div class="note mb0">
+          <b>Cykl życia konta.</b> Administrator dodaje i usuwa konta samodzielnie, blokada konta byłego
+          pracownika działa natychmiast i unieważnia otwartą sesję. Wymagane: 2FA, reset hasła,
+          automatyczne wylogowanie po bezczynności. Każda operacja na koncie trafia do
+          <a href="12-rejestr-aktywnosci.html">rejestru aktywności</a> <span class="ref">D-116</span>.
+        </div>
+        <div class="note" style="margin-top:12px">
+          <b>Podział zarządzania kontami</b> <span class="ref">D-126</span>
+          <span class="tip-mark" data-tip="Administrator instytucji moze samodzielnie dodawac i zarzadzac wlasnymi pracownikami, ale wylacznie w granicach wlasnych uprawnien (nie nada pracownikowi wiecej niz ma sam). Usuwanie i blokowanie kont oraz filtrowanie listy po instytucji pozostaje po stronie administratora LDIT (D-126).">i</span>.
+          Administrator instytucji może dodawać i zarządzać <b>własnymi pracownikami</b>, maksymalnie
+          w granicach własnych uprawnień. <b>Usuwanie i blokowanie kont</b> oraz filtrowanie listy po
+          instytucji pozostaje po stronie <b>administratora LDIT</b>.
+          Progi dofinansowania są konfigurowalne <span class="ref">D-131</span>.
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ ZAKLADKA 2: KONFIGURATOR ROL ============ -->
+    <div class="tab-pane" id="t2">
+      <div class="card-body">
+        <div class="note">
+          <b>Model uprawnień jest płaski, bez hierarchii.</b> Menedżer nie musi widzieć więcej niż
+          szeregowy pracownik, dopuszczalna jest dowolna kombinacja. Jednostką uprawnienia jest
+          zakładka (moduł) z lewej nawigacji, poziomy są dwa: podgląd i edycja. Menu boczne renderuje
+          się dynamicznie na podstawie roli zalogowanego użytkownika <span class="ref">D-36</span>.<br><br>
+          <b>Bartek (59:04):</b> „chciałbym mieć możliwość samodzielnej decyzji, co widzi ten menedżer,
+          a co widzi to nie. Nawet absurdalny przykład: jeżeli będę chciał, żeby pracownik zwykły widział
+          więcej niż menedżer, to żebym mógł sobie to ustawić.”
+        </div>
+
+        <div class="grid g-1-2">
+          <div>
+            <div class="card mb0">
+              <div class="card-head">
+                <h3>Role<span class="tip-mark" data-tip="Lista rol w systemie. Role bazowe dostarczane z systemem (bez roli klienta koncowego, D-252) plus role wlasne, ktore administrator tworzy sam bez udzialu wykonawcy. Licznik przy roli pokazuje, ile modulow ta rola widzi.">i</span></h3>
+                <span class="sub" id="liczR"></span>
+              </div>
+              <div class="card-body">
+                <div id="listaRol"></div>
+                <button class="btn sm" style="width:100%;justify-content:center;margin-top:6px" onclick="nowaRola()">+ Nowa rola</button>
+                <div class="small muted" style="margin-top:10px;line-height:1.5">
+                  Role bazowe dostarczane z systemem (bez roli klienta końcowego, D-252). Role własne administrator tworzy sam,
+                  bez udziału wykonawcy.
+                </div>
+              </div>
+            </div>
+
+            <div class="card mt16 mb0">
+              <div class="card-head"><h3>Podgląd menu bocznego<span class="tip-mark" data-tip="Podglad nawigacji, jaka zobaczy uzytkownik z ta rola po zalogowaniu. Menu renderuje sie dynamicznie na podstawie uprawnien roli (D-36).">i</span></h3></div>
+              <div class="card-body">
+                <div class="menu-prev" id="podgladMenu"></div>
+                <div class="small muted" style="margin-top:9px;line-height:1.5">
+                  Tak zobaczy nawigację użytkownik z tą rolą po zalogowaniu.
+                  Moduł bez uprawnienia podglądu nie pojawia się w menu i nie jest dostępny
+                  z poziomu adresu URL.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card mb0">
+              <div class="card-head">
+                <h3>Uprawnienia roli: <span id="nazwaRoli"></span><span class="tip-mark" data-tip="Zestaw modulow widocznych i edytowalnych dla wybranej roli. Model jest plaski, bez hierarchii: dopuszczalna jest dowolna kombinacja, nawet gdy pracownik widzi wiecej niz menedzer.">i</span></h3>
+                <div class="ch-actions">
+                  <button class="btn xs" onclick="zaznaczWszystko(true)">Edycja we wszystkich</button>
+                  <button class="btn xs" onclick="zaznaczWszystko(false)">Ukryj wszystkie</button>
+                </div>
+              </div>
+              <div class="tbl-wrap">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th>Moduł<span class="tip-mark" data-tip="Zakladka z lewej nawigacji. Jednostka uprawnienia jest wlasnie modul, nie pojedyncze pole.">i</span></th>
+                      <th style="width:230px">Poziom dostępu<span class="tip-mark" data-tip="Brak: modul nie pojawia sie w menu i nie da sie go otworzyc z adresu URL. Podglad: tylko odczyt. Edycja: odczyt i zmiany. Zapis do tabeli role_funkcje (features modul.view i modul.*), kazda zmiana trafia do rejestru aktywnosci.">i</span></th>
+                    </tr>
+                  </thead>
+                  <tbody id="bodyPerm"></tbody>
+                </table>
+              </div>
+              <div class="card-body">
+                <div class="small muted mb0">
+                  Zmiana zapisuje się od razu. Poziom edycji zawiera podgląd, bo nie da się edytować
+                  modułu, którego się nie widzi.
+                </div>
+              </div>
+            </div>
+
+            <div class="card mt16 mb0">
+              <div class="card-head">
+                <h3>Uprawnienia pól i funkcji<span class="tip-mark" data-tip="Uprawnienia wewnatrz modulu, zapisane w tabeli role_funkcje, katalog w tabeli funkcje. Klucz ma postac feature jak w Open Mercato (grupa.funkcja), bo docelowy framework nadaje uprawnienia w ten sposob (D-176).">i</span></h3>
+                <span class="sub">klucz feature i opis</span>
+              </div>
+              <div class="tbl-wrap">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th>Feature</th>
+                      <th class="c" style="width:110px">Widoczne</th>
+                    </tr>
+                  </thead>
+                  <tbody id="bodyFeat"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="note open mt16 mb0">
+              <b>Trzeci wymiar, poza modułem i instytucją <span class="ref p">P-08</span>:</b>
+              filtrowanie wierszy. Uprawnienie ma działać także wewnątrz modułu, po instytucji,
+              po etapie procesu i po naborze <span class="ref">D-73</span>. Przykład z warsztatu:
+              handlowiec instytucji widzi wyłącznie klientów z najnowszego naboru. W tym prototypie
+              filtry wierszy nie są jeszcze odwzorowane, sam mechanizm wymaga zaprojektowania razem
+              z modelem danych <span class="ref p">P-25</span>.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ ZAKLADKA 3: MACIERZ ============ -->
+    <div class="tab-pane" id="t3">
+    </div>
+
+    <!-- ============ ZAKLADKA 4: PRZYPISANIE DO INSTYTUCJI ============ -->
+    <div class="tab-pane" id="t4">
+    </div>
+
+    <!-- ============ ZAKLADKA 5: PODGLAD KONTA I ROLI (D-268) ============ -->
+    <div class="tab-pane" id="t5">
+      <div class="card-body">
+        <div class="note">
+          Sprawdź, co zobaczy konto albo rola, zanim je udostępnisz <span class="ref">D-268</span>.
+          Podgląd tylko do odczytu, nie logujesz się na to konto. Wynik liczony z tych samych tabel co aplikacja.
+        </div>
+        <select class="inp" id="selPodglad" style="margin-bottom:14px;max-width:420px"></select>
+        <div id="podgladWynik"></div>
+      </div>
+    </div>
+
+    <!-- ============ ZAKLADKA 6: SLOWNIKI ADMINISTRATORA (D-273) ============ -->
+    <div class="tab-pane" id="t6"><div class="card-body" id="slowniki11"></div></div>
+  </div>
+
+  <div class="note open">
+    <b>Nierozstrzygnięte <span class="ref p">P-35</span>: czy pracownik LDIT ma dostęp do danych
+    finansowych.</b> Na warsztacie klient nie dokończył zdania.
+    <b>Bartek (58:02):</b> „na razie tylko zostaje [dla] admina, no ale docelowo...”.
+    W makiecie przyjęto wariant zachowawczy: moduł Administracja, prowizje i faktury są niedostępne
+    dla roli Pracownik LDIT, a kafelki finansowe na dashboardzie są dla niego ukryte
+    <span class="ref">D-34</span>. Jeśli klient zdecyduje inaczej, zmiana sprowadza się do
+    przestawienia checkboxów w konfiguratorze ról, bez pracy programistycznej. Rozstrzygnięcia
+    wymaga natomiast to, czy „dane finansowe” oznaczają całą Administrację, czy tylko stawki prowizji.
+  </div>
+
+</div>
+
+<!-- kfs:skrypty -->
+<script src="../db/sql-wasm.js"></script>
+<script src="../db/sql-wasm-data.js"></script>
+<script src="../db/seed-db.js"></script>
+<script src="../assets/sqlite.js"></script>
+<script src="../assets/store.js"></script>
+<script src="../assets/haslo.js"></script>
+<script src="../assets/funkcje.js"></script>
+<script src="../assets/auth.js"></script>
+<script src="../assets/walidacja.js"></script>
+<script src="../assets/straznik-wlasnosc.js"></script>
+<script src="../assets/straznik.js"></script>
+<script src="../assets/zakres.js"></script>
+<script src="../assets/prowizja.js"></script>
+<script src="../assets/db-format.js"></script>
+<script src="../assets/db-klienci.js"></script>
+<script src="../assets/db-instytucje.js"></script>
+<script src="../assets/db-nabory.js"></script>
+<script src="../assets/db.js"></script>
+<script src="../assets/lata.js"></script>
+<script src="../assets/nabory-import.js"></script>
+<script src="../assets/html.js"></script>
+<script src="../assets/statusy.js"></script>
+<script src="../assets/akceptacje.js"></script>
+<script src="../assets/wielowybor.js"></script>
+<script src="../assets/nawigacja.js"></script>
+<script src="../assets/podglad-roli.js"></script>
+<script src="../assets/interfejs.js"></script>
+<script src="../assets/tips.js"></script>
+<script src="../assets/boot.js" data-modul="ustaw"></script>
+<script src="js/11-konta-uprawnienia-wspolne.js"></script>
+<script src="js/11-konta-uprawnienia-uzytkownicy.js"></script>
+<script src="js/11-konta-uprawnienia-konto-form.js"></script>
+<script src="js/11-konta-uprawnienia-konto-zapis.js"></script>
+<script src="js/11-konta-uprawnienia-role.js"></script>
+<script src="js/11-konta-uprawnienia-role-zapis.js"></script>
+<script src="js/11-konta-uprawnienia-przydzial.js"></script>
+<script src="js/11-konta-uprawnienia-panele.js"></script>
+<script src="js/11-konta-uprawnienia-podglad.js"></script>
+<script src="js/11-konta-uprawnienia-urzedy.js"></script>
+<script src="js/11-konta-uprawnienia-slowniki.js"></script>
+<script type="text/kfs-strona">inicjuj11();</script>
+</body>
+</html>

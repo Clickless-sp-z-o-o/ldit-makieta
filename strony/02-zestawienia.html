@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zestawienia</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/style-sesja.css">
+<link rel="stylesheet" href="../assets/style-listy.css">
+<link rel="stylesheet" href="../assets/style-interfejs.css">
+<link rel="stylesheet" href="../assets/style-listy-0810.css">
+</head>
+<body>
+<div class="page lista">
+
+  <div class="page-head">
+    <h1 class="page-title">Dofinansowania</h1>
+    <span class="tip-mark" data-tip="Wnioski wybranego roku w układzie z Excela. Status zmieniasz przyciskiem Zmień w wierszu, a do wniosku przechodzisz przyciskiem Szczegóły.">i</span>
+    <div class="ph-actions">
+      <button class="btn sm atrapa" data-tip="W aplikacji docelowej">Eksport</button>
+      <button class="btn primary sm" id="btnNowyProjekt" data-tip="Przenosi na ekran Nowy formularz, zakładka Nowy projekt, z wybranym rokiem i instytucją.">+ Nowy projekt</button>
+    </div>
+  </div>
+
+  <nav class="mod-tabs">
+    <a href="02-zestawienia.html" class="on" data-tip="Wnioski od etapu 3. Licznik to liczba wierszy widocznych teraz: wybrany rok i bieżące filtry. D-128.">Wnioski <span class="n" id="licznikWnioskow"></span></a>
+    <a href="13-terminy.html" data-tip="Kalendarz terminów szkoleń per instytucja. D-142.">Terminy szkoleń</a>
+  </nav>
+
+  <div class="card">
+    <div class="toolbar">
+      <input class="inp search" id="q" type="search" aria-label="Szukaj wniosków" placeholder="Szukaj: firma, NIP, osoba, telefon, e-mail, wykonawca, urząd, numer...">
+      <button type="button" class="btn sm" id="btnSzukaj">Wyszukaj</button>
+      <select class="inp" id="fRok" title="Rok zestawienia (D-159)"></select>
+      <select class="inp" id="fIS" data-wielo><option value="">Wszystkie instytucje</option></select>
+      <select class="inp" id="fPUP" data-wielo><option value="">Wszystkie urzędy</option></select>
+      <select class="inp" id="fStatus" data-wielo><option value="">Wszystkie statusy</option></select>
+      <select class="inp" id="fPrzyg" data-wielo data-pusty="Przygotował: wszyscy"><option value="">Przygotował: wszyscy</option></select>
+      <div class="chipy" id="chipyWykresu"></div>
+      <button type="button" class="btn xs" id="btnWyczysc" title="Czyści wyszukiwarkę, filtry i znaczniki filtrów z wykresów (rok zostaje)">Wyczyść filtry</button>
+      <span class="sp"></span>
+      <span class="small muted" id="licz"></span>
+    </div>
+
+    <div class="toolbar" style="background:#fff;border-bottom:1px solid var(--line);padding-top:4px;padding-bottom:4px">
+      <button class="btn xs" id="btnKolejnosc" type="button" aria-pressed="false" title="Pokazuje przyciski Wyżej i Niżej oraz przeciąganie wierszy">Ustaw kolejność</button>
+      <button class="btn xs" id="btnCofnij" onclick="cofnijZbiorcza()">Cofnij ostatnią zmianę zbiorczą</button>
+      <button class="btn xs" id="btnUsuniete" style="display:none" title="Wnioski usunięte z listy, z możliwością przywrócenia">Usunięte z listy</button>
+      <span class="tip-mark" data-tip="Usunięty wniosek znika z listy, a klient zostaje w Bazie danych. Przywrócisz go w sekcji Usunięte z listy.">i</span>
+      <span class="small" id="komZbiorcza" role="status"></span>
+      <span class="sp"></span>
+      <div class="legend">
+        <span><i style="background:var(--st-czekamy-bg);border-color:var(--line-strong)"></i>czekamy</span>
+        <span><i style="background:var(--st-poz-bg);border-color:var(--st-poz-mark)"></i>pozytywna</span>
+        <span><i style="background:var(--st-neg-bg);border-color:var(--st-neg-mark)"></i>negatywna</span>
+        <span><i style="background:var(--st-rez-bg);border-color:var(--st-rez-mark)"></i>rezygnacja</span>
+        <span><i style="background:var(--st-set-bg);border-color:var(--st-set-mark)"></i>rozliczony</span>
+      </div>
+    </div>
+
+    <div id="usunietePanel" class="card-body" style="display:none;border-bottom:1px solid var(--line);max-height:220px;overflow:auto"></div>
+
+    <div id="histPanel" class="card-body" style="display:none;border-bottom:1px solid var(--line);max-height:220px;overflow:auto"></div>
+
+    <div class="card-body" id="notaRok" style="display:none;border-bottom:1px solid var(--line);padding:8px 12px">
+      <div class="note mb0" id="notaRokTresc"></div>
+    </div>
+
+    <div class="lista-tabela">
+      <table class="tbl bez-klikania" id="tab">
+        <thead>
+          <tr>
+            <th class="c" style="width:70px">Lp.<span class="tip-mark" data-tip="Liczba porządkowa na liście, zawsze bez luk. Zmieniasz ją po włączeniu Ustaw kolejność, przyciskami albo przeciągnięciem wiersza, zawsze z potwierdzeniem (D-261).">i</span></th>
+            <th style="width:36px">Nr<span class="tip-mark" data-tip="Numer wniosku (ID) jest stały, trafia na fakturę i nie zmienia się przy zmianie kolejności (D-112, D-261).">i</span></th>
+            <th>Klient</th>
+            <th class="kol-is">Instytucja</th>
+            <th>Wykonawca<span class="tip-mark" data-tip="Realizator szkolenia (podwykonawca), obok instytucji (D-258).">i</span></th>
+            <th>Kontakt<span class="tip-mark" data-tip="Osoba do kontaktu i telefon z wniosku, a gdy wniosek ich nie ma, z karty klienta (D-241).">i</span></th>
+            <th>E-mail<span class="tip-mark" data-tip="E-mail osoby do kontaktu (D-262).">i</span></th>
+            <th>Urząd</th>
+            <th class="c">Osób<span class="tip-mark" data-tip="Zakwalifikowani; po ukośniku wszyscy zgłoszeni. Do wyliczeń wchodzą tylko zakwalifikowani (D-79).">i</span></th>
+            <th class="num">Wartość<span class="tip-mark" data-tip="Kwota wnioskowana, znana od początku (D-259).">i</span></th>
+            <th class="num">Przyznano<span class="tip-mark" data-tip="Dofinansowanie z urzędu: koszt całkowity × procent progu (D-131). Puste przed decyzją pozytywną (D-259).">i</span></th>
+            <th class="num">Koszt całk.<span class="tip-mark" data-tip="Wartość uznana przez urząd, z dopłatą staje się podstawą prowizji (D-64). Puste przed decyzją pozytywną (D-259).">i</span></th>
+            <th>Status</th>
+            <th>Rozl.<span class="tip-mark" data-tip="Etap finansowy: Oczekuje, Zafakturowany, Rozliczone.">i</span></th>
+            <th>Dokumenty<span class="tip-mark" data-tip="U: umowa (z urzędem pracy), F: faktura, C: certyfikat. Znaczniki tylko do podglądu, edycja wyłącznie w Szczegółach wniosku (D-232, D-263).">i</span></th>
+            <th>Przygotował<span class="tip-mark" data-tip="Kto przygotował wniosek (jedna osoba). Nie zawsze jest to opiekun instytucji (D-233, D-260).">i</span></th>
+            <th>Opiekunowie<span class="tip-mark" data-tip="Opiekunowie wniosku, może być kilku (np. zastępstwo). Ustawiasz ich w Szczegółach wniosku (D-260).">i</span></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="body"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- kfs:skrypty -->
+<script src="../db/sql-wasm.js"></script>
+<script src="../db/sql-wasm-data.js"></script>
+<script src="../db/seed-db.js"></script>
+<script src="../assets/sqlite.js"></script>
+<script src="../assets/store.js"></script>
+<script src="../assets/haslo.js"></script>
+<script src="../assets/funkcje.js"></script>
+<script src="../assets/auth.js"></script>
+<script src="../assets/walidacja.js"></script>
+<script src="../assets/straznik-wlasnosc.js"></script>
+<script src="../assets/straznik.js"></script>
+<script src="../assets/zakres.js"></script>
+<script src="../assets/prowizja.js"></script>
+<script src="../assets/db-format.js"></script>
+<script src="../assets/db-klienci.js"></script>
+<script src="../assets/db-instytucje.js"></script>
+<script src="../assets/db-nabory.js"></script>
+<script src="../assets/db.js"></script>
+<script src="../assets/lata.js"></script>
+<script src="../assets/nabory-import.js"></script>
+<script src="../assets/html.js"></script>
+<script src="../assets/statusy.js"></script>
+<script src="../assets/akceptacje.js"></script>
+<script src="../assets/wielowybor.js"></script>
+<script src="../assets/nawigacja.js"></script>
+<script src="../assets/podglad-roli.js"></script>
+<script src="../assets/interfejs.js"></script>
+<script src="../assets/tips.js"></script>
+<script src="../assets/boot.js" data-modul="dofin"></script>
+<script src="js/02-zestawienia-dane.js"></script>
+<script src="js/02-zestawienia-lista.js"></script>
+<script src="js/02-zestawienia-wykres.js"></script>
+<script src="js/02-zestawienia-lata.js"></script>
+<script src="js/02-zestawienia-projekt.js"></script>
+<script src="js/02-zestawienia-wiersz.js"></script>
+<script src="js/02-zestawienia-zbiorcza.js"></script>
+<script src="js/02-zestawienia-akcje.js"></script>
+<script src="js/02-zestawienia-kolejnosc.js"></script>
+<script src="js/02-zestawienia-status.js"></script>
+<script src="js/02-zestawienia-usuwanie.js"></script>
+<script type="text/kfs-strona">
+inicjuj02();
+otworzNowyProjektZAdresu();
+</script>
+</body>
+</html>

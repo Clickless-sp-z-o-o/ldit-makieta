@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard: skuteczność i lejki</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/style-sesja.css">
+<link rel="stylesheet" href="../assets/style-listy.css">
+<link rel="stylesheet" href="../assets/style-interfejs.css">
+<link rel="stylesheet" href="../assets/style-ekrany-0810.css">
+<style>
+  .zablokowana { position: relative; }
+  .zablokowana .card-body { filter: grayscale(1); opacity: .45; pointer-events: none; }
+  .zablokowana .naklejka {
+    position: absolute; inset: 34px 0 0; display: grid; place-items: center;
+    background: rgba(248,250,252,.55); z-index: 2;
+  }
+  .zablokowana .naklejka span {
+    background: #7e22ce; color: #fff; font-size: 12px; font-weight: 700;
+    padding: 6px 14px; border-radius: 20px; box-shadow: var(--shadow);
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <h1 class="page-title">Dashboard: skuteczność i lejki
+        <span class="tip-mark" data-tip="Statystyki lejka dostarczonych osob per instytucja, skutecznosc zespolu, ile wnioskow przeszlo. Marzowosc widzi tylko administrator. Statystyki dostepne tez per instytucja i zbiorczo w Administracji. D-141.">i</span>
+      </h1>
+      <p class="page-desc">Skuteczność, wolumeny i porównanie lat.</p>
+    </div>
+    <div class="ph-actions">
+      <select class="inp" style="width:auto" id="okres"></select>
+      <button class="btn atrapa" data-tip="W aplikacji docelowej">Eksport do Excela</button>
+    </div>
+  </div>
+
+  <nav class="mod-tabs">
+    <a href="01-dashboard.html">Przegląd</a>
+    <a href="14-statystyki.html" class="on">Skuteczność i lejki</a>
+  </nav>
+
+
+  <div class="toolbar" style="border:1px solid var(--line);border-radius:var(--radius-lg);margin-bottom:18px;background:var(--surface)">
+    <span class="small muted" style="font-weight:650">Instytucja:</span>
+    <select class="inp" id="fIS" data-wielo><option value="">Wszystkie instytucje</option></select>
+    <span class="sp"></span>
+    <span class="small muted" id="podsumowanie"></span>
+  </div>
+
+  <div class="card" id="kartaHistoria" style="display:none">
+    <div class="card-head"><h3 id="historiaTytul"></h3><span class="sub">tylko podsumowania, bez wniosków <span class="ref">D-160</span> <span class="ref">D-175</span></span></div>
+    <div class="card-body tight">
+      <table class="tbl"><thead id="historiaHead"></thead><tbody id="historiaBody"></tbody></table>
+    </div>
+  </div>
+
+  <div id="widokBiezacy">
+  <!-- ================= DLA LDIT ================= -->
+  <h2 style="font-size:15px;font-weight:700;margin:0 0 12px">Widok firmy pozyskującej dofinansowania</h2>
+
+  <div class="grid g4" style="margin-bottom:18px" id="kpi"></div>
+
+  <div class="grid g-2-1">
+    <div>
+      <div class="card">
+        <div class="card-head">
+          <h3>Wnioski w kolejnych miesiącach</h3>
+          <span class="sub">rozbicie na decyzje</span>
+          <div class="ch-actions">
+            <div class="legend">
+              <span><i style="background:var(--pos-ink)"></i>pozytywne</span>
+              <span><i style="background:#ef4444"></i>negatywne</span>
+              <span><i style="background:#93c5fd"></i>bez decyzji</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-body"><div class="bars" id="barsMies"></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Lejek osób w projektach</h3>
+          <span class="sub" id="lejekOpis"></span>
+        </div>
+        <div class="card-body"><div class="funnel" id="lejek"></div></div>
+      </div>
+
+      <div class="note">
+        Skuteczność i porównanie instytucji, prowizja LDIT, przychód i VAT są w module
+        <a href="08-administracja.html">Administracja</a>, zakładka Statystyki
+        <span class="ref">D-141</span> <span class="ref">D-34</span>, żeby w systemie była jedna tabela i jedna liczba prowizji.
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-head"><h3>Skuteczność wg wielkości firmy</h3></div>
+        <div class="card-body" id="wgWielkosci"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Najczęstsze urzędy</h3>
+          <span class="sub">wg liczby wniosków</span>
+        </div>
+        <div class="card-body tight">
+          <table class="tbl">
+            <thead><tr><th>Urząd pracy</th><th class="num">Wnioski</th><th class="num">Skut.</th></tr></thead>
+            <tbody id="pupy"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Kontrola kompletności danych</h3></div>
+        <div class="card-body" id="kompletnosc"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h3>Najpopularniejsze szkolenia</h3>
+      <span class="sub">liczba uczestników i wartość</span>
+    </div>
+    <div class="card-body tight">
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead>
+            <tr><th>Szkolenie</th><th>Instytucja</th><th class="num">Projekty</th>
+                <th class="num">Uczestnicy</th><th class="num">Wartość</th><th>Udział</th></tr>
+          </thead>
+          <tbody id="szkolenia"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- ================= DLA INSTYTUCJI ================= -->
+  <h2 style="font-size:15px;font-weight:700;margin:0 0 6px">Widok instytucji szkoleniowej</h2>
+  <p class="page-desc" style="margin-bottom:14px">
+    To, co instytucja zobaczy po zalogowaniu. Zakres celowo wąski.
+  </p>
+
+  <div class="grid g3" style="margin-bottom:18px" id="kpiIS"></div>
+
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-head">
+        <h3>Moje szkolenia</h3>
+        <span class="sub" id="mojaInstytucja"></span>
+      </div>
+      <div class="card-body tight">
+        <table class="tbl">
+          <thead><tr><th>Szkolenie</th><th class="num">Zrealizowane</th><th class="num">Uczestnicy</th><th class="num">Wartość</th></tr></thead>
+          <tbody id="mojeSzkolenia"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="note">
+    <b>Rozstrzygnięte <span class="ref new">D-209</span>:</b> instytucja widzi statystyki własnych klientów,
+    bez rozbicia per handlowiec. Handlowiec instytucji widzi wyłącznie swoich klientów i wnioski, bez statystyk
+    instytucji <span class="ref new">D-210</span>. Wcześniej pytanie <span class="ref p">P-12</span>.
+  </div>
+  </div>
+
+</div>
+
+<!-- kfs:skrypty -->
+<script src="../db/sql-wasm.js"></script>
+<script src="../db/sql-wasm-data.js"></script>
+<script src="../db/seed-db.js"></script>
+<script src="../assets/sqlite.js"></script>
+<script src="../assets/store.js"></script>
+<script src="../assets/haslo.js"></script>
+<script src="../assets/funkcje.js"></script>
+<script src="../assets/auth.js"></script>
+<script src="../assets/walidacja.js"></script>
+<script src="../assets/straznik-wlasnosc.js"></script>
+<script src="../assets/straznik.js"></script>
+<script src="../assets/zakres.js"></script>
+<script src="../assets/prowizja.js"></script>
+<script src="../assets/db-format.js"></script>
+<script src="../assets/db-klienci.js"></script>
+<script src="../assets/db-instytucje.js"></script>
+<script src="../assets/db-nabory.js"></script>
+<script src="../assets/db.js"></script>
+<script src="../assets/lata.js"></script>
+<script src="../assets/nabory-import.js"></script>
+<script src="../assets/html.js"></script>
+<script src="../assets/statusy.js"></script>
+<script src="../assets/akceptacje.js"></script>
+<script src="../assets/wielowybor.js"></script>
+<script src="../assets/nawigacja.js"></script>
+<script src="../assets/podglad-roli.js"></script>
+<script src="../assets/interfejs.js"></script>
+<script src="../assets/tips.js"></script>
+<script src="../assets/boot.js" data-modul="dash"></script>
+<script src="js/14-statystyki-rdzen.js"></script>
+<script src="js/14-statystyki-historia.js"></script>
+<script src="js/14-statystyki-wielkosci.js"></script>
+<script src="js/14-statystyki-biezacy.js"></script>
+<script src="js/14-statystyki-szkolenia.js"></script>
+<script type="text/kfs-strona">
+inicjuj14();
+</script>
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zadania i powiadomienia</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/style-sesja.css">
+<link rel="stylesheet" href="../assets/style-interfejs.css">
+<link rel="stylesheet" href="../assets/style-zadania-0810.css">
+<style>
+  .zad-row { display:flex; align-items:flex-start; gap:11px; padding:11px 0; border-top:1px solid var(--line); }
+  .zad-row:first-child { border-top:0; }
+  .zad-row .chk { margin-top:2px; }
+  .zad-row.done .zt { text-decoration: line-through; color: var(--ink-4); }
+  .zad-row .zt { font-weight:650; font-size:13.5px; }
+  .zad-row .zm { font-size:12px; color:var(--ink-3); margin-top:2px; }
+  .zad-row .zmeta { margin-left:auto; text-align:right; flex:0 0 auto; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <h1 class="page-title">Zadania i powiadomienia
+        <span class="tip-mark" data-tip="Modul wrocil do systemu po warsztacie 04.09 (D-140), odwracajac wczesniejsze wykluczenie do Projectly (D-118). Laczy plan dnia, zadania automatyczne i alerty. To ostatni modul w kolejnosci prac.">i</span>
+      </h1>
+      <p class="page-desc">Plan dnia: zadania z terminami, kalendarz zadań i powiadomienia o sprawach do załatwienia.</p>
+    </div>
+    <div class="ph-actions">
+      <button class="btn primary" id="btnNoweZadanie" onclick="otworzFormularzZadania()">+ Nowe zadanie</button>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>Zadania i powiadomienia to dwa moduły</b> <span class="ref">D-195</span>.
+    Zadanie to pozycja do zrobienia (plan dnia). Powiadomienie to informacja o zdarzeniu, na przykład
+    formularz czekający na akceptację. Do czasu dodania osobnej pozycji menu w tabeli moduly
+    ekran pokazuje je jako dwie osobne sekcje.
+  </div>
+
+  <div class="grid g3" style="margin-bottom:18px" id="kpi"></div>
+
+  <!-- KALENDARZ ZADAN: miesiac, tydzien, dzien (D-246, ocena makiety 08.10) -->
+  <div class="card" id="kartaKalendarza">
+    <div class="card-head kal-pasek">
+      <h3>Kalendarz zadań
+        <span class="tip-mark" data-tip="Zadania z terminem w widoku miesiąca, tygodnia albo dnia. Kliknięcie dnia otwiera widok dnia, kliknięcie zadania otwiera kartę wniosku albo edycję zadania. Numery tygodni wg ISO 8601 (D-246).">i</span>
+      </h3>
+      <div class="ch-actions" style="flex-wrap:wrap">
+        <span id="kalWidoki" class="btn-row"></span>
+        <button class="btn xs" type="button" aria-label="Poprzedni okres" onclick="przesunKalendarz18(-1)">&lsaquo;</button>
+        <button class="btn xs" type="button" onclick="przesunKalendarz18(0)">Dziś</button>
+        <button class="btn xs" type="button" aria-label="Następny okres" onclick="przesunKalendarz18(1)">&rsaquo;</button>
+        <strong id="kalOkres" class="kal-okres"></strong>
+      </div>
+    </div>
+    <div class="card-body" id="kalTresc"></div>
+  </div>
+
+  <div class="card" id="formZadania" style="display:none">
+    <div class="card-head"><h3 id="tytulFormularza">Nowe zadanie ręczne</h3></div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:2fr 2fr 1fr;gap:10px">
+        <label class="small" style="display:flex;flex-direction:column;gap:3px"><span class="muted">Tytuł</span>
+          <input class="inp" id="tytulZadania"></label>
+        <label class="small" style="display:flex;flex-direction:column;gap:3px"><span class="muted">Wniosek</span>
+          <select class="inp" id="wniosekZadania"></select></label>
+        <label class="small" style="display:flex;flex-direction:column;gap:3px"><span class="muted">Termin</span>
+          <input class="inp" type="date" id="terminZadania"></label>
+      </div>
+      <div style="display:grid;grid-template-columns:2fr 2fr 1fr;gap:10px;margin-top:10px">
+        <label class="small" style="display:flex;flex-direction:column;gap:3px"><span class="muted">Opis</span>
+          <input class="inp" id="opisZadania"></label>
+        <label class="small" style="display:flex;flex-direction:column;gap:3px" id="wierszPrzypisania"><span class="muted">Przypisane do</span>
+          <select class="inp" id="przypisaneZadania"></select></label>
+        <label class="small" style="display:flex;flex-direction:column;gap:3px"><span class="muted">Przypomnij (dni przed terminem)</span>
+          <input class="inp" type="number" min="0" id="przypomnijZadania" placeholder="od razu"></label>
+      </div>
+      <div class="small muted" style="margin-top:8px" id="podpowiedzPrzypisania"></div>
+      <div class="small" style="margin-top:6px;color:var(--neg-ink)" id="bladZadania"></div>
+      <div class="btn-row" style="margin-top:12px">
+        <button class="btn primary sm" onclick="zapiszZadanie()">Zapisz</button>
+        <button class="btn sm" onclick="zamknijFormularzZadania()">Anuluj</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid g-2-1">
+    <div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Do zrobienia
+            <span class="tip-mark" data-tip="Zadania otwarte, ktorych okno przypomnienia juz sie zaczelo. Zadanie z przypomnieniem pojawia sie tu dopiero na zadana liczbe dni przed terminem (D-239). Typ automatyczne = z reguly statusu, typ reczne = dopisane z reki (D-140, P-57).">i</span>
+          </h3>
+          <span class="sub" id="subZad"></span>
+        </div>
+        <div class="card-body" id="listaZad"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Zaplanowane
+            <span class="tip-mark" data-tip="Zadania z przypomnieniem, ktore jeszcze nie weszly na liste Do zrobienia. Pojawia sie tam na ustawiona liczbe dni przed terminem (D-239).">i</span>
+          </h3>
+          <span class="sub" id="subPlan"></span>
+        </div>
+        <div class="card-body" id="listaPlan"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Historia
+            <span class="tip-mark" data-tip="Zadania zrobione i anulowane (D-246). Zadanie mozna z historii przywrocic do otwartych.">i</span>
+          </h3>
+          <div class="ch-actions">
+            <select class="inp" id="filtrHistorii" onchange="zmienFiltrHistorii(this.value)">
+              <option value="">Zrobione i anulowane</option>
+              <option value="zrobione">Zrobione</option>
+              <option value="anulowane">Anulowane</option>
+            </select>
+          </div>
+        </div>
+        <div class="card-body" id="listaHist"></div>
+      </div>
+    </div>
+
+    <div>
+
+      <!-- POWIADOMIENIA: osobny modul (D-195) -->
+      <div class="card">
+        <div class="card-head">
+          <h3>Powiadomienia: wnioski oczekujące na akceptację
+            <span class="tip-mark" data-tip="Bramka anty-spam (D-105): formularz (preferencyjnie Google Forms) wplywa najpierw tutaj. Administrator akceptuje albo odrzuca, dopiero potem rekord wchodzi do bazy klientow. LDIT moze tez dodawac klientow recznie i importem starej bazy (D-147). Licznik pokazywany tez jako kolko w prawym gornym rogu.">i</span>
+          </h3>
+          <div class="ch-actions"><span class="tag neg" id="badgeAkc"></span></div>
+        </div>
+        <div class="card-body" id="listaAkc"></div>
+      </div>
+
+      <!-- POWIADOMIENIA SYSTEMU (D-297) -->
+      <div class="card">
+        <div class="card-head">
+          <h3>Powiadomienia systemu
+            <span class="tip-mark" data-tip="Sprawy do wyjaśnienia przez pracownika: urząd z pliku naborów spoza słownika (D-272), mail pasujący do klientów w kilku instytucjach (D-286). Widzą je pracownicy i administrator (D-297).">i</span>
+          </h3>
+          <div class="ch-actions"><span class="tag neg" id="badgePow"></span></div>
+        </div>
+        <div class="card-body" id="listaPow"></div>
+      </div>
+
+      <!-- JAK DZIALAJA ZADANIA: uwaga projektowa, widoczna po wlaczeniu w gornym pasku -->
+      <div class="note">
+        <b>Jak działają zadania</b> <span class="ref">D-140</span>
+        <div>
+          <dl class="dl">
+            <dt>Ręczne</dt><dd>Dopisywane z ręki, np. „kontakt za 4 dni" po rozmowie z klientem. Przypięte do wniosku i pracownika.</dd>
+            <dt>Automatyczne</dt><dd>Wyzwalane statusem lub datą. Przykład: przygotowanie rozliczenia z daty ostatniego dnia szkolenia, wysłanie danych do faktury. Które są automatyczne, pozostaje do rozpisania <span class="ref p">P-57</span>.</dd>
+            <dt>Reagują na terminy</dt><dd>Przesunięcie terminu szkolenia przesuwa powiązane zadanie.</dd>
+            <dt>Widoczność</dt><dd>Pracownik widzi i edytuje swoje zadania (plan dnia). Administrator ma wgląd we wszystkie, przypisuje je dowolnej osobie z LDIT i widzi historię <span class="ref">D-140</span> <span class="ref">D-246</span>.</dd>
+            <dt>Przypomnienie</dt><dd>Notatka z terminem z karty wniosku to zadanie z przypomnieniem, domyślnie 3 dni przed terminem. Do tego czasu leży w sekcji Zaplanowane <span class="ref">D-239</span>.</dd>
+          </dl>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- kfs:skrypty -->
+<script src="../db/sql-wasm.js"></script>
+<script src="../db/sql-wasm-data.js"></script>
+<script src="../db/seed-db.js"></script>
+<script src="../assets/sqlite.js"></script>
+<script src="../assets/store.js"></script>
+<script src="../assets/haslo.js"></script>
+<script src="../assets/funkcje.js"></script>
+<script src="../assets/auth.js"></script>
+<script src="../assets/walidacja.js"></script>
+<script src="../assets/straznik-wlasnosc.js"></script>
+<script src="../assets/straznik.js"></script>
+<script src="../assets/zakres.js"></script>
+<script src="../assets/prowizja.js"></script>
+<script src="../assets/db-format.js"></script>
+<script src="../assets/db-klienci.js"></script>
+<script src="../assets/db-instytucje.js"></script>
+<script src="../assets/db-nabory.js"></script>
+<script src="../assets/db.js"></script>
+<script src="../assets/lata.js"></script>
+<script src="../assets/nabory-import.js"></script>
+<script src="../assets/html.js"></script>
+<script src="../assets/statusy.js"></script>
+<script src="../assets/akceptacje.js"></script>
+<script src="../assets/wielowybor.js"></script>
+<script src="../assets/nawigacja.js"></script>
+<script src="../assets/podglad-roli.js"></script>
+<script src="../assets/interfejs.js"></script>
+<script src="../assets/tips.js"></script>
+<script src="../assets/boot.js" data-modul="zadania"></script>
+<script src="js/18-zadania-logika.js"></script>
+<script src="js/18-zadania-powiadomienia.js"></script>
+<script src="js/18-zadania-lista.js"></script>
+<script src="js/18-zadania-kalendarz.js"></script>
+<script src="js/18-zadania-formularz.js"></script>
+<script type="text/kfs-strona">
+wczytajUprawnienia18();
+podepnijOdswiezanie18();
+render();
+</script>
+</body>
+</html>

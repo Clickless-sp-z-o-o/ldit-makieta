@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Administracja</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/style-sesja.css">
+<link rel="stylesheet" href="../assets/style-listy.css">
+<link rel="stylesheet" href="../assets/style-interfejs.css">
+<link rel="stylesheet" href="../assets/style-ekrany-0810.css">
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <h1 class="page-title">Administracja</h1>
+      <p class="page-desc">Prowizje, faktury i statystyki finansowe, widoczne tylko dla administratora.</p>
+    </div>
+    <div class="ph-actions">
+      <button class="btn atrapa" data-tip="W aplikacji docelowej">Eksport do Excela</button>
+      <button class="btn primary atrapa" data-tip="W aplikacji docelowej">Wystaw fakturę prowizyjną</button>
+    </div>
+  </div>
+
+
+
+  <div class="note warn">
+    <b>Moduł wyłącznie dla administratora <span class="ref">D-34</span>.</b>
+    Prowizje, faktury i statystyki finansowe są niewidoczne dla pracownika LDIT, dla instytucji
+    szkoleniowej i dla klienta końcowego. Instytucja nie widzi ani swojej stawki, ani cudzej.
+    Przy roli innej niż administrator ta pozycja nie pojawia się w menu, a bezpośrednie wejście
+    pod adres kończy się odmową na poziomie danych, nie tylko interfejsu.
+    <span class="ref p">P-35</span> pozostaje otwarte: klient dopuścił, że docelowo pracownik
+    dostanie część danych finansowych, ale nie określił których.
+  </div>
+
+  <div class="note">
+    <b>Administracja to podsumowanie, nie miejsce edycji stawek <span class="ref">D-138</span>.</b>
+    Prowizja per instytucja to widok zbiorczy: dashboard miesięczny i narastająco plus podstawa
+    do fakturowania. <b>Nadpisanie prowizji robi się na karcie wniosku</b>, jako procent albo kwota
+    <span class="ref">D-136</span>, a stawka indywidualna wlicza się do puli progowej instytucji
+    <span class="ref">D-137</span>. Rozwinięcie w pojedyncze wnioski poniżej służy tylko podglądowi
+    podstawy, samego nadpisania tu nie ma.
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="tabs">
+      <div class="tab on" data-t="t-prowizje">Prowizje</div>
+      <div class="tab" data-t="t-faktury">Faktury</div>
+      <div class="tab" data-t="t-statystyki">Statystyki</div>
+      <div class="tab" data-t="t-wewnetrzne">Prowizje wewnętrzne</div>
+    </div>
+  </div>
+
+  <!-- ============================= PROWIZJE ============================= -->
+  <div class="tab-pane on" id="t-prowizje">
+
+    <div class="grid g4" style="margin-bottom:18px" id="kpiProw"></div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Prowizja per instytucja szkoleniowa</h3>
+        <span class="sub">podstawa do fakturowania</span>
+        <div class="ch-actions">
+          <select class="inp" style="width:auto" id="okres"></select><span id="zamkniecieOkresu"></span>
+          <button class="btn sm atrapa" data-tip="W aplikacji docelowej">Eksport</button>
+        </div>
+      </div>
+      <div class="card-body tight">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Instytucja</th>
+              <th class="c">Model<span class="tip-mark" data-tip="Model z umowy instytucji: A kumulacja miesięczna od całości obrotu, B kumulacja roczna od całości obrotu, C od nadwyżki ponad próg, D stała stawka. Konfigurowany per instytucja w Konfiguratorze instytucji, widoczny tylko dla administratora (D-34).">i</span></th>
+              <th>Kumulacja<span class="tip-mark" data-tip="Okres, w którym sumuje się obrót do sprawdzenia progu: miesięczny, roczny albo bez kumulacji (stawka stała).">i</span></th>
+              <th class="num">Projekty<span class="tip-mark" data-tip="Liczba projektów z decyzją pozytywną wchodzących do podstawy prowizji w wybranym okresie.">i</span></th>
+              <th class="num">Obrót narastająco<span class="tip-mark" data-tip="Suma kosztu całkowitego z dopłatą (D-64), nie kwoty przyznanej przez urząd. Tylko projekty z decyzją pozytywną. To podstawa naliczenia prowizji.">i</span></th>
+              <th class="num">Stawka efekt.<span class="tip-mark" data-tip="Prowizja naliczona podzielona przez obrót. W modelach progowych zależy od tego, ile obrotu przekroczyło kolejne progi.">i</span></th>
+              <th class="num">Prowizja naliczona<span class="tip-mark" data-tip="Prowizja LDIT policzona silnikiem progowym na całym okresie. Uwzględnia stawki indywidualne nadpisane na kartach wniosków (D-137).">i</span></th>
+              <th class="num">Prowizja rozliczona<span class="tip-mark" data-tip="Część prowizji już objęta fakturą prowizyjną, ze statusem Rozliczone.">i</span></th>
+              <th class="num">Do zafakturowania<span class="tip-mark" data-tip="Prowizja naliczona pomniejszona o rozliczoną. Kwota czekająca na wystawienie faktury prowizyjnej.">i</span></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tabProw"></tbody>
+          <tfoot id="stopkaProw"></tfoot>
+        </table>
+      </div>
+      <div class="card-body" style="border-top:1px solid var(--line)">
+        <div class="legend" id="legendaModeli"></div>
+        <div class="small muted" style="margin-top:8px">
+          Obrót liczony z pola <b>koszt całkowity z dopłatą</b>, nie z kwoty przyznanej przez urząd.
+          Do obrotu wchodzą wyłącznie projekty z decyzją pozytywną. Kolejność faktur ma znaczenie,
+          bo określa, która faktura wyczerpała próg. Faktura korygująca jest rozliczana w okresie swojej daty po stawce
+          faktury pierwotnej i nie zmienia obrotu tego okresu <span class="ref">D-161</span>. Nowe warunki działają od swojej
+          daty, nigdy wstecz <span class="ref">D-162</span>. Wniosek z nadpisaną prowizją wlicza się do puli progowej
+          <span class="ref">D-137</span>.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Dashboard prowizji <span class="ref">D-138</span></h3>
+        <span class="sub">widok miesięczny per instytucja oraz wartość narastająco dla progu rocznego</span>
+        <div class="ch-actions"><span class="tag info" id="tagRok"></span></div>
+      </div>
+      <div class="card-body tight">
+        <div class="tbl-wrap" style="overflow-x:auto">
+          <table class="tbl" id="tabDash">
+            <thead>
+              <tr id="dashHead"></tr>
+            </thead>
+            <tbody id="dashBody"></tbody>
+            <tfoot id="dashFoot"></tfoot>
+          </table>
+        </div>
+      </div>
+      <div class="card-body" style="border-top:1px solid var(--line)">
+        <div class="small muted">
+          Kolumny to kolejne miesiące roku, ostatnia kolumna sumuje obrót narastająco od początku roku.
+          W modelach z kumulacją roczną (B) to właśnie narastająco decyduje, który próg jest aktywny,
+          więc miesięczny słupek bez sumy rocznej wprowadzałby w błąd. Wartości pokazują obrót objęty
+          prowizją, czyli koszt całkowity z dopłatą projektów z decyzją pozytywną.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3 id="naglProjekty">Rozwinięcie instytucji</h3>
+        <span class="sub">podgląd projektów w podstawie prowizji, nadpisanie na karcie wniosku <span class="ref">D-138</span></span>
+        <div class="ch-actions"><span class="tag mute" id="tagOkresProj"></span></div>
+      </div>
+      <div class="card-body tight">
+        <div class="tbl-wrap" style="max-height:430px;overflow-y:auto">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th style="width:44px">Nr</th>
+                <th>Klient</th>
+                <th>Szkolenie</th>
+                <th>Data faktury</th>
+                <th class="num">Podstawa</th>
+                <th class="num">Obrót przed</th>
+                <th class="num">Stawka</th>
+                <th class="num">Prowizja</th>
+                <th>Rozliczenie</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tabProjekty"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Przewidywana prowizja <span class="ref">D-26</span></h3>
+        <span class="sub">prognoza z zaplanowanych terminów szkoleń, zanim powstaną faktury</span>
+        <div class="ch-actions"><span class="tag info dot" id="okresPrognozy"></span></div>
+      </div>
+      <div class="card-body tight">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Instytucja</th>
+              <th class="c">Model</th>
+              <th class="num">Terminy</th>
+              <th class="num">Osoby</th>
+              <th class="num">Obrót planowany</th>
+              <th class="num">Stawka prognozowana</th>
+              <th class="num">Prowizja przewidywana</th>
+              <th>Margines do progu</th>
+            </tr>
+          </thead>
+          <tbody id="tabPrognoza"></tbody>
+        </table>
+      </div>
+      <div class="card-body" style="border-top:1px solid var(--line)">
+        <div class="note warn mb0" id="scenariusz"></div>
+        <div class="small muted" style="margin-top:10px">
+          Prognoza przelicza się przy każdej zmianie wolumenu. Zmiana pojedynczej pozycji przelicza
+          stawkę dla wszystkich pozycji w okresie, a nie tylko dla tego jednego szkolenia.
+          Domyślna data planowanego wystawienia faktury to ostatni dzień szkolenia.
+        </div>
+      </div>
+    </div>
+
+    <div class="note open">
+      <b>Blokada <span class="ref p">P-01</span>: konflikt reguły okresu rozliczeniowego.</b>
+      Klient ustalił, że okresem rozliczeniowym jest <b>data wystawienia faktury</b> (22:21),
+      a pięć minut później opisał prognozowanie progu z kalendarza szkoleń (25:55) i sam wskazał
+      sprzeczność: „chodzi mi o to, że na przykład ma szkolenie w październiku, a wystawiliśmy to
+      w sierpniu” (26:10). Ta strona przyjmuje propozycję rozstrzygnięcia: tabela główna liczy
+      <b>prowizję rzeczywistą</b> po dacie faktury, a sekcja prognozy liczy
+      <b>prowizję przewidywaną</b> po dacie planowanej. Ten sam silnik, inne źródło daty.
+      Wymaga potwierdzenia u klienta przed prototypem konfiguratora.
+    </div>
+
+    <div class="note open">
+      <b>Otwarte <span class="ref p">P-06</span>: kto może nadpisać prowizję.</b>
+      Miejsce jest ustalone: karta wniosku <span class="ref">D-138</span>, które przeniosło nadpisanie
+      z Administracji <span class="ref">D-93</span>. Na pytanie „tylko ty możesz to zmienić czy pracownik
+      twój też?” klient odpowiedział „Administracja”, czyli tylko na drugą część pytania. W tabeli powyżej
+      przy każdym projekcie jest link „Karta wniosku”, a samo uprawnienie do nadpisania pozostaje nieokreślone.
+      Nadpisanie kasuje regułę i musi być odwracalne akcją „Przywróć regułę”
+      <span class="ref">D-16</span>.
+    </div>
+  </div>
+
+  <!-- Zakladki Faktury, Statystyki i Prowizje wewnetrzne sa budowane w js/08-administracja-*.js -->
+  <div class="tab-pane" id="t-faktury"></div>
+  <div class="tab-pane" id="t-statystyki"></div>
+  <div class="tab-pane" id="t-wewnetrzne"></div>
+</div>
+
+<!-- kfs:skrypty -->
+<script src="../db/sql-wasm.js"></script>
+<script src="../db/sql-wasm-data.js"></script>
+<script src="../db/seed-db.js"></script>
+<script src="../assets/sqlite.js"></script>
+<script src="../assets/store.js"></script>
+<script src="../assets/haslo.js"></script>
+<script src="../assets/funkcje.js"></script>
+<script src="../assets/auth.js"></script>
+<script src="../assets/walidacja.js"></script>
+<script src="../assets/straznik-wlasnosc.js"></script>
+<script src="../assets/straznik.js"></script>
+<script src="../assets/zakres.js"></script>
+<script src="../assets/prowizja.js"></script>
+<script src="../assets/db-format.js"></script>
+<script src="../assets/db-klienci.js"></script>
+<script src="../assets/db-instytucje.js"></script>
+<script src="../assets/db-nabory.js"></script>
+<script src="../assets/db.js"></script>
+<script src="../assets/lata.js"></script>
+<script src="../assets/nabory-import.js"></script>
+<script src="../assets/html.js"></script>
+<script src="../assets/statusy.js"></script>
+<script src="../assets/akceptacje.js"></script>
+<script src="../assets/wielowybor.js"></script>
+<script src="../assets/nawigacja.js"></script>
+<script src="../assets/podglad-roli.js"></script>
+<script src="../assets/interfejs.js"></script>
+<script src="../assets/tips.js"></script>
+<script src="../assets/boot.js" data-modul="admin"></script>
+<script src="js/08-administracja-rdzen.js"></script>
+<script src="js/08-administracja-silnik.js"></script>
+<script src="js/08-administracja-zamkniecie.js"></script>
+<script src="js/08-administracja-prowizje.js"></script>
+<script src="js/08-administracja-prognoza.js"></script>
+<script src="js/08-administracja-faktury.js"></script>
+<script src="js/08-administracja-statystyki.js"></script>
+<script src="js/08-administracja-wewnetrzne.js"></script>
+<script type="text/kfs-strona">
+inicjuj08();
+Nawigacja.podlaczLinki(document.body);
+</script>
+</body>
+</html>

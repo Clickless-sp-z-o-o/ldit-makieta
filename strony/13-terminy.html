@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terminy</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/style-sesja.css">
+<link rel="stylesheet" href="../assets/style-interfejs.css">
+<link rel="stylesheet" href="../assets/style-ekrany-0810.css">
+<style>
+  /* Drobny wyjatek: wiersz rozwijany z lista osob zapisanych */
+  tr.osoby td { background: var(--surface-2); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <h1 class="page-title">Terminy szkoleń<span class="tip-mark" data-tip="Po co ta zakładka: jedno źródło prawdy o realizacji szkoleń. Kalendarz per instytucja, termin przypisany do projektu, LDIT widzi terminy wszystkich instytucji, a każda instytucja tylko swoje (D-142).">i</span></h1>
+      <p class="page-desc">Wspólny kalendarz szkoleń instytucji.</p>
+    </div>
+    <div class="ph-actions">
+      <button class="btn atrapa" data-tip="W aplikacji docelowej">Pismo do PUP o zmianie terminu</button>
+      <button class="btn primary" id="btnNowy">+ Nowy termin</button>
+    </div>
+  </div>
+
+  <nav class="mod-tabs">
+    <a href="02-zestawienia.html">Projekty <span class="n" id="navProjekty"></span></a>
+    <a href="04-baza-klientow.html">Oczekujące na nabór</a>
+    <a href="13-terminy.html" class="on">Terminy szkoleń</a>
+  </nav>
+
+
+  <div class="grid g4" style="margin-bottom:18px" id="kpi"></div>
+
+  <div class="card" style="padding:0">
+    <div class="tabs">
+      <button class="tab on" data-t="t1">Kalendarz</button>
+      <button class="tab" data-t="t2">Lista terminów</button>
+    </div>
+
+    <!-- ============ ZAKLADKA 1: KALENDARZ ============ -->
+    <div class="tab-pane on" id="t1">
+      <div class="toolbar">
+        <button class="btn sm" id="prev">&#8592; Poprzedni</button>
+        <b id="mLabel" style="min-width:170px;text-align:center"></b>
+        <button class="btn sm" id="next">Następny &#8594;</button>
+        <select class="inp" id="fIS" data-wielo><option value="">Wszystkie instytucje</option></select>
+        <span class="sp"></span>
+        <div id="przelacznikWidoku" class="btn-row"></div>
+        <span class="sp"></span>
+        <div class="legend" id="legendaKolorow"></div>
+      </div>
+
+      <div class="card-body">
+        <div class="cal" id="cal"></div>
+        <div class="small muted mt16">
+          Termin wielodniowy pokazywany jest w każdym dniu swojego trwania, dlatego kursy długie
+          (na przykład spawanie MAG, 15 dni) zajmują ciągły blok w kalendarzu.
+          Kafelek pokazuje <b>firmę klienta i wykonawcę</b> szkolenia, a kolor oznacza instytucję (<span class="ref">D-267</span>). Po najechaniu widać szkolenie, obłożenie i miejsce, a <b>kliknięcie otwiera wniosek</b> (przy kilku wnioskach w terminie lista do wyboru). Przy więcej niż trzech szkoleniach w dniu widoku miesięcznego reszta kryje się pod „+N więcej”, które otwiera widok dnia.
+        </div>
+
+        <div class="note">
+          <b>Kalendarz per instytucja <span class="ref">D-142</span>.</b> Terminy wystawia instytucja
+          szkoleniowa i przypisuje je do projektu. LDIT ma wgląd we wszystkie kalendarze, każda instytucja
+          widzi wyłącznie swój. Po <b>kliknięciu terminu</b> widać <b>listę uczestników</b> na niego zapisanych:
+          nazwa po rodzaju szkolenia, pod spodem klienci, plus miejsce szkolenia. Pełna lista uczestników jest
+          w zakładce <b>Lista terminów</b> (rozwijana w wierszu terminu).
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ ZAKLADKA 2: LISTA ============ -->
+    <div class="tab-pane" id="t2">
+      <div class="toolbar">
+        <input class="inp search" id="q" placeholder="Szukaj: szkolenie, miejsce, firma klienta, NIP...">
+        <select class="inp" id="fIS2" data-wielo><option value="">Wszystkie instytucje</option></select>
+        <select class="inp" id="fSt" data-wielo>
+          <option value="">Wszystkie statusy</option>
+          <option>Zaplanowany</option>
+          <option>Wolny</option>
+          <option>Odbyty</option>
+        </select>
+        <span class="sp"></span>
+        <span class="small muted" id="licz"></span>
+      </div>
+
+      <div id="addForm" class="card-body" style="display:none;border-bottom:1px solid var(--line)"></div>
+
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Id</th>
+              <th>Szkolenie<span class="tip-mark" data-tip="Nazwa po rodzaju szkolenia (pozycja z katalogu), pod spodem identyfikator szkolenia. Kliknięcie terminu (przycisk Zapisani) rozwija listę klientów przypisanych do tego terminu.">i</span></th>
+              <th>Instytucja<span class="tip-mark" data-tip="Instytucja, która wystawiła termin. Kalendarz jest prowadzony per instytucja; LDIT widzi wszystkie, instytucja tylko swoje (D-142).">i</span></th>
+              <th class="nowrap">Od</th>
+              <th class="nowrap">Do</th>
+              <th>Miejsce<span class="tip-mark" data-tip="Miejsce realizacji szkolenia (online lub adres). Pokazywane też na kafelku w kalendarzu po najechaniu.">i</span></th>
+              <th>Status<span class="tip-mark" data-tip="Etap realizacji terminu: Wolny (można dopisywać), Zaplanowany (są zapisani), Odbyty.">i</span></th>
+              <th style="width:170px">Zapisani<span class="tip-mark" data-tip="Obłożenie terminu. Kliknij, aby zobaczyć listę uczestników przypisanych do tego terminu: klienci wraz z projektem, z którego pochodzą (D-142).">i</span></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="body"></tbody>
+        </table>
+      </div>
+
+      <div class="card-body">
+      </div>
+    </div>
+  </div>
+
+  <h3 style="font-size:15px;margin:24px 0 12px">Dwa modele operacyjne ustalania terminu<span class="tip-mark" data-tip="System musi obsłużyć oba warianty naraz, bo klient wprost powiedział, że jednego standardu nie ma. Od modelu zależy kto wystawia termin i w którą stronę idzie powiadomienie (D-12).">i</span></h3>
+
+  <div class="note">
+    <b>Powiadomienia terminowe zależą od modelu <span class="ref">D-12</span>.</b>
+    <b>Model A:</b> termin ustala LDIT z kalendarza instytucji, powiadomienie idzie do instytucji (odbiorcy).
+    <b>Model B:</b> instytucja ustala termin telefonicznie z klientem i przekazuje go do systemu, a powiadomienie
+    o zmianie trafia do LDIT, które składa pismo do urzędu pracy. Przykłady modeli poniżej.
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-head">
+        <h3>Model A: termin ustala LDIT</h3>
+        <span class="sub">przykład: Metal Maniak</span>
+        <div class="ch-actions"><span class="tag info">większość instytucji</span></div>
+      </div>
+      <div class="card-body">
+        <div class="timeline">
+          <div class="tl-item done"><div class="t">Instytucja wystawia wolne terminy</div>
+            <div class="m">Każdy termin powiązany z pozycją katalogu, z limitem miejsc i miejscem realizacji.</div></div>
+          <div class="tl-item done"><div class="t">LDIT widzi kalendarz instytucji</div>
+            <div class="m">Przy pierwszej rozmowie z klientem od razu wiadomo, co jest wolne.</div></div>
+          <div class="tl-item now"><div class="t">LDIT ustala termin z klientem i zapisuje uczestników</div>
+            <div class="m">Wpis idzie prosto do tabeli terminów, bez maila do instytucji.</div></div>
+          <div class="tl-item"><div class="t">Instytucja tylko podgląda</div>
+            <div class="m">Nie musi nic potwierdzać, widzi gotową listę osób na swój termin.</div></div>
+        </div>
+        <div class="sep"></div>
+        <div class="small muted">
+          Rola instytucji: <b>odbiorca</b>. Powiadomienie mailowe idzie do instytucji, nie do LDIT.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Model B: termin ustala instytucja</h3>
+        <span class="sub">przykład: Dron Fortech</span>
+        <div class="ch-actions"><span class="tag warn">wymaga pisma do PUP</span></div>
+      </div>
+      <div class="card-body">
+        <div class="timeline">
+          <div class="tl-item done"><div class="t">Instytucja ustala termin telefonicznie z klientem</div>
+            <div class="m">Poza systemem, w swoim własnym narzędziu lub kalendarzu.</div></div>
+          <div class="tl-item done"><div class="t">Instytucja wpisuje termin do systemu</div>
+            <div class="m">Dziś: mail do LDIT. Docelowo: wpis w module terminów, który jest źródłem prawdy.</div></div>
+          <div class="tl-item now"><div class="t">LDIT dostaje powiadomienie o zmianie</div>
+            <div class="m">Zdarzenie widoczne w rejestrze aktywności z wartością przed i po <span class="ref">D-116</span>.</div></div>
+          <div class="tl-item"><div class="t">LDIT składa w urzędzie pismo o zmianie terminu</div>
+            <div class="m">Krok procesu, który musi być widoczny w systemie, bo bez niego zmiana nie jest skuteczna wobec PUP.</div></div>
+        </div>
+        <div class="sep"></div>
+        <div class="small muted">
+          Rola instytucji: <b>autor terminu</b>. System musi przyjąć oba warianty, bo klient wprost powiedział,
+          że jednego standardu nie ma.
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="note open">
+    <b>Do rozstrzygnięcia <span class="ref p">P-10</span>:</b> warsztat wykluczył moduł zadań i integrację
+    z kalendarzem Outlook <span class="ref">D-118</span>, ale <b>nie potwierdził wprost</b>, czy w systemie
+    zostaje jakikolwiek własny kalendarz terminów szkoleń. Z dokumentacji przedwarsztatowej i wcześniejszej
+    części warsztatu wynika, że powinien zostać, i tak przyjęto w tej makiecie. Wykluczony jest wyłącznie
+    kalendarz spotkań i zadań, nie kalendarz terminów szkoleń, który jest częścią procesu KFS.
+  </div>
+
+</div>
+
+<!-- kfs:skrypty -->
+<script src="../db/sql-wasm.js"></script>
+<script src="../db/sql-wasm-data.js"></script>
+<script src="../db/seed-db.js"></script>
+<script src="../assets/sqlite.js"></script>
+<script src="../assets/store.js"></script>
+<script src="../assets/haslo.js"></script>
+<script src="../assets/funkcje.js"></script>
+<script src="../assets/auth.js"></script>
+<script src="../assets/walidacja.js"></script>
+<script src="../assets/straznik-wlasnosc.js"></script>
+<script src="../assets/straznik.js"></script>
+<script src="../assets/zakres.js"></script>
+<script src="../assets/prowizja.js"></script>
+<script src="../assets/db-format.js"></script>
+<script src="../assets/db-klienci.js"></script>
+<script src="../assets/db-instytucje.js"></script>
+<script src="../assets/db-nabory.js"></script>
+<script src="../assets/db.js"></script>
+<script src="../assets/lata.js"></script>
+<script src="../assets/nabory-import.js"></script>
+<script src="../assets/html.js"></script>
+<script src="../assets/statusy.js"></script>
+<script src="../assets/akceptacje.js"></script>
+<script src="../assets/wielowybor.js"></script>
+<script src="../assets/nawigacja.js"></script>
+<script src="../assets/podglad-roli.js"></script>
+<script src="../assets/interfejs.js"></script>
+<script src="../assets/tips.js"></script>
+<script src="../assets/boot.js" data-modul="terminy"></script>
+<script src="js/13-terminy-stan.js"></script>
+<script src="js/13-terminy-firmy.js"></script>
+<script src="js/13-terminy-kalendarz.js"></script>
+<script src="js/13-terminy-kafelki.js"></script>
+<script src="js/13-terminy-widoki.js"></script>
+<script src="js/13-terminy-lista.js"></script>
+<script src="js/13-terminy-zapis.js"></script>
+<script type="text/kfs-strona">
+el("prev").addEventListener("click", poprzedniMiesiac);
+el("next").addEventListener("click", nastepnyMiesiac);
+el("fIS").addEventListener("change", renderKalendarz);
+podepnijWidoki13();
+["q", "fIS2", "fSt"].forEach(function (id) {
+  el(id).addEventListener("input", renderLista);
+  el(id).addEventListener("change", renderLista);
+});
+document.querySelectorAll(".tab").forEach(function (t) {
+  t.addEventListener("click", function () { przelaczZakladke13(t); });
+});
+el("btnNowy").addEventListener("click", pokazForm);
+window.addEventListener("db:changed", odswiez13);
+inicjujStan13();
+odswiez13();
+</script>
+</body>
+</html>

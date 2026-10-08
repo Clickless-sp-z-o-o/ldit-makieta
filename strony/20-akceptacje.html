@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Do akceptacji</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/style-sesja.css">
+<link rel="stylesheet" href="../assets/style-listy.css">
+<link rel="stylesheet" href="../assets/style-interfejs.css">
+<link rel="stylesheet" href="../assets/style-ekrany-0810.css">
+<style>
+  .akc-uklad { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(360px, 1fr); gap: 14px; flex: 1 1 auto; min-height: 0; }
+  .akc-uklad > .card { display: flex; flex-direction: column; min-height: 0; margin-bottom: 0; }
+  .akc-panel { overflow: auto; }
+  tr.wybrany td { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--gold); }
+  .zmiana-po { background: var(--pos-bg); padding: 1px 5px; border-radius: 4px; }
+  .zmiana-przed { text-decoration: line-through; color: var(--ink-3); }
+</style>
+</head>
+<body>
+<div class="page lista">
+
+  <div class="page-head">
+    <div class="naglowek-karty">
+      <button class="btn sm" onclick="Nawigacja.wstecz('01-dashboard.html')" data-tip="Poprzedni ekran.">&larr; Wstecz</button>
+      <h1 class="page-title">Do akceptacji</h1>
+      <span class="tip-mark" data-tip="Bramka anty-spam (D-105): formularz zgłoszeniowy wprowadza LDIT albo instytucja (jej handlowiec też): ręcznie, z pliku CSV albo z załączonym PDF. Klient końcowy nie wypełnia formularzy (D-223, D-244). Formularz z brakami jest przyjmowany, a wprowadzający widzi komunikat o brakach (D-245). Instytucja zgłasza też zmiany swoich danych i danych swoich klientów (D-224). Nic nie wchodzi do bazy bez decyzji pracownika LDIT albo administratora. Odrzucenie wymaga powodu, który zobaczy instytucja. Niekompletny formularz można zwrócić instytucji do uzupełnienia (D-269). Formularz ma pełny zestaw pól klienta (D-256, D-257). Każda decyzja trafia do rejestru aktywności.">i</span>
+    </div>
+  </div>
+
+  <nav class="mod-tabs" id="zakladki">
+    <a href="#" class="on" data-widok="formularze" onclick="przelaczWidok20('formularze');return false">Formularze zgłoszeniowe <span class="n" id="nForm"></span></a>
+    <a href="#" data-widok="zmiany" onclick="przelaczWidok20('zmiany');return false">Zmiany danych od instytucji <span class="n" id="nZmiany"></span></a>
+  </nav>
+
+  <div class="akc-uklad">
+    <div class="card">
+      <div class="toolbar">
+        <input class="inp search" id="q" placeholder="Szukaj: firma, NIP, instytucja...">
+        <select class="inp" id="fIS" data-wielo><option value="">Wszystkie instytucje</option></select>
+        <select class="inp" id="fStatus" data-wielo>
+          <option value="">Wszystkie statusy</option>
+          <option value="oczekuje" selected>Oczekuje</option>
+          <option value="rozpatrzone">Rozpatrzone</option>
+        </select>
+        <span class="sp"></span>
+        <button class="btn primary sm" id="btnNowyFormularz" hidden onclick="nowyFormularz20()" data-tip="Wprowadź formularz klienta za instytucję: ręcznie, z pliku CSV albo z załączonym PDF (D-244). Wymaga uprawnienia do dodawania formularzy, które nadaje administrator w konfiguratorze ról.">+ Wprowadź formularz</button>
+        <span class="small muted" id="licz"></span>
+      </div>
+      <div class="lista-tabela">
+        <table class="tbl">
+          <thead id="glowa"></thead>
+          <tbody id="body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3 id="tytulPanelu">Szczegóły</h3><span class="sub" id="subPanelu"></span></div>
+      <div class="card-body akc-panel" id="panelFormularza"><div id="zfKontener20" style="display:none"></div>
+      <div id="panel">
+        <div class="empty"><div class="ei">&#10003;</div><div class="et">Wybierz zgłoszenie z listy</div>Kliknij wiersz, żeby zobaczyć szczegóły i podjąć decyzję.</div>
+      </div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- kfs:skrypty -->
+<script src="../db/sql-wasm.js"></script>
+<script src="../db/sql-wasm-data.js"></script>
+<script src="../db/seed-db.js"></script>
+<script src="../assets/sqlite.js"></script>
+<script src="../assets/store.js"></script>
+<script src="../assets/haslo.js"></script>
+<script src="../assets/funkcje.js"></script>
+<script src="../assets/auth.js"></script>
+<script src="../assets/walidacja.js"></script>
+<script src="../assets/straznik-wlasnosc.js"></script>
+<script src="../assets/straznik.js"></script>
+<script src="../assets/zakres.js"></script>
+<script src="../assets/prowizja.js"></script>
+<script src="../assets/db-format.js"></script>
+<script src="../assets/db-klienci.js"></script>
+<script src="../assets/db-instytucje.js"></script>
+<script src="../assets/db-nabory.js"></script>
+<script src="../assets/db.js"></script>
+<script src="../assets/lata.js"></script>
+<script src="../assets/nabory-import.js"></script>
+<script src="../assets/html.js"></script>
+<script src="../assets/statusy.js"></script>
+<script src="../assets/akceptacje.js"></script>
+<script src="../assets/wielowybor.js"></script>
+<script src="../assets/nawigacja.js"></script>
+<script src="../assets/podglad-roli.js"></script>
+<script src="../assets/interfejs.js"></script>
+<script src="../assets/tips.js"></script>
+<script src="../assets/boot.js" data-modul="akcept"></script>
+<script src="js/16-formularz-csv.js"></script>
+<script src="js/16-formularz-pola.js"></script>
+<script src="js/16-formularz-zgloszenia.js"></script>
+<script src="js/20-akceptacje-lista.js"></script>
+<script src="js/20-akceptacje-sekcje.js"></script>
+<script src="js/20-akceptacje-szczegoly.js"></script>
+<script src="js/20-akceptacje-panel.js"></script>
+<script type="text/kfs-strona">
+inicjuj20();
+</script>
+</body>
+</html>

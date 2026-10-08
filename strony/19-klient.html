@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Karta klienta</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/style-sesja.css">
+<link rel="stylesheet" href="../assets/style-listy.css">
+<link rel="stylesheet" href="../assets/style-interfejs.css">
+</head>
+<body>
+<div class="page" id="stronaKlienta">
+
+  <div class="page-head">
+    <div class="naglowek-karty">
+      <button class="btn sm" id="btnWstecz" data-tip="Wraca do poprzedniego ekranu z tym samym filtrem.">&larr; Wstecz</button>
+      <h1 class="page-title" id="tytul">Klient</h1>
+      <span class="tip-mark" data-tip="Karta klienta w sekcjach z pełnego formularza (D-256, D-257): firma, osoba do kontaktu, rachunek, zatrudnienie, podatki, reprezentacja, zobowiązania, konto na praca.gov.pl. Wszystkie wnioski ze wszystkich lat (D-128) i korespondencja (D-52). Dane firmy zmienia się tylko tutaj, we wniosku zostają dane wniosku (D-265). Klik w wniosek otwiera jego kartę.">i</span>
+      <span class="tag warn" id="licznikBrakow" style="display:none"></span>
+    </div>
+    <div class="ph-actions">
+      <span id="znacznikCzarnej"></span>
+      <button class="btn primary sm" id="btnZlozWniosek" data-tip="Przenosi na ekran Nowy formularz, zakładka Nowy projekt, z tym klientem już wybranym (D-265).">Złóż wniosek</button>
+      <button class="btn sm" id="btnEksportKlienta" data-tip="Plik z danymi klienta do zaimportowania w innej instytucji jako nowy klient (D-282).">Eksportuj do pliku</button>
+      <button class="btn sm" id="btnEdytuj" data-tip="Edycja wszystkich danych klienta w sekcjach (D-235, D-256). Pole Kolejny nabór zmieniasz tylko tutaj (D-265).">Edytuj dane</button>
+    </div>
+  </div>
+
+  <div class="card" id="cardEdycja" style="display:none;margin-bottom:14px">
+    <div class="card-head"><h3>Edycja danych klienta</h3><span class="sub">sekcje można zwijać, liczba zatrudnionych jest tu, a projekt kopiuje ją na dzień wniosku <span class="ref">D-235</span> <span class="ref">D-256</span></span></div>
+    <div class="card-body">
+      <div id="edycjaPola"></div>
+      <div class="small" id="edycjaBledy" style="color:var(--neg,#b91c1c);margin-top:8px"></div>
+      <div class="btn-row" style="margin-top:12px">
+        <button class="btn primary sm" id="btnZapiszKlienta">Zapisz</button>
+        <button class="btn sm" id="btnAnulujKlienta">Anuluj</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid g2" id="sekcjeDanych"></div>
+
+  <div class="grid" style="margin-top:14px">
+    <div class="card">
+      <div class="card-head"><h3>Wnioski</h3><span class="sub" id="subWnioski"></span></div>
+      <div class="lista-tabela" style="--nad-tabela:260px">
+        <table class="tbl">
+          <thead><tr>
+            <th>Wniosek</th><th>Rok</th><th>Instytucja</th><th>Szkolenie</th>
+            <th class="num">Przyznano</th><th>Status</th><th>Rozl.</th><th>Etap</th>
+          </tr></thead>
+          <tbody id="wnioski"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px" id="uczestnicy">
+    <div class="card-head"><h3>Uczestnicy</h3><span class="sub" id="subUczestnicy"></span>
+      <span class="tip-mark" data-tip="Osoby klienta, które mogą iść na szkolenia (D-236). Dodajesz je i edytujesz tutaj, a w projekcie tylko się je wybiera z tej listy, więc kolejny wniosek nie wymaga przepisywania. PESEL widzą tylko konta z uprawnieniem do danych wrażliwych.">i</span>
+      <div class="ch-actions"><button class="btn sm" id="btnDodajUczestnika">+ Dodaj uczestnika</button></div>
+    </div>
+    <div class="card-body" id="uczestnikForm" style="display:none;border-bottom:1px solid var(--line)"></div>
+    <div class="card-body tight">
+      <table class="tbl">
+        <thead><tr><th>Imię i nazwisko</th><th>Rodzaj zatrudnienia</th><th>Termin zatrudnienia</th><th>Wykształcenie</th><th>PESEL</th><th class="num">Wiek</th><th>Zawód</th><th></th></tr></thead>
+        <tbody id="uczestnicyKlienta"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <div class="card-head"><h3>Urzędy pracy klienta</h3>
+      <span class="tip-mark" data-tip="Klient może mieć kilka oddziałów i wnioskować do różnych urzędów (D-238). Główny urząd edytujesz w danych klienta, dodatkowe tutaj. W Naborach każdy urząd klienta to osobny wiersz.">i</span>
+    </div>
+    <div class="card-body">
+      <div class="small" id="urzedyGlowny" style="margin-bottom:8px"></div>
+      <table class="tbl"><thead><tr><th>Dodatkowy urząd</th><th>Oddział</th><th></th></tr></thead><tbody id="urzedyDodatkowe"></tbody></table>
+      <div id="urzadForm" style="display:flex;gap:8px;align-items:end;margin-top:10px">
+        <label class="small" style="display:flex;flex-direction:column;gap:3px;flex:1"><span class="muted">Urząd</span><select class="inp" id="nowyUrzad"></select></label>
+        <label class="small" style="display:flex;flex-direction:column;gap:3px;flex:1"><span class="muted">Oddział klienta</span><input class="inp" id="nowyOddzial"></label>
+        <button class="btn sm" id="btnDodajUrzad">+ Dodaj urząd</button>
+      </div>
+      <div class="small" id="urzadBledy" style="color:var(--neg,#b91c1c);margin-top:6px"></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <div class="card-head"><h3>Notatki</h3><span class="sub">ustalenia z rozmów, widoczne w zakresie konta</span></div>
+    <div class="card-body">
+      <div id="notatkaForm" style="display:flex;gap:8px;align-items:flex-start;margin-bottom:10px">
+        <textarea class="inp" id="nowaNotatka" rows="2" style="flex:1 1 auto" placeholder="Nowa notatka, np. ustalenia z rozmowy"></textarea>
+        <button class="btn primary sm" id="btnNotatka">Dodaj notatkę</button>
+      </div>
+      <div id="notatki"></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <div class="card-head"><h3>Korespondencja</h3><span class="sub">wszystkie maile klienta (D-52)</span></div>
+    <div class="card-body tight">
+      <table class="tbl">
+        <thead><tr><th style="width:30px"></th><th>Temat</th><th>Skrzynka</th><th>Data</th><th class="c">Załączniki</th></tr></thead>
+        <tbody id="maile"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- kfs:skrypty -->
+<script src="../db/sql-wasm.js"></script>
+<script src="../db/sql-wasm-data.js"></script>
+<script src="../db/seed-db.js"></script>
+<script src="../assets/sqlite.js"></script>
+<script src="../assets/store.js"></script>
+<script src="../assets/haslo.js"></script>
+<script src="../assets/funkcje.js"></script>
+<script src="../assets/auth.js"></script>
+<script src="../assets/walidacja.js"></script>
+<script src="../assets/straznik-wlasnosc.js"></script>
+<script src="../assets/straznik.js"></script>
+<script src="../assets/zakres.js"></script>
+<script src="../assets/prowizja.js"></script>
+<script src="../assets/db-format.js"></script>
+<script src="../assets/db-klienci.js"></script>
+<script src="../assets/db-instytucje.js"></script>
+<script src="../assets/db-nabory.js"></script>
+<script src="../assets/db.js"></script>
+<script src="../assets/lata.js"></script>
+<script src="../assets/nabory-import.js"></script>
+<script src="../assets/html.js"></script>
+<script src="../assets/statusy.js"></script>
+<script src="../assets/akceptacje.js"></script>
+<script src="../assets/wielowybor.js"></script>
+<script src="../assets/nawigacja.js"></script>
+<script src="../assets/podglad-roli.js"></script>
+<script src="../assets/interfejs.js"></script>
+<script src="../assets/tips.js"></script>
+<script src="../assets/boot.js" data-modul="baza"></script>
+<script src="js/19-klient-logika.js"></script>
+<script src="js/19-klient-osoba.js"></script>
+<script src="js/19-klient-eksport.js"></script>
+<script src="js/19-klient-pola.js"></script>
+<script src="js/19-klient-formularz.js"></script>
+<script src="js/19-klient-uczestnicy.js"></script>
+<script src="js/19-klient-sekcje.js"></script>
+<script src="js/19-klient-edycja.js"></script>
+<script src="js/19-klient.js"></script>
+<script type="text/kfs-strona">
+inicjuj19();
+</script>
+</body>
+</html>

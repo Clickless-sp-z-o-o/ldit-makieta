@@ -1,0 +1,69 @@
+/* ============================================================================
+   Listy robocze (Zestawienia, Baza danych, karta klienta): mieszcza sie na
+   ekranie bez przewijania strony. Naglowek w jednej linii, opisy w podpowiedzi
+   "i", tabela zajmuje reszte wysokosci i przewija sie tylko w swoim obszarze.
+   ============================================================================ */
+
+/* Lista na cala wysokosc okna: naglowek, pasek zakladek i karta z tabela, ktora
+   bierze reszte miejsca. Bez recznie liczonych wysokosci. */
+.page.lista {
+  padding: 14px 20px 12px; max-width: none; box-sizing: border-box;
+  height: 100vh; display: flex; flex-direction: column;
+}
+.page.lista > .card { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.page.lista .lista-tabela { flex: 1 1 auto; min-height: 0; max-height: none; }
+.page.lista .page-head { margin-bottom: 10px; align-items: center; }
+.page.lista .page-title { font-size: 1.125rem; margin: 0; }
+.page.lista .mod-tabs { margin: 0 0 10px; }
+.page.lista .card { margin-bottom: 0; }
+.page.lista .toolbar { padding: 8px 12px; gap: 8px; }
+.page.lista .toolbar .inp { padding: 5px 8px; font-size: 0.7813rem; }
+.page.lista .toolbar .inp.search { min-width: 220px; }
+
+/* Tabela z przyklejonym naglowkiem. Poza lista na cala wysokosc (np. karta klienta)
+   ogranicza ja --nad-tabela: miejsce zajete nad tabela. */
+.lista-tabela { overflow: auto; max-height: calc(100vh - var(--nad-tabela, 230px)); }
+.lista-tabela table.tbl { font-size: 0.7813rem; }
+.lista-tabela table.tbl th { position: sticky; top: 0; z-index: 1; padding: 7px 8px; white-space: nowrap; }
+.lista-tabela table.tbl td { padding: 5px 8px; }
+.lista-tabela tr[data-id] { cursor: pointer; }
+.lista-tabela tr[data-id]:hover td { filter: brightness(.97); }
+
+/* Dlugie teksty skracane, pelna tresc w dymku (atrybut title) */
+.tnij { max-width: 210px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tnij.w { max-width: 260px; }
+.pod { display: block; font-size: 0.75rem; color: var(--ink-3); font-weight: 400; }
+a.link-rekordu { color: inherit; text-decoration: none; border-bottom: 1px dotted var(--line-strong); }
+a.link-rekordu:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* Filtry z wykresu (drill through): usuwalne znaczniki nad tabela */
+.chipy { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.chip-filtr {
+  display: inline-flex; align-items: center; gap: 6px; padding: 2px 4px 2px 9px;
+  border-radius: 12px; background: var(--accent-soft); color: var(--ink); font-size: 0.75rem;
+}
+.chip-filtr button { border: 0; background: none; cursor: pointer; font-size: 0.875rem; line-height: 1; color: var(--ink-3); padding: 0 4px; }
+.chip-filtr button:hover { color: var(--neg-ink); }
+
+/* Karta rekordu: przycisk Wstecz przy tytule */
+.naglowek-karty { display: flex; align-items: center; gap: 10px; }
+.naglowek-karty .btn { flex: 0 0 auto; }
+
+/* Elementy wykresow i kafelki prowadzace do listy rekordow (Nawigacja.podlaczLinki) */
+[data-href] { cursor: pointer; }
+[data-href]:hover { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: 3px; }
+tr[data-href]:hover { outline: none; }
+tr[data-href]:hover td { background: var(--accent-soft); }
+
+/* Znaczniki dokumentow po decyzji (certyfikat, umowa, faktura), tylko do odczytu (D-232) */
+.dok-flagi { display: inline-flex; gap: 6px; }
+.dok { display: inline-flex; align-items: center; gap: 2px; font-size: 0.75rem; color: var(--ink-3); cursor: default; }
+.dok input { margin: 0; }
+
+/* Zestawienia (D-261, D-262): klik w wiersz nic nie otwiera, kolejnosc zmieniana strzalkami i przeciaganiem */
+.lista-tabela table.bez-klikania tr[data-id] { cursor: default; }
+.lp-kolejnosc { white-space: nowrap; }
+.lp-kolejnosc .lp-nr { display: inline-block; min-width: 22px; cursor: grab; }
+.lp-kolejnosc .ruch { border: 0; background: none; cursor: pointer; font-size: 0.75rem; color: var(--ink-3); padding: 2px; }
+.lp-kolejnosc .ruch:hover { color: var(--accent); }
+tr[draggable="true"].przeciagany { opacity: .5; }

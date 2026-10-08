@@ -1,0 +1,37 @@
+/* ============================================================================
+   Ekran Instytucje szkoleniowe (06) po uwagach z 08.10.2026: kafelki w kolorze
+   instytucji, przeglad, konfiguracja jednej instytucji i karta planu jako osobne widoki.
+   Kolor instytucji przychodzi z DB.INSTYTUCJE (kazda inny, assets/db-instytucje.js);
+   tlo kafelka to jasny wariant tego koloru, policzony w 06-instytucje-lista.js.
+   ============================================================================ */
+
+/* Widoki i zakladki administratora chowane atrybutem hidden; klasy .tab i .tag maja wlasne display */
+.page [hidden] { display: none !important; }
+
+.is-card { cursor: pointer; margin-bottom: 0; border-left: 5px solid var(--kolor-is, var(--line-strong)); background: var(--tlo-is, #fff); }
+.is-card:hover, .is-card:focus-visible { border-color: var(--accent); border-left-color: var(--kolor-is, var(--accent)); }
+.is-card .miniset { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.is-card .mini { background: rgba(255, 255, 255, .72); border: 1px solid rgba(15, 23, 42, .08); border-radius: var(--radius); padding: 7px 9px; }
+.is-card .mini .mv { font-size: 1.0625rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.is-card .mini .ml { font-size: 0.75rem; color: var(--ink-2); font-weight: 650; text-transform: uppercase; letter-spacing: .03em; margin-top: 3px; }
+.is-card .is-nazwa { font-size: 0.9375rem; font-weight: 700; }
+.is-card .is-kontakt { margin-top: 9px; color: var(--ink-2); }
+
+/* Konfiguracja jednej instytucji: naglowek z powrotem do przegladu */
+.konf-head { flex-wrap: wrap; gap: 8px 12px; }
+.konf-head .kolor-kropka { width: 14px; height: 14px; border-radius: 50%; flex: 0 0 14px; background: var(--kolor-is, var(--line-strong)); }
+.tabs .tab.admin::after { content: "admin"; margin-left: 6px; font-size: 0.75rem; color: var(--ink-3); font-weight: 600; }
+#tabs { flex-wrap: wrap; }
+
+#widokKonfig .dl { grid-template-columns: minmax(110px, 230px) minmax(0, 1fr); }
+#widokKonfig .dl dd { overflow-wrap: anywhere; }
+#widokKonfig .dl dd .tag { white-space: normal; }
+
+/* Telefon: zakladki w jednym przewijanym pasku (widac, ze jest ich wiecej), dane w dwoch waskich kolumnach */
+@media (max-width: 700px) {
+  .is-card .miniset { gap: 6px; }
+  #tabs { overflow-x: auto; flex-wrap: nowrap; padding: 0 8px; }
+  #tabs .tab { white-space: nowrap; flex: 0 0 auto; }
+  #widokKonfig .dl { grid-template-columns: minmax(0, 1fr); }
+  #widokKonfig .dl dt { border-bottom: 0; padding-bottom: 0; }
+}

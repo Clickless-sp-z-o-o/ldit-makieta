@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rejestr aktywności</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/style-sesja.css">
+<link rel="stylesheet" href="../assets/style-interfejs.css">
+<link rel="stylesheet" href="../assets/style-ekrany-0810.css">
+<style>
+  /* Drobne uzupelnienia lokalne, reszta z assets/style.css */
+  .przed { color: var(--ink-4); text-decoration: line-through; }
+  .po { font-weight: 700; color: var(--ink); }
+  .arrow { color: var(--ink-4); padding: 0 6px; }
+  tr.row-fin td { background: #fffbeb; }
+  tr.row-fin:hover td { background: #fef3c7; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <h1 class="page-title">Rejestr aktywności
+        <span class="tip-mark" data-tip="Wglad administratora: kto co zrobil i kiedy. Trzy strumienie: zmiany danych (wartosc przed i po), istotne zdarzenia (D-189, w tym wysylki) i log logowan. Rejestr jest tylko do dopisywania. D-116, D-122.">i</span>
+      </h1>
+      <p class="page-desc">Kto, co i kiedy zrobił w systemie.</p>
+    </div>
+    <div class="ph-actions">
+      <button class="btn" onclick="alert('Eksport widocznego zakresu rejestru do pliku CSV. Eksport rejestru sam trafia do rejestru.')">Eksport</button>
+    </div>
+  </div>
+
+  <nav class="mod-tabs">
+    <a href="11-konta-uprawnienia.html">Konta i role</a>
+    <a href="12-rejestr-aktywnosci.html" class="on">Rejestr aktywności</a>
+  </nav>
+
+
+  <div class="card">
+    <div class="tabs">
+      <div class="tab on" data-t="t1">Rejestr zmian danych</div>
+      <div class="tab" data-t="t3">Istotne zdarzenia</div>
+      <div class="tab" data-t="t2">Log logowań</div>
+      <div class="tab" data-t="t4">Aktywne sesje</div>
+    </div>
+
+    <!-- ============ ZAKLADKA 1: ZMIANY DANYCH ============ -->
+    <div class="tab-pane on" id="t1">
+      <div class="card-body">
+        <div class="grid g4" id="kpi"></div>
+      </div>
+
+      <div class="toolbar">
+        <input class="inp search" id="qA" placeholder="Szukaj po obiekcie: PR-26-0141, KL-0238, IS-02...">
+        <select class="inp" id="fKto" data-wielo><option value="">Wszyscy użytkownicy</option></select>
+        <select class="inp" id="fTyp" data-wielo><option value="">Wszystkie typy operacji</option></select>
+        <input class="inp" type="date" id="dOd" title="Data od">
+        <input class="inp" type="date" id="dDo" title="Data do">
+        <button class="chip" id="chipFin">Tylko wartości finansowe</button>
+        <button class="chip" id="chipIstotne">Tylko istotne zdarzenia</button>
+        <span class="sp"></span>
+        <span class="small muted" id="liczA"></span>
+      </div>
+
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th style="width:135px">Czas</th>
+              <th>Kto</th>
+              <th>Typ operacji</th>
+              <th>Obiekt</th>
+              <th>Pole</th>
+              <th>Wartość przed</th>
+              <th>Wartość po</th>
+              <th class="c">Charakter</th>
+            </tr>
+          </thead>
+          <tbody id="bodyA"></tbody>
+          <tfoot>
+            <tr><td colspan="8" class="c muted small" style="padding:14px" id="stopkaA"></td></tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="card-body">
+        <div class="note warn mb0">
+          <b>Rejestr jest tylko do odczytu, także dla administratora.</b> Wpisu nie da się edytować
+          ani usunąć z poziomu aplikacji, bo inaczej traci wartość dowodową. Korekta błędnej zmiany
+          polega na wprowadzeniu kolejnej zmiany, która również zostanie zalogowana. Wpisy typu
+          <span class="tag set">Przywrócenie reguły</span> pokazują dokładnie ten scenariusz:
+          pole wyliczane zostało nadpisane ręcznie, a potem przywrócone do wartości z reguły
+          <span class="ref">D-81</span>.
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ ZAKLADKA 2: LOG LOGOWAN ============ -->
+    <div class="tab-pane" id="t2">
+      <div class="card-body">
+        <div class="grid g4" id="kpiL"></div>
+      </div>
+
+      <div class="toolbar">
+        <input class="inp search" id="qL" placeholder="Szukaj: konto, adres IP, urządzenie...">
+        <select class="inp" id="fWynik" data-wielo>
+          <option value="">Wszystkie próby</option>
+          <option value="udane">Udane</option>
+          <option value="nieudane">Nieudane</option>
+        </select>
+        <span class="sp"></span>
+        <span class="small muted" id="liczL"></span>
+      </div>
+
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th style="width:135px">Czas</th>
+              <th>Konto</th>
+              <th>Adres IP</th>
+              <th>Urządzenie</th>
+              <th>Wynik</th>
+            </tr>
+          </thead>
+          <tbody id="bodyL"></tbody>
+          <tfoot>
+            <tr><td colspan="5" class="c muted small" style="padding:14px" id="stopkaL"></td></tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="card-body">
+        <div class="grid g2">
+          <div>
+            <div class="card mb0">
+              <div class="card-head"><h3>Sygnały do sprawdzenia</h3><span class="sub">wyliczane z logu</span></div>
+              <div class="card-body">
+                <div class="timeline" id="sygnaly"></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card mb0">
+              <div class="card-head"><h3>Powiązanie z modułem kont</h3></div>
+              <div class="card-body">
+                <dl class="dl">
+                  <dt>Blokada konta</dt>
+                  <dd>Unieważnia otwartą sesję natychmiast, wpis trafia do rejestru zmian danych.</dd>
+                  <dt>Konto bez 2FA</dt>
+                  <dd>Logowanie jednoskładnikowe oznaczane w logu, żeby dało się je odsiać przy analizie incydentu.</dd>
+                  <dt>Wylogowanie po bezczynności</dt>
+                  <dd>Zamyka sesję, nie generuje wpisu o nieudanym logowaniu.</dd>
+                  <dt>Reset hasła</dt>
+                  <dd>Operacja na koncie, więc trafia do rejestru zmian danych, nie do logu logowań.</dd>
+                </dl>
+                <div class="btn-row mt16">
+                  <a class="btn sm" href="11-konta-uprawnienia.html">Przejdź do Kont i uprawnień</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane" id="t4"></div>
+
+    <!-- ============ ZAKLADKA 3: ISTOTNE ZDARZENIA (D-189) ============ -->
+    <div class="tab-pane" id="t3">
+      <div class="card-body">
+        <div class="note mb0">
+          <b>Które zdarzenia są istotne</b> <span class="ref">D-189</span>: logujemy zdarzenia o znaczeniu
+          dowodowym, nie każde kliknięcie. Lista: otwarcie karty klienta lub wniosku, eksport, wejście
+          w moduł finansowy, wysyłka maila, zmiana statusu i zmiana uprawnień. Każde zdarzenie jest
+          przypisane do zalogowanego pracownika <span class="ref">D-121</span> <span class="ref">D-122</span>.
+          To jest ten sam rejestr co w pierwszej zakładce, tu widać go w podziale na typ.
+          Przycisk „Pokaż wpisy” otwiera listę przefiltrowaną po typie. Wysyłki maili są typem
+          „Wysyłka maila” z tej listy.
+          <br><br>
+          Zakres do doprecyzowania <span class="ref p">P-54</span>, retencja <span class="ref p">P-26</span>.
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>Typ zdarzenia</th><th class="num">Wpisów</th><th>Ostatni wpis</th><th></th></tr></thead>
+          <tbody id="bodyIstotne"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ RETENCJA ============ -->
+  <div class="card">
+    <div class="card-head">
+      <h3>Retencja danych</h3>
+      <span class="sub">jak długo trzymamy wpisy i dane osobowe</span>
+      <div class="ch-actions"><span class="tag warn dot">nieustalone</span></div>
+    </div>
+    <div class="card-body">
+      <div class="note open mb0">
+        <b>Polityka retencji NIE ZOSTAŁA ustalona <span class="ref p">P-26</span>.</b>
+        Pytanie postawione jeszcze w dokumentacji przedwarsztatowej wróciło na warsztat i nie
+        doczekało się odpowiedzi. Bez rozstrzygnięcia pozostają trzy rzeczy:
+        <br><br>
+        1. <b>Jak długo przechowywana jest zaimportowana korespondencja</b> z klientami i instytucjami.
+        Treści maili to dane osobowe, a przy 400 mailach na jednym rekordzie w szczycie zbiór rośnie szybko.
+        <br>
+        2. <b>Co dzieje się z danymi uczestników po zakończeniu i rozliczeniu szkolenia.</b>
+        System przechowuje numery PESEL, bo wymaga tego wniosek KFS. Po rozliczeniu podstawa
+        do ich trzymania przestaje być oczywista.
+        <br>
+        3. <b>Czy starsze roczniki są archiwizowane z ograniczeniem dostępu</b>, czy pozostają
+        w pełni dostępne na równi z bieżącym rokiem.
+        <br><br>
+        <b>To musi zostać domknięte przed wdrożeniem produkcyjnym</b>, bo wpływa bezpośrednio na
+        model danych: usuwanie miękkie kontra twarde, osobne tabele archiwum, anonimizacja
+        uczestników po rozliczeniu. Cofanie takiej decyzji po starcie jest kosztowne, dlatego
+        pytanie powinno zostać zadane razem z <span class="ref p">P-25</span> (architektura danych),
+        a nie po nim.
+      </div>
+
+      <div class="grid g3 mt16" id="kartyRetencji"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- kfs:skrypty -->
+<script src="../db/sql-wasm.js"></script>
+<script src="../db/sql-wasm-data.js"></script>
+<script src="../db/seed-db.js"></script>
+<script src="../assets/sqlite.js"></script>
+<script src="../assets/store.js"></script>
+<script src="../assets/haslo.js"></script>
+<script src="../assets/funkcje.js"></script>
+<script src="../assets/auth.js"></script>
+<script src="../assets/walidacja.js"></script>
+<script src="../assets/straznik-wlasnosc.js"></script>
+<script src="../assets/straznik.js"></script>
+<script src="../assets/zakres.js"></script>
+<script src="../assets/prowizja.js"></script>
+<script src="../assets/db-format.js"></script>
+<script src="../assets/db-klienci.js"></script>
+<script src="../assets/db-instytucje.js"></script>
+<script src="../assets/db-nabory.js"></script>
+<script src="../assets/db.js"></script>
+<script src="../assets/lata.js"></script>
+<script src="../assets/nabory-import.js"></script>
+<script src="../assets/html.js"></script>
+<script src="../assets/statusy.js"></script>
+<script src="../assets/akceptacje.js"></script>
+<script src="../assets/wielowybor.js"></script>
+<script src="../assets/nawigacja.js"></script>
+<script src="../assets/podglad-roli.js"></script>
+<script src="../assets/interfejs.js"></script>
+<script src="../assets/tips.js"></script>
+<script src="../assets/boot.js" data-modul="ustaw"></script>
+<script src="js/12-rejestr-aktywnosci-zmiany.js"></script>
+<script src="js/12-rejestr-aktywnosci-logowania.js"></script>
+<script src="js/12-rejestr-aktywnosci-retencja.js"></script>
+<script src="js/12-rejestr-aktywnosci-sesje.js"></script>
+<script type="text/kfs-strona">
+renderRetencja();
+inicjuj12();
+</script>
+</body>
+</html>

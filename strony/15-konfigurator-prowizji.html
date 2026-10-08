@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Konfigurator prowizji</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/style-sesja.css">
+<link rel="stylesheet" href="../assets/style-interfejs.css">
+<link rel="stylesheet" href="../assets/style-ekrany-0810.css">
+<style>
+  .prog-row { display: flex; gap: 8px; align-items: center; margin-bottom: 7px; }
+  .prog-row .inp { width: 150px; }
+  .prog-row .lab { font-size: 12px; color: var(--ink-3); width: 74px; flex: 0 0 74px; }
+  .faktura-row td input { width: 128px; }
+  .wynik-box { background: var(--brand-900); color: #e2e8f0; border-radius: var(--radius-lg); padding: 18px 20px; }
+  .wynik-box .wl { font-size:12px; text-transform: uppercase; letter-spacing: .05em; color: #64748b; font-weight: 700; }
+  .wynik-box .wv { font-size: 29px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+  .wynik-box .ws { font-size: 12.5px; color: #94a3b8; margin-top: 5px; }
+  .rozb { font-size: 12px; color: #cbd5e1; margin-top: 12px; border-top: 1px solid rgba(255,255,255,.12); padding-top: 11px; }
+  .rozb div { padding: 2px 0; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <div class="small muted" style="margin-bottom:4px"
+           data-tip="Prototyp do walidacji z klientem (D-20) nie stoi w stalym pasku Administracji. Wchodzi sie do niego z Konfiguratora warunkow instytucji.">
+        <a href="07-konfigurator-is.html">Konfigurator warunków</a> &rsaquo; Kalkulator prowizji (prototyp)
+      </div>
+      <h1 class="page-title">Konfigurator prowizji &middot; prototyp obliczeniowy
+        <span class="tip-mark" data-tip="Jak liczy sie prowizja LDIT: podstawa = koszt calkowity z doplata (D-18), stawka wg modelu instytucji (A/B/C/D). A = prog miesieczny, nowa stawka od CALOSCI obrotu. B = skala roczna narastajaco, stawka od NADWYZKI nad progiem. C = prog miesieczny od nadwyzki. D = stala stawka. Prowizja zawsze procentowa (D-21), a nadpisanie per wniosek moze byc procentem albo kwota (D-136).">i</span>
+      </h1>
+      <p class="page-desc">Sprawdzenie warunków prowizji na prawdziwych liczbach.</p>
+    </div>
+  </div>
+
+
+  <div class="note warn">
+    <b>Zanim to zatwierdzisz, trzeba domknąć <span class="ref p">P-01</span>:</b>
+    czy okresem rozliczeniowym jest data wystawienia faktury, czy prognoza z kalendarza szkoleń.
+    Na warsztacie padły obie wersje. Ten kalkulator liczy po <b>dacie faktury</b>.
+  </div>
+
+  <div class="grid g-1-2">
+
+    <!-- KONFIGURACJA WARUNKÓW -->
+    <div>
+      <div class="card">
+        <div class="card-head">
+          <h3>Warunki instytucji</h3>
+          <div class="ch-actions">
+            <select class="inp" id="preset" style="height:28px;font-size:12.5px;width:auto">
+              <option value="A">Model A &middot; Metal Maniak (10/12%, próg 50k)</option>
+              <option value="A2">Model A &middot; wariant z arkusza (12/10%, próg 60k)</option>
+              <option value="Y1">Model B &middot; wariant z arkusza (20/10/5%)</option>
+              <option value="B">Model B &middot; Dron Fortech</option>
+              <option value="C">Model C &middot; Fit Akademia</option>
+              <option value="D">Model D &middot; stała 20%</option>
+            </select>
+          </div>
+        </div>
+        <div class="card-body">
+
+          <div class="field">
+            <label>Rodzaj kumulacji</label>
+            <select class="inp" id="kumulacja">
+              <option value="miesieczny">Miesięczny</option>
+              <option value="roczny">Roczny (YTD)</option>
+              <option value="brak">Brak, stała stawka</option>
+            </select>
+            <div class="hint">Okres, w którym sumuje się obrót do progów</div>
+          </div>
+
+          <div class="field" id="wrapSposob">
+            <label>Sposób liczenia <span class="tip-mark" data-tip="OD CALOSCI: po przekroczeniu progu nowa stawka obejmuje CALY obrot okresu (przyklad 10/12: 49 000 -> 10%, 50 000 -> 12% od calosci). OD NADWYZKI: wyzsza stawka tylko dla czesci powyzej progu (przyklad 18/14: 100 000 po 18%, kolejne 2 000 po 14%). To rozroznienie klient wskazal jako kluczowe (D-16).">i</span></label>
+            <select class="inp" id="sposob">
+              <option value="od_calosci">Od całości &middot; nowa stawka obejmuje cały obrót okresu</option>
+              <option value="od_nadwyzki">Od nadwyżki &middot; stawka progowa tylko powyżej progu</option>
+            </select>
+            <div class="hint">To rozróżnienie klient wskazał jako kluczowe <span class="ref">D-16</span></div>
+          </div>
+
+          <div class="field" id="wrapStala" style="display:none">
+            <label>Stała stawka</label>
+            <input class="inp num" id="stala" value="20">
+            <div class="hint">Standard w firmie to 20%</div>
+          </div>
+
+          <div class="field" id="wrapProgi">
+            <label>Progi przychodu</label>
+            <div id="progi"></div>
+            <button class="btn xs" onclick="dodajProg()" style="margin-top:6px">+ Dodaj próg</button>
+            <div class="hint">Pierwszy próg zawsze od 0. Prowizja zwykle maleje wraz ze wzrostem obrotu.</div>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="field">
+            <label>Obowiązuje od</label>
+            <input class="inp" id="odKiedy" value="2027-01-01">
+            <div class="hint">
+              Warunki wersjonowane w czasie, zmiany od kolejnego roku <span class="ref">D-22</span>.
+              Historia nie jest przeliczana wstecz <span class="ref">D-23</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Nadpisanie indywidualne</h3></div>
+        <div class="card-body">
+          <div class="field">
+            <label>Stawka dla pojedynczego projektu</label>
+            <input class="inp num" id="nadpisz" placeholder="np. 15">
+            <div class="hint">
+              Nadpisanie działa <b>per wniosek</b>, nie per klient <span class="ref">D-17</span>.
+              Zastosuj poniżej w wierszu faktury.
+            </div>
+          </div>
+          <div class="note" style="margin:0;font-size:12px;border-left-color:var(--pos-ink);background:var(--pos-bg)">
+            <b>Rozstrzygnięte na warsztacie 04.09 <span class="ref">D-137</span>:</b> projekt z nadpisaną stawką
+            <b>wlicza się</b> do sumy narastającej wypełniającej progi pozostałych projektów tej instytucji
+            (wcześniej P-03). Kalkulator liczy to zgodnie z tym ustaleniem. Nadpisanie może być procentem albo kwotą <span class="ref">D-136</span>.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SYMULACJA -->
+    <div>
+      <div class="card">
+        <div class="card-head">
+          <h3>Symulacja okresu</h3>
+          <span class="sub">wpisz faktury tak, jak idą chronologicznie</span>
+          <div class="ch-actions">
+            <button class="btn sm" onclick="dodajFakture()">+ Faktura</button>
+            <button class="btn sm" onclick="wczytajPrzyklad()">Wczytaj przykład z warsztatu</button>
+          </div>
+        </div>
+        <div class="card-body tight">
+          <table class="tbl">
+            <thead>
+              <tr><th style="width:36px">#</th><th>Opis</th><th class="num">Kwota netto</th>
+                  <th class="num">Obrót narastająco<span class="tip-mark" data-tip="Suma obrotu od poczatku okresu (miesiac albo rok). Decyduje, ktora faktura wyczerpala prog, dlatego kolejnosc faktur ma znaczenie.">i</span></th>
+                  <th class="num">Stawka<span class="tip-mark" data-tip="Stawka zastosowana do tej faktury. Zolta = faktura podzielona miedzy progi (srednia wazona). Fioletowa 'recznie' = nadpisanie indywidualne.">i</span></th>
+                  <th class="num">Prowizja</th><th></th></tr>
+            </thead>
+            <tbody id="faktury"></tbody>
+            <tfoot>
+              <tr style="background:var(--surface-2);font-weight:700">
+                <td colspan="2">Razem w okresie</td>
+                <td class="num" id="sumObrot"></td>
+                <td></td>
+                <td class="num" id="sumStawka"></td>
+                <td class="num" id="sumProwizja"></td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div class="grid g2">
+        <div class="wynik-box">
+          <div class="wl">Prowizja za okres</div>
+          <div class="wv" id="bigKwota">0 zł</div>
+          <div class="ws" id="bigOpis"></div>
+          <div class="rozb" id="bigRozb"></div>
+        </div>
+
+        <div class="card mb0">
+          <div class="card-head"><h3>Kontrola poprawności</h3></div>
+          <div class="card-body" id="kontrola"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Przypadki testowe z dokumentacji</h3>
+          <span class="sub">12 przypadków z warsztatu i z arkusza Prowizja liczenie.xlsx, kliknij żeby sprawdzić</span>
+        </div>
+        <div class="card-body tight">
+          <table class="tbl">
+            <thead><tr><th>#</th><th>Scenariusz i źródło</th><th class="num">Oczekiwany wynik</th><th></th></tr></thead>
+            <tbody id="testy"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Korekty i zmiana warunków w czasie</h3>
+          <span class="sub">liczone przez Prowizja.rozliczOkresy <span class="ref">D-161</span> <span class="ref">D-162</span></span>
+          <div class="ch-actions">
+            <button class="btn sm" onclick="scenariuszKorekty()">Scenariusz: korekta w innym miesiącu</button>
+            <button class="btn sm" onclick="scenariuszZmianyWarunkow()">Scenariusz: zmiana warunków od daty</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="small muted" style="margin-bottom:10px">
+            Faktura korygująca trafia do okresu swojej daty i zdejmuje prowizję stawką faktury pierwotnej, bez zmiany obrotu
+            tego okresu. Nowe warunki działają od swojej daty, nigdy wstecz, więc okresy sprzed zmiany zostają bez zmian.
+            Warunki bieżące to te z lewego panelu.
+          </div>
+          <div class="btn-row" style="align-items:center;margin-bottom:10px">
+            <label class="small muted" for="nowyPreset">Nowe warunki od daty</label>
+            <select class="inp" id="nowyPreset" style="width:auto" onchange="przeliczCzas()">
+              <option value="">brak zmiany</option>
+              <option value="A">Model A (10/12%, próg 50k)</option>
+              <option value="B">Model B (20/17,5/15%)</option>
+              <option value="C">Model C (18/14/10%)</option>
+              <option value="D">Model D (stała 20%)</option>
+            </select>
+            <input class="inp" type="date" id="nowaOd" value="2027-01-01" onchange="przeliczCzas()">
+          </div>
+          <table class="tbl">
+            <thead><tr><th>Id</th><th>Data faktury</th><th class="num">Kwota</th><th>Korekta faktury</th><th></th></tr></thead>
+            <tbody id="czasFaktury"></tbody>
+          </table>
+          <div class="btn-row" style="margin:8px 0 12px"><button class="btn xs" onclick="dodajFakturaCzas(false)">+ Faktura</button>
+            <button class="btn xs" onclick="dodajFakturaCzas(true)">+ Korekta</button></div>
+          <div id="czasOczekiwane" class="small muted" style="margin-bottom:8px"></div>
+          <div id="czasWynik"></div>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- kfs:skrypty -->
+<script src="../db/sql-wasm.js"></script>
+<script src="../db/sql-wasm-data.js"></script>
+<script src="../db/seed-db.js"></script>
+<script src="../assets/sqlite.js"></script>
+<script src="../assets/store.js"></script>
+<script src="../assets/haslo.js"></script>
+<script src="../assets/funkcje.js"></script>
+<script src="../assets/auth.js"></script>
+<script src="../assets/walidacja.js"></script>
+<script src="../assets/straznik-wlasnosc.js"></script>
+<script src="../assets/straznik.js"></script>
+<script src="../assets/zakres.js"></script>
+<script src="../assets/prowizja.js"></script>
+<script src="../assets/db-format.js"></script>
+<script src="../assets/db-klienci.js"></script>
+<script src="../assets/db-instytucje.js"></script>
+<script src="../assets/db-nabory.js"></script>
+<script src="../assets/db.js"></script>
+<script src="../assets/lata.js"></script>
+<script src="../assets/nabory-import.js"></script>
+<script src="../assets/html.js"></script>
+<script src="../assets/statusy.js"></script>
+<script src="../assets/akceptacje.js"></script>
+<script src="../assets/wielowybor.js"></script>
+<script src="../assets/nawigacja.js"></script>
+<script src="../assets/podglad-roli.js"></script>
+<script src="../assets/interfejs.js"></script>
+<script src="../assets/tips.js"></script>
+<script src="../assets/boot.js" data-modul="admin"></script>
+<script src="js/15-konfigurator-prowizji-warunki.js"></script>
+<script src="js/15-konfigurator-prowizji-symulacja.js"></script>
+<script src="js/15-konfigurator-prowizji-testy.js"></script>
+<script src="js/15-konfigurator-prowizji-czas.js"></script>
+<script type="text/kfs-strona">
+podlacz15();
+progi = JSON.parse(JSON.stringify(PRESETY.A.progi));
+faktury = [{ opis: "Szkolenie 1", kwota: 26000 }, { opis: "Szkolenie 2", kwota: 25000 }];
+renderTesty();
+przelaczWidoki(); renderProgi(); renderFaktury(); przelicz();
+scenariuszKorekty();
+</script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+/* ============================================================================
+   Listy Wnioski (02) i Baza danych (04) po przegladzie 08.10: znacznik statusu
+   z przyciskiem Zmien i menu statusu, tryb ustawiania kolejnosci z przyciskami
+   min. 24 px, wspolny wyglad akcji w wierszu.
+   ============================================================================ */
+
+
+/* Status w wierszu: znacznik i maly przycisk obok */
+.zmien-status { margin-left: 6px; }
+
+.menu-statusu {
+  position: absolute; z-index: 60; min-width: 160px; padding: 4px;
+  background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius);
+  box-shadow: var(--shadow-lg); display: flex; flex-direction: column;
+}
+.menu-statusu button {
+  text-align: start; border: 0; background: none; padding: 8px 10px; border-radius: 6px;
+  font: inherit; font-size: 0.8125rem; color: var(--ink); cursor: pointer; min-height: 32px;
+}
+.menu-statusu button:hover, .menu-statusu button:focus-visible { background: var(--surface-3); }
+
+/* Tryb "Ustaw kolejnosc": przyciski Wyzej/Nizej co najmniej 24 x 24 px */
+.tryb-kolejnosci .lp-kolejnosc .ruch {
+  min-width: 24px; min-height: 24px; border: 1px solid var(--line-strong); border-radius: 5px;
+  background: var(--surface); margin: 0 2px; vertical-align: middle;
+}
+.tryb-kolejnosci tr[draggable="true"] { cursor: grab; }
+#btnKolejnosc[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent-border); }
+
+/* Przycisk rozwijania wnioskow w Bazie: ten sam rozmiar co male przyciski akcji na liscie wnioskow */
+.exp-btn { min-width: 24px; min-height: 24px; }

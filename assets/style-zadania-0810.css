@@ -1,0 +1,48 @@
+/* ============================================================================
+   Zadania i powiadomienia (18-zadania.html): kalendarz zadan w widokach
+   Miesiac, Tydzien i Dzien oraz kafelki prowadzace do szczegolow (ocena 08.10).
+   ============================================================================ */
+
+.kal-pasek { flex-wrap: wrap; gap: 8px; }
+.kal-okres { font-weight: 650; margin-left: 6px; text-transform: capitalize; }
+
+/* Miesiac: kolumna numeru tygodnia i siedem dni */
+.kal-siatka { display: grid; grid-template-columns: 40px repeat(7, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); }
+.kal-glowa { background: var(--surface-2); text-align: center; font-size: 0.75rem; font-weight: 700; color: var(--ink-3); padding: 6px 0; }
+.kal-tydz { background: var(--surface-2); text-align: center; font-size: 0.75rem; color: var(--ink-3); padding-top: 6px; }
+.kal-dzien { background: #fff; min-height: 92px; padding: 4px 5px; cursor: pointer; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.kal-dzien:hover { background: var(--surface-2); }
+.kal-dzien.poza { background: var(--surface-3); }
+.kal-dzien.poza .kal-nr { color: var(--ink-3); }
+.kal-dzien.dzis { box-shadow: inset 0 0 0 2px var(--brand-900); }
+.kal-nr { font-size: 0.75rem; font-weight: 700; }
+.kal-wiecej { font-size: 0.75rem; color: var(--ink-3); }
+
+/* Zadanie w kalendarzu: przycisk z tytulem; kolor i tekst stanu, nie sam kolor */
+.kal-zad {
+  display: block; width: 100%; text-align: left; border: 1px solid var(--accent-border); background: var(--accent-soft);
+  color: var(--ink); border-radius: 5px; padding: 2px 6px; font: inherit; font-size: 0.75rem; cursor: pointer;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.kal-zad.zalegle { border-color: var(--neg-ink); background: var(--neg-bg); }
+.kal-zad.zalegle::before { content: "zaległe: "; font-weight: 700; }
+.kal-zad.zrobione { text-decoration: line-through; color: var(--ink-3); background: var(--surface-3); border-color: var(--line); }
+
+/* Tydzien: siedem kolumn z pelnymi listami */
+.kal-tydzien { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+.kal-kolumna { border: 1px solid var(--line); border-radius: var(--radius); padding: 6px; display: flex; flex-direction: column; gap: 4px; min-height: 140px; min-width: 0; }
+.kal-kolumna.dzis { border-color: var(--brand-900); }
+.kal-kol-glowa { border: 0; background: none; font: inherit; font-weight: 700; font-size: 0.8125rem; text-align: left; padding: 0 0 4px; cursor: pointer; color: var(--ink); }
+
+/* Kafelki KPI jako przejscie do szczegolow */
+.kpi-link { display: block; text-align: left; font: inherit; color: inherit; cursor: pointer; text-decoration: none; width: 100%; }
+.kpi-link:hover { border-color: var(--accent-border); text-decoration: none; }
+
+@media (max-width: 700px) {
+  .kal-siatka { grid-template-columns: 28px repeat(7, minmax(0, 1fr)); }
+  .kal-dzien { min-height: 56px; padding: 3px; }
+  .kal-dzien .kal-zad { font-size: 0; padding: 0; height: 6px; border-radius: 3px; }
+  .kal-dzien .kal-zad.zalegle::before { content: none; }
+  .kal-tydzien { grid-template-columns: minmax(0, 1fr); }
+  .kal-kolumna { min-height: 0; }
+}

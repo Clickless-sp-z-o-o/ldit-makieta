@@ -1,0 +1,41 @@
+/* ============================================================================
+   Karta wniosku (strony/03-wniosek.html) po uwagach z 08.10: sekcja danych
+   wpisywanych recznie i sekcja wyliczen w kolejnosci przeplywu obliczen.
+   ============================================================================ */
+
+/* Numer sekcji przed tytulem: 1 dane wpisywane, 2 wyliczenia, 3 prowizja */
+.nr-sekcji {
+  display: inline-grid; place-items: center; width: 22px; height: 22px; margin-right: 8px;
+  border-radius: 50%; background: var(--brand-900); color: #fff; font-size: 0.75rem; font-weight: 700;
+}
+.podsekcja {
+  margin: 4px 0 8px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+.podsekcja ~ .podsekcja { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+.wiersz-pola { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; min-height: 34px; }
+.wiersz-pola .inp { width: auto; min-width: 120px; }
+
+/* Wyliczenia: kroki jeden pod drugim, numer kroku przy etykiecie */
+.krok-lista { counter-reset: krok; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 16px; }
+.krok-lista #kontrola { grid-column: 1 / -1; }
+.krok > label::before {
+  counter-increment: krok; content: counter(krok) ".";
+  display: inline-block; min-width: 1.4em; color: var(--ink-3); font-weight: 700;
+}
+.krok .hint { color: var(--ink-3); }
+
+/* Formularze dodawania (szkolenie, zadanie, wpis reczny): zawijaja sie zamiast sciskac pole opisu */
+.formularz-osi, .formularz-szkolenia { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; margin-top: 6px; }
+.formularz-szkolenia { padding: 8px 12px; margin-top: 0; }
+.formularz-osi > input:first-child, .formularz-szkolenia > select:first-child { flex: 1 1 100%; min-width: 0; }
+.formularz-osi > select, .formularz-osi > input[type="date"], .formularz-szkolenia > input { flex: 1 1 140px; min-width: 0; }
+.formularz-osi > .btn, .formularz-szkolenia > .btn { flex: 0 0 auto; }
+
+/* Naglowki kart z narzedziami zawijaja sie na waskim ekranie */
+#stronaWniosku .card-head { flex-wrap: wrap; row-gap: 8px; }
+@media (max-width: 700px) {
+  .krok-lista { grid-template-columns: minmax(0, 1fr); }
+  #stronaWniosku .ph-actions { flex-wrap: wrap; }
+  #stronaWniosku .card-head .ch-actions { margin-left: 0; flex-wrap: wrap; }
+}

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Karta projektu</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/style-sesja.css">
+<link rel="stylesheet" href="../assets/style-listy.css">
+<link rel="stylesheet" href="../assets/style-interfejs.css">
+<link rel="stylesheet" href="../assets/style-wniosek-0810.css">
+</head>
+<body>
+<div class="page" id="stronaWniosku">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <div class="small muted" style="margin-bottom:4px">
+        <a href="02-zestawienia.html" id="linkPowrotu">Zestawienia</a> &rsaquo; Projekt
+      </div>
+      <div class="naglowek-karty">
+        <button class="btn sm" id="btnWstecz" data-tip="Wraca do poprzedniego ekranu z tym samym filtrem i rokiem.">&larr; Wstecz</button>
+        <h1 class="page-title" id="tytul">Projekt</h1>
+        <span class="tip-mark" data-tip="Jeden projekt = jeden wniosek (D-53). Najpierw dane wpisywane, potem wyliczenia w kolejności, w jakiej liczy je system: od sumy szkoleń do wkładu własnego i prowizji.">i</span>
+      </div>
+      <p class="page-desc">Dane wpisywane ręcznie, a pod nimi wyliczenia KFS w kolejności, w jakiej jedno wynika z drugiego.</p>
+    </div>
+    <div class="ph-actions">
+      <span class="small muted" id="stanZapisu" role="status"></span>
+      <button class="btn atrapa" data-tip="W aplikacji docelowej: mail do instytucji z danymi klienta do faktury, wysyłany po zatwierdzeniu.">Dane do faktury</button>
+      <button class="btn primary" id="btnZapisz">Zapisz</button>
+    </div>
+  </div>
+
+  <div class="grid g-2-1">
+    <div>
+
+      <!-- ============ 1. DANE WPISYWANE (ręcznie) ============ -->
+      <div class="card sekcja-karty" id="sekcjaWpisywane">
+        <div class="card-head">
+          <h3><span class="nr-sekcji">1</span>Dane wpisywane</h3>
+          <span class="sub">uzupełniasz ręcznie, system z nich liczy</span>
+        </div>
+        <div class="card-body">
+          <div class="podsekcja">Wniosek</div>
+          <div class="grid g2">
+            <div class="field"><label for="selPupWniosku">Urząd pracy wniosku<span class="tip-mark" data-tip="Urząd wybierasz spośród urzędów klienta (główny i dodatkowe), a gdy klient składa gdzie indziej, z rubryki Inny PUP (D-238).">i</span></label><select class="inp" id="selPupWniosku"></select></div>
+            <div class="field"><label for="fWykonawca">Wykonawca<span class="tip-mark" data-tip="Realizator szkolenia (podwykonawca), gdy inny niż instytucja szkoleniowa projektu (D-258).">i</span></label><input class="inp" id="fWykonawca"></div>
+            <div class="field"><label for="selPrzygotowal">Przygotował</label><select class="inp" id="selPrzygotowal"></select></div>
+            <div class="field"><label for="selOpiekunowie">Opiekunowie<span class="tip-mark" data-tip="Wybór wielokrotny z kont LDIT, np. gdy ktoś zastępuje opiekuna (D-260).">i</span></label>
+              <select class="inp" id="selOpiekunowie" data-wielo data-pusty="Wybierz opiekunów"><option value="">Wybierz opiekunów</option></select></div>
+          </div>
+
+          <div class="podsekcja">Firma i kwoty do wyliczeń</div>
+          <div class="grid g2">
+            <div class="field">
+              <label for="selWielkosc">Wielkość firmy <span class="calc-badge manual">ręczne</span><span class="tip-mark" data-tip="Wielkość wyznacza próg dofinansowania. Nie wynika tylko z liczby zatrudnionych: firma do 9 osób z obrotem powyżej 2 mln EUR to już mały, nie mikro (D-132).">i</span></label>
+              <div class="wiersz-pola">
+                <select class="inp" id="selWielkosc">
+                  <option value="mikro">mikro</option>
+                  <option value="mały">mały</option>
+                  <option value="średni">średni</option>
+                  <option value="duży">duży</option>
+                  <option value="inny">inny</option>
+                </select>
+                <span class="tag mute" id="tagWielkosc"></span>
+              </div>
+            </div>
+            <div class="field">
+              <label for="fZatrudnieni">Liczba zatrudnionych <span class="calc-badge manual">ręczne</span><span class="tip-mark" data-tip="Liczba osób na umowie o pracę na dzień wniosku, per wniosek (D-169).">i</span></label>
+              <input class="inp num" id="fZatrudnieni" type="number" min="0" step="1">
+              <div class="hint" id="hintZatrudnieni"></div>
+            </div>
+            <div class="field">
+              <label for="fKosztDop">Koszt całkowity z dopłatą <span class="calc-badge manual">ręczne</span><span class="tip-mark" data-tip="Kwota, na jaką realnie umawiamy szkolenie (D-134). Z niej liczy się koszt całkowity, a przy dopłacie na fakturze KFS jest podstawą prowizji (D-174).">i</span></label>
+              <input class="inp num" id="fKosztDop">
+            </div>
+            <div class="field">
+              <label for="fDoplata">Kwota dopłaty dodatkowej <span class="calc-badge manual">ręczne</span><span class="tip-mark" data-tip="Kwota, którą dopłaca klient, gdy urząd przyznał za mało. Domyślnie 0, nie wchodzi do podstawy Przyznano (D-63).">i</span></label>
+              <input class="inp num" id="fDoplata">
+            </div>
+            <div class="field">
+              <label for="chDoplataFaktura">Dopłata na fakturze KFS<span class="tip-mark" data-tip="Zaznaczone: dopłata jest na fakturze KFS i podstawa prowizji to koszt z dopłatą. Odznaczone: podstawa to koszt całkowity (D-174).">i</span></label>
+              <label class="small wiersz-pola" style="font-weight:400"><input type="checkbox" id="chDoplataFaktura"> tak, dopłata na fakturze KFS</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Szkolenia projektu</h3>
+          <span class="sub">cena ustalana w tym projekcie</span>
+          <span class="tip-mark" data-tip="Szkolenia wybierasz z katalogu instytucji, a cenę ustalasz dla tego projektu; cena katalogowa jest tylko domyślna (D-264).">i</span>
+        </div>
+        <div class="card-body tight" id="szkoleniaWniosku"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Uczestnicy</h3>
+          <span class="sub" id="subUcz"></span>
+          <span class="tip-mark" data-tip="Uczestników wybierasz z listy klienta, a dodajesz i edytujesz w karcie klienta (D-236). Kwota jest ustalana per uczestnik w tym projekcie (D-237).">i</span>
+          <div class="ch-actions" id="narzedziaKwoty" style="align-items:center">
+            <input class="inp num" id="kwotaDlaWszystkich" style="height:28px;width:100px" placeholder="kwota" aria-label="Kwota dla wszystkich">
+            <select class="inp" id="zakresKwoty" style="height:28px;width:auto" aria-label="Komu ustawić kwotę"></select>
+            <button class="btn sm" id="btnKwotaWszystkim" onclick="zastosujKwoteDlaWszystkich()">Zastosuj kwotę dla wszystkich</button>
+            <span class="tip-mark" data-tip="Pusta kwota: bierze kwotę pierwszego uczestnika albo cenę wybranego szkolenia z projektu. Zmiana prosi o potwierdzenie (D-263).">i</span>
+          </div>
+          <div class="ch-actions">
+            <a class="btn sm" id="linkUczKlienta" href="19-klient.html">Dodaj uczestnika w karcie klienta</a>
+            <button class="btn sm" id="btnDodajUcz" onclick="przelaczWyborUcz()">+ Wybierz z listy klienta</button>
+          </div>
+        </div>
+        <div class="card-body" id="wyborUcz" style="display:none;border-bottom:1px solid var(--line)"></div>
+        <div class="card-body tight">
+          <table class="tbl">
+            <thead>
+              <tr><th>Uczestnik</th><th>Dane z karty klienta</th><th>Szkolenie</th>
+                  <th class="num">Kwota (ręczna)</th><th>Kwalifikacja</th><th></th></tr>
+            </thead>
+            <tbody id="uczestnicy"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============ 2. WYLICZENIA (w kolejności przepływu) ============ -->
+      <div class="card sekcja-karty" id="sekcjaWyliczenia">
+        <div class="card-head">
+          <h3><span class="nr-sekcji">2</span>Wyliczenia</h3>
+          <span class="sub">w kolejności: każde pole wynika z poprzednich</span>
+        </div>
+        <div class="card-body krok-lista">
+
+          <div class="field calc-field krok" data-krok="1">
+            <label for="fWartosc">Całkowita wartość szkolenia <span class="calc-badge">wyliczane</span></label>
+            <input class="inp num" id="fWartosc" readonly>
+            <div class="hint">= suma kwot zakwalifikowanych uczestników</div>
+          </div>
+
+          <div class="field calc-field krok" data-krok="2" id="wrapWartoscWn">
+            <label for="fWartoscWnioskowana">Wartość wnioskowana <span class="calc-badge">wyliczane</span><span class="tip-mark" data-tip="Kwota, o którą klient wnioskuje. Ręczna zmiana wyłącza regułę, link pod polem ją przywraca (D-259, D-281).">i</span></label>
+            <input class="inp num" id="fWartoscWnioskowana">
+            <div class="hint" id="hintWartosc"></div>
+          </div>
+          <div class="field calc-field krok" data-krok="3" id="wrapProg">
+            <label for="selProg">Próg dofinansowania <span class="calc-badge">wyliczane</span></label>
+            <select class="inp" id="selProg"></select>
+            <div class="hint">= z wielkości firmy i daty wniosku</div>
+            <div class="restore-rule"><span>&#9888; reguła wyłączona</span><button onclick="przywrocRegule('prog')">Przywróć regułę</button></div>
+          </div>
+          <div class="field calc-field krok" data-krok="4">
+            <label for="fKoszt">Koszt całkowity <span class="calc-badge">wyliczane</span></label>
+            <input class="inp num" id="fKoszt" readonly>
+            <div class="hint">= koszt całkowity z dopłatą − kwota dopłaty dodatkowej; po decyzji urzędu</div>
+          </div>
+          <div class="field calc-field krok" data-krok="5" id="wrapPrzyznano">
+            <label for="fPrzyznano">Przyznano <span class="calc-badge">wyliczane</span></label>
+            <input class="inp num" id="fPrzyznano">
+            <div class="hint" id="hintPrzyznano"></div>
+            <div class="restore-rule"><span>&#9888; reguła wyłączona</span><button onclick="przywrocRegule('przyznano')">Przywróć regułę</button></div>
+          </div>
+          <div class="field calc-field krok" data-krok="6" id="wrapWklad">
+            <label for="fWklad">Wkład własny <span class="calc-badge">wyliczane</span></label>
+            <input class="inp num" id="fWklad">
+            <div class="hint">= koszt całkowity − przyznano</div>
+            <div class="restore-rule"><span>&#9888; reguła wyłączona</span><button onclick="przywrocRegule('wklad')">Przywróć regułę</button></div>
+          </div>
+
+          <div id="kontrola"></div>
+        </div>
+      </div>
+
+      <div class="card" id="cardProwizja">
+        <div class="card-head">
+          <h3><span class="nr-sekcji">3</span>Prowizja LDIT</h3>
+          <span class="sub">z wyliczeń powyżej</span>
+          <span class="tag warn" style="margin-left:auto">tylko administrator</span>
+        </div>
+        <div class="card-body" id="prowizja"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Korespondencja i notatki</h3>
+          <span class="sub">wspólna dla wszystkich projektów klienta</span>
+          <div class="ch-actions">
+            <input class="inp atrapa" style="height:28px;width:180px" placeholder="Szukaj w treści..." aria-label="Szukaj w korespondencji" data-tip="W aplikacji docelowej">
+          </div>
+        </div>
+        <div class="card-body tight">
+          <table class="tbl">
+            <thead><tr><th style="width:38px"></th><th>Temat</th><th>Skrzynka</th><th>Data</th><th class="c">Zał.</th></tr></thead>
+            <tbody id="maile"></tbody>
+          </table><div id="notatkiWniosku"></div>
+        </div>
+      </div>
+
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-head"><h3>Status i etap</h3>
+          <span class="tip-mark" data-tip="Status zmieniasz akcją. Etap, status składania, decyzja i rozliczenie przestawiają się razem (D-146, D-116).">i</span>
+        </div>
+        <div class="card-body" id="statusWniosku"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Dane projektu</h3>
+          <span class="tip-mark" data-tip="Dane firmy edytujesz tylko w karcie klienta. Tutaj jest nazwa firmy i przejście do klienta (D-265).">i</span>
+        </div>
+        <div class="card-body"><dl class="dl" id="dane"></dl></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Dokumenty</h3><span class="tip-mark" data-tip="Kolejność jak w procesie: umowa z urzędem pracy, faktura, certyfikat (D-232, D-263).">i</span></div>
+        <div class="card-body" id="dokumentyWniosku"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Osoby kontaktowe wniosku</h3>
+          <span class="tip-mark" data-tip="Do dwóch osób i dwóch adresów e-mail per wniosek. Po adresach e-mail wniosku dopasowywana jest korespondencja (D-133, D-178).">i</span>
+        </div>
+        <div class="card-body" id="kontaktyWniosku"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Przebieg</h3>
+          <span class="tip-mark" data-tip="Oś czasu ze zmian etapu i wpisów ręcznych. Zadania z terminem pokazują się na osi razem z etapami (D-145, D-263).">i</span>
+        </div>
+        <div class="card-body">
+          <div class="timeline" id="przebieg"></div>
+          <div id="osFormularz"></div>
+          <button class="btn sm atrapa" style="margin-top:12px" data-tip="W aplikacji docelowej: zmiana na następny etap z komentarzem. Dziś etap zmienia się w Status i etap.">Przejdź do następnego etapu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- kfs:skrypty -->
+<script src="../db/sql-wasm.js"></script>
+<script src="../db/sql-wasm-data.js"></script>
+<script src="../db/seed-db.js"></script>
+<script src="../assets/sqlite.js"></script>
+<script src="../assets/store.js"></script>
+<script src="../assets/haslo.js"></script>
+<script src="../assets/funkcje.js"></script>
+<script src="../assets/auth.js"></script>
+<script src="../assets/walidacja.js"></script>
+<script src="../assets/straznik-wlasnosc.js"></script>
+<script src="../assets/straznik.js"></script>
+<script src="../assets/zakres.js"></script>
+<script src="../assets/prowizja.js"></script>
+<script src="../assets/db-format.js"></script>
+<script src="../assets/db-klienci.js"></script>
+<script src="../assets/db-instytucje.js"></script>
+<script src="../assets/db-nabory.js"></script>
+<script src="../assets/db.js"></script>
+<script src="../assets/lata.js"></script>
+<script src="../assets/nabory-import.js"></script>
+<script src="../assets/html.js"></script>
+<script src="../assets/statusy.js"></script>
+<script src="../assets/akceptacje.js"></script>
+<script src="../assets/wielowybor.js"></script>
+<script src="../assets/nawigacja.js"></script>
+<script src="../assets/podglad-roli.js"></script>
+<script src="../assets/interfejs.js"></script>
+<script src="../assets/tips.js"></script>
+<script src="../assets/boot.js" data-modul="dofin"></script>
+<script src="js/19-klient-logika.js"></script>
+<script src="js/03-wniosek-szkolenia-logika.js"></script>
+<script src="js/03-wniosek-logika.js"></script>
+<script src="js/03-wniosek-os-logika.js"></script>
+<script src="js/03-wniosek-stan.js"></script>
+<script src="js/03-wniosek-finanse.js"></script>
+<script src="js/03-wniosek-uczestnicy.js"></script>
+<script src="js/03-wniosek-uczestnicy-wybor.js"></script>
+<script src="js/03-wniosek-dodatkowe.js"></script>
+<script src="js/03-wniosek-szkolenia.js"></script>
+<script src="js/03-wniosek-os-wpis.js"></script>
+<script src="js/03-wniosek-os-czasu.js"></script>
+<script src="js/03-wniosek-kontakty.js"></script>
+<script src="js/03-wniosek-przeglad.js"></script>
+<script src="js/03-wniosek-prowizja.js"></script>
+<script src="js/03-wniosek-status.js"></script>
+<script src="js/03-wniosek-notatki.js"></script>
+<script src="js/03-wniosek-certyfikaty.js"></script>
+<script src="js/03-wniosek-start.js"></script>
+<script type="text/kfs-strona">
+inicjujStan03();
+start03();
+</script>
+</body>
+</html>

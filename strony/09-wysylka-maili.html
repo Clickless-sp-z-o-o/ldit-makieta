@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wysyłka maili</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/style-sesja.css">
+<link rel="stylesheet" href="../assets/style-interfejs.css">
+<link rel="stylesheet" href="../assets/style-ekrany-0810.css">
+<style>
+  .odb-list { max-height: 300px; overflow-y: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+  .odb-row { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-bottom: 1px solid var(--line); font-size: 12.5px; }
+  .odb-row:last-child { border-bottom: 0; }
+  .odb-row .on { flex: 1 1 auto; min-width: 0; }
+  .odb-row .om { color: var(--ink-3); font-size:12px; }
+  .step-bar { display: flex; gap: 0; margin-bottom: 16px; }
+  .step { display: flex; align-items: center; gap: 8px; padding: 9px 16px; font-size: 12.5px; font-weight: 650;
+          color: var(--ink-3); background: var(--surface-2); border: 1px solid var(--line); }
+  .step:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+  .step:last-child { border-radius: 0 var(--radius) var(--radius) 0; border-left: 0; }
+  .step.on { background: var(--accent-soft); border-color: var(--accent-border); color: var(--accent-dark); }
+  .step .n { width: 20px; height: 20px; border-radius: 50%; background: var(--line-strong); color: #fff;
+             display: grid; place-items: center; font-size:12px; }
+  .step.on .n { background: var(--accent); }
+  .switch { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; font-size: 12px; }
+  .switch input { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <h1 class="page-title">Wysyłka maili<span class="tip-mark" data-tip="Modul komunikacji z klientami i instytucjami: biblioteka szablonow, kreator wysylki oraz automatyzacje i alerty. Cala korespondencja wychodzi z domeny LDIT. Kazda wysylka wymaga potwierdzenia na osobnym ekranie (D-106) i trafia do logu wysylek w rejestrze aktywnosci (D-122).">i</span></h1>
+      <p class="page-desc">Szablony maili, wysyłka i automatyczne wiadomości.</p>
+    </div>
+    <div class="ph-actions">
+      <button class="btn atrapa" data-tip="W aplikacji docelowej">Historia wysyłek</button>
+      <button class="btn primary" onclick="idzDoWysylki()">Nowa wysyłka</button>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>Zasada nadrzędna: cała komunikacja wychodzi z domeny LDIT</b> <span class="ref">D-87</span>.
+    Instytucje szkoleniowe nie mogą wysyłać powiadomień z systemu, ani mailowych, ani SMS-owych.
+    Nadawcą jest zawsze alias <code>powiadomienia@ldit.pl</code> w tenancie Microsoft 365 klienta.
+    Kompromis dla instytucji <span class="ref">D-88</span>: przycisk otwiera Outlooka z gotowym adresatem,
+    tematem i treścią, a instytucja wysyła z własnej skrzynki. Mechanizm (eksport pliku czy link
+    <code>mailto:</code>) pozostaje nieustalony <span class="ref p">P-16</span>.
+    <b>Kanał wyłącznie mailowy, SMS odrzucony w etapie I</b> <span class="ref">D-04</span>.
+  </div>
+
+  <div class="card">
+    <div class="tabs">
+      <div class="tab on" data-t="t1">Biblioteka szablonów</div>
+      <div class="tab" data-t="t2">Wysyłka</div>
+      <div class="tab" data-t="t3">Automatyzacje i alerty</div>
+    </div>
+
+    <!-- ============ ZAKŁADKA 1: BIBLIOTEKA ============ -->
+    <div class="tab-pane on" id="t1">
+      <div class="card-body">
+        <div class="grid g-1-2">
+
+          <div>
+            <div class="card mb0">
+              <div class="card-head">
+                <h3>Szablony<span class="tip-mark" data-tip="Biblioteka gotowych tresci wiadomosci. Szablon ma placeholdery w nawiasach klamrowych, ktore w chwili wysylki podstawiaja sie danymi klienta, projektu i terminu.">i</span></h3>
+                <span class="sub" id="subSzab"></span>
+              </div>
+              <div class="card-body tight">
+                <div class="tbl-wrap">
+                  <table class="tbl">
+                    <thead>
+                      <tr><th>Nazwa<span class="tip-mark" data-tip="Nazwa szablonu wiadomosci. Pod nazwa widoczny jest jego identyfikator (SZB-..).">i</span></th><th>Odbiorca<span class="tip-mark" data-tip="Typ adresata, do ktorego kierowany jest szablon: klient koncowy, instytucja, uczestnik lub zespol LDIT.">i</span></th><th>Autor<span class="tip-mark" data-tip="Kto jest autorem tresci: LDIT lub instytucja szkoleniowa (IS). Niezaleznie od autora wiadomosc wychodzi z domeny LDIT (D-87).">i</span></th><th class="num">Użyć<span class="tip-mark" data-tip="Ile razy szablon zostal uzyty do wysylki. Pokazuje popularnosc szablonu.">i</span></th><th></th></tr>
+                    </thead>
+                    <tbody id="tbSzablony"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="note" style="margin-top:14px">
+              Pełna lista szablonów zostanie dosłana przez klienta po postawieniu szkieletu systemu
+              <span class="ref">D-119</span>. Dziewięć pozycji poniżej to szablony wynikające z warsztatu
+              i z dokumentu „spis funkcji”.
+            </div>
+          </div>
+
+          <div>
+            <div class="card mb0">
+              <div class="card-head">
+                <h3 id="podgTytul">Podgląd szablonu</h3>
+                <div class="ch-actions">
+                  <button class="btn sm" onclick="alert('Edytor treści szablonu z listą dostępnych placeholderów.')">Edytuj</button>
+                  <button class="btn sm primary" onclick="idzDoWysylki()">Wyślij z tego szablonu</button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div id="podglad"></div>
+                <div id="podgMeta"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ ZAKŁADKA 2: WYSYŁKA ============ -->
+    <div class="tab-pane" id="t2">
+      <div class="card-body">
+
+        <div class="step-bar">
+          <div class="step on" id="st1"><span class="n">1</span> Wybór szablonu i adresatów</div>
+          <div class="step" id="st2"><span class="n">2</span> Potwierdzenie wysyłki<span class="tip-mark" data-tip="Krok obowiazkowy. Nic nie wychodzi z systemu, dopoki wysylka nie zostanie tu recznie zatwierdzona (D-106). Zabezpiecza przed przypadkowym klknieciem. Po zatwierdzeniu wpis z lista adresatow i osoba zatwierdzajaca trafia do logu wysylek (D-122).">i</span></div>
+        </div>
+
+        <!-- KROK 1 -->
+        <div id="krok1">
+          <div class="grid g-1-2">
+            <div>
+              <div class="card mb0">
+                <div class="card-head"><h3>Co i do kogo</h3></div>
+                <div class="card-body">
+
+                  <div class="field">
+                    <label>Szablon</label>
+                    <select class="inp" id="wySzablon"></select>
+                    <div class="hint">Treść uzupełnia się danymi klienta i projektu w chwili wysyłki.</div>
+                  </div>
+
+                  <div class="field">
+                    <label>Kontekst</label>
+                    <select class="inp" id="wyKontekst">
+                      <option value="poz">Projekty z decyzją pozytywną, oczekujące na termin</option>
+                      <option value="zlozone">Projekty złożone, bez decyzji</option>
+                      <option value="rozl">Projekty rozliczone (prośba o opinię)</option>
+                    </select>
+                    <div class="hint">Kontekst filtruje listę adresatów, nie jest zapisywany w mailu.</div>
+                  </div>
+
+                  <div class="field">
+                    <label>Nadawca <span class="calc-badge">wyliczane</span></label>
+                    <input class="inp" value="powiadomienia@ldit.pl" readonly>
+                    <div class="hint">Nadawcy nie da się zmienić <span class="ref">D-87</span></div>
+                  </div>
+
+                  <div class="field mb0">
+                    <label>Adresaci <span id="licznikOdb" class="tag info"></span></label>
+                    <div class="btn-row" style="margin-bottom:8px">
+                      <button class="btn xs" onclick="zaznacz(true)">Zaznacz wszystkich</button>
+                      <button class="btn xs" onclick="zaznacz(false)">Odznacz wszystkich</button>
+                    </div>
+                    <div class="odb-list" id="odbList"></div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="card mb0">
+                <div class="card-head">
+                  <h3>Podgląd dla pierwszego adresata</h3>
+                  <span class="sub">placeholdery podstawione realnymi danymi</span>
+                </div>
+                <div class="card-body">
+                  <div id="wyPodglad"></div>
+                  <div class="note warn mt16 mb0">
+                    <b>Wysyłka wymaga zatwierdzenia</b> <span class="ref">D-106</span>
+                    <span class="tip-mark" data-tip="Wysylka nie rusza po jednym kliknieciu. Zawsze poprzedza ja osobny ekran potwierdzenia (D-106), a po zatwierdzeniu kazda wysylka jest zapisywana w logu wysylek (D-122).">i</span>.
+                    Klient uzasadnił to wprost: <i>„chciałbym, żebyśmy to zatwierdzili, tak jak masz
+                    napisane, w celu uniknięcia przypadkowego kliknięcia”</i>.
+                    Przycisk poniżej nie wysyła nic, tylko przenosi na ekran potwierdzenia.
+                    Każda potwierdzona wysyłka trafia do logu wysyłek <span class="ref">D-122</span>.
+                  </div>
+                  <div class="btn-row mt16">
+                    <button class="btn primary" onclick="doKroku2()">Dalej, ekran potwierdzenia</button>
+                    <button class="btn">Zapisz jako wersję roboczą</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KROK 2 -->
+        <div id="krok2" style="display:none">
+          <div class="grid g-2-1">
+            <div>
+              <div class="card mb0">
+                <div class="card-head">
+                  <h3>Potwierdzenie wysyłki<span class="tip-mark" data-tip="Ostatni ekran przed wyjsciem maili z systemu. Lista dokladnie tych adresatow, ktorzy dostana wiadomosc. Wysylka rusza dopiero po recznym potwierdzeniu (D-106).">i</span></h3>
+                  <span class="sub">ostatni ekran przed wyjściem maili z systemu</span>
+                  <div class="ch-actions"><span class="tag warn dot">wymaga zatwierdzenia</span></div>
+                </div>
+                <div class="card-body tight">
+                  <table class="tbl">
+                    <thead><tr><th>Adresat<span class="tip-mark" data-tip="Nazwa klienta koncowego, do ktorego trafi wiadomosc.">i</span></th><th>Adres e-mail<span class="tip-mark" data-tip="Konkretny adres e-mail odbiorcy podstawiony z danych klienta.">i</span></th><th>Projekt<span class="tip-mark" data-tip="Numer projektu, w kontekscie ktorego wysylana jest wiadomosc.">i</span></th><th>Instytucja<span class="tip-mark" data-tip="Instytucja szkoleniowa powiazana z projektem tego adresata.">i</span></th></tr></thead>
+                    <tbody id="tbPotw"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="card mb0">
+                <div class="card-head"><h3>Podsumowanie</h3></div>
+                <div class="card-body">
+                  <dl class="dl" id="potwPodsum"></dl>
+                  <div class="note mt16">
+                    Wysyłka trafi do <b>logu wysyłek</b> <span class="ref">D-122</span> w rejestrze aktywności
+                    <span class="ref">D-55</span>, razem z listą adresatów i osobą, która ją zatwierdziła.
+                    Potwierdzenie jest wymagane przed wysłaniem <span class="ref">D-106</span>.
+                  </div>
+                  <div class="btn-row mt16">
+                    <button class="btn primary" id="btnPotwierdz" onclick="potwierdz()">Potwierdzam wysyłkę</button>
+                    <button class="btn" onclick="doKroku1()">Wróć do edycji</button>
+                  </div>
+                  <div id="wynikWysylki"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============ ZAKŁADKA 3: AUTOMATYZACJE ============ -->
+    <div class="tab-pane" id="t3">
+    </div>
+
+  </div>
+
+</div>
+
+<!-- kfs:skrypty -->
+<script src="../db/sql-wasm.js"></script>
+<script src="../db/sql-wasm-data.js"></script>
+<script src="../db/seed-db.js"></script>
+<script src="../assets/sqlite.js"></script>
+<script src="../assets/store.js"></script>
+<script src="../assets/haslo.js"></script>
+<script src="../assets/funkcje.js"></script>
+<script src="../assets/auth.js"></script>
+<script src="../assets/walidacja.js"></script>
+<script src="../assets/straznik-wlasnosc.js"></script>
+<script src="../assets/straznik.js"></script>
+<script src="../assets/zakres.js"></script>
+<script src="../assets/prowizja.js"></script>
+<script src="../assets/db-format.js"></script>
+<script src="../assets/db-klienci.js"></script>
+<script src="../assets/db-instytucje.js"></script>
+<script src="../assets/db-nabory.js"></script>
+<script src="../assets/db.js"></script>
+<script src="../assets/lata.js"></script>
+<script src="../assets/nabory-import.js"></script>
+<script src="../assets/html.js"></script>
+<script src="../assets/statusy.js"></script>
+<script src="../assets/akceptacje.js"></script>
+<script src="../assets/wielowybor.js"></script>
+<script src="../assets/nawigacja.js"></script>
+<script src="../assets/podglad-roli.js"></script>
+<script src="../assets/interfejs.js"></script>
+<script src="../assets/tips.js"></script>
+<script src="../assets/boot.js" data-modul="komun"></script>
+<script src="js/09-wysylka-maili-tresci.js"></script>
+<script src="js/09-wysylka-maili-szablony.js"></script>
+<script src="js/09-wysylka-maili-podstawianie.js"></script>
+<script src="js/09-wysylka-maili-wysylka.js"></script>
+<script src="js/09-wysylka-maili-potwierdzenie.js"></script>
+<script src="js/09-wysylka-maili-automaty.js"></script>
+<script src="js/09-wysylka-maili-prosba-termin.js"></script>
+<script src="js/09-wysylka-maili-alert-reczny.js"></script>
+<script src="js/09-wysylka-maili-panel-automatyzacji.js"></script>
+<script type="text/kfs-strona">inicjuj09();</script>
+</body>
+</html>

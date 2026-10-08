@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Instytucje szkoleniowe</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/style-sesja.css">
+<link rel="stylesheet" href="../assets/style-instytucje-0810.css">
+<link rel="stylesheet" href="../assets/style-interfejs.css">
+<style>
+  .cert {
+    border: 1px solid var(--line-strong); border-radius: var(--radius);
+    background: #fff; padding: 30px 34px; text-align: center;
+    background-image: linear-gradient(0deg, var(--surface-2) 0%, #fff 30%);
+  }
+  .cert .c-top { font-size: 0.75rem; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-3); font-weight: 700; }
+  .cert .c-tyt { font-size: 1.375rem; font-weight: 700; margin: 12px 0 4px; letter-spacing: -.01em; }
+  .cert .c-os { font-size: 1.1875rem; font-weight: 700; margin: 16px 0 6px; }
+  .cert .c-txt { font-size: 0.8125rem; color: var(--ink-2); line-height: 1.7; }
+  .cert .ph { background: var(--accent-soft); border: 1px dashed var(--accent-border); border-radius: 4px; padding: 0 5px; font-family: "Cascadia Mono", Consolas, monospace; font-size: 0.75rem; color: var(--accent-dark); }
+  .cert .c-stopka { display: flex; justify-content: space-between; margin-top: 26px; font-size: 0.75rem; color: var(--ink-3); }
+  .drop { border: 1px dashed var(--line-strong); border-radius: var(--radius); background: var(--surface-2); padding: 18px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <button class="btn sm" style="margin-bottom:6px" onclick="Nawigacja.wstecz('01-dashboard.html')"
+              data-tip="Wraca do poprzedniego ekranu, np. do karty wniosku albo zgłoszenia.">&larr; Wstecz</button>
+      <h1 class="page-title">Instytucje szkoleniowe<span class="tip-mark" data-tip="Instytucje szkoleniowe współpracujące z LDIT. Kliknięcie kafelka otwiera konfigurację instytucji z zakładkami. Każda instytucja widzi wyłącznie własnych klientów i projekty.">i</span></h1>
+      <p class="page-desc">Instytucje współpracujące z LDIT; kliknij kafelek, żeby otworzyć konfigurację instytucji.</p>
+    </div>
+    <div class="ph-actions">
+      <button class="btn atrapa" data-tip="W aplikacji docelowej">Eksport listy</button>
+      <button class="btn primary" id="btnNowaIS">+ Nowa instytucja</button>
+    </div>
+  </div>
+
+  <!-- PRZEGLAD: kafelki w kolorach instytucji -->
+  <section id="widokPrzeglad">
+    <div class="card">
+      <div class="toolbar">
+        <label class="small muted" for="fSzukaj">Szukaj</label>
+        <input class="inp search" id="fSzukaj" placeholder="np. Poznań albo 7811955339">
+        <select class="inp" id="fOpiekun" data-wielo aria-label="Opiekun"></select>
+        <select class="inp" id="fMiasto" data-wielo aria-label="Miasto"></select>
+        <span class="chip on">Aktywne <span class="n" id="chipAkt">0</span></span>
+        <span class="chip">Nieaktywne <span class="n" id="chipNieakt">0</span></span>
+      </div>
+      <div class="card-body">
+        <div class="grid g3" id="listaIS"></div>
+        <div class="small muted" style="margin-top:14px" id="stopkaLista"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KONFIGURACJA JEDNEJ INSTYTUCJI: wszystkie zakladki w jednym miejscu -->
+  <section id="widokKonfig" hidden>
+    <div class="card">
+      <div class="card-head konf-head">
+        <button class="btn sm" type="button" onclick="wrocDoPrzegladu06()">&larr; Wszystkie instytucje</button>
+        <span class="kolor-kropka" id="detKolor" aria-hidden="true"></span>
+        <h3 id="detNazwa">Instytucja</h3>
+        <span class="sub" id="detSub"></span>
+        <span class="tag warn dot tylko-admin" id="tagModel"></span>
+        <div class="ch-actions">
+          <button class="btn sm atrapa tylko-admin" data-tip="W aplikacji docelowej">Historia zmian</button>
+          <button class="btn sm" id="btnEdytujIS">Edytuj kartę</button>
+        </div>
+      </div>
+
+      <div class="tabs" id="tabs">
+        <div class="tab on" data-p="p-dane">Konto instytucji</div>
+        <div class="tab" data-p="p-katalog">Programy</div>
+        <div class="tab" data-p="p-osoby">Osoby i konta</div>
+        <div class="tab" data-p="p-mail">Korespondencja</div>
+        <div class="tab admin tylko-admin" data-p="p-prow">Warunki prowizyjne</div>
+        <div class="tab admin tylko-admin" data-p="p-cert">Wzór certyfikatu</div>
+        <div class="tab admin tylko-admin" data-p="p-fakt">Dane do faktury</div>
+        <div class="tab admin tylko-admin" data-p="p-form">Formularz zgłoszeniowy</div>
+      </div>
+
+      <!-- KONTO INSTYTUCJI (D-288) -->
+      <div class="tab-pane on" id="p-dane">
+        <div class="card-body">
+          <div class="grid g-2-1">
+            <div>
+              <dl class="dl" id="daneFirmy"></dl>
+              <div id="isForm" style="display:none"></div>
+            </div>
+            <div>
+              <div class="note mb0">
+                <b>Siedziba jest źródłem miejscowości na certyfikacie</b> <span class="ref">D-99</span>.
+                Na dokumencie drukuje się miasto siedziby instytucji, nigdy miejsce realizacji szkolenia.
+              </div>
+              <div class="note warn mb0" style="margin-top:12px">
+                <b>Standard godzinowy</b> to powtarzalny wzorzec godzin i dni.
+                <b>Do potwierdzenia z klientem</b> <span class="ref">D-248</span>: czy dotyczy godzin szkoleń, czy godzin pracy instytucji.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROGRAMY: lista; karta planu otwiera sie w osobnym widoku -->
+      <div class="tab-pane" id="p-katalog">
+        <div class="toolbar">
+          <span class="small muted" id="katSub"></span>
+          <span class="sp"></span>
+          <button class="btn sm" id="btnDodajPlan">+ Dodaj plan szkolenia</button>
+        </div>
+        <div id="planForm" class="card-body" style="display:none;border-top:1px solid var(--line)"></div>
+        <div class="card-body tight">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>Nazwa szkolenia<span class="tip-mark" data-tip="Nazwa programu instytucji. Trafia do formularza zgłoszeniowego jako pozycja listy wyboru. Instytucja dodaje nowe plany, edycja istniejących idzie przez administratora (D-43).">i</span></th>
+                <th class="num">Godziny</th>
+                <th class="num">Dni</th>
+                <th>Tryb</th>
+                <th class="num">Cennik<span class="tip-mark" data-tip="Ceny do wyboru we wniosku (D-277). Nowa kwota wpisana we wniosku po potwierdzeniu dopisuje się do cennika.">i</span></th>
+                <th class="num">Realizacje 2026</th>
+                <th class="c">Pliki</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="katalog"></tbody>
+          </table>
+        </div>
+        <div class="card-body">
+          <div class="note warn mb0" id="notkaKatalogIS" style="display:none">
+            <b>Zmiana katalogu jest propozycją do akceptacji administratora</b> <span class="ref">D-204</span>.
+            Nazwa szkolenia trafia do formularza zgłoszeniowego i musi pozostać spójna ze złożonymi wnioskami.
+          </div>
+        </div>
+      </div>
+
+      <!-- OSOBY I KONTA -->
+      <div class="tab-pane" id="p-osoby">
+        <div class="card-body">
+          <div class="small muted" style="margin-bottom:8px">Osoby kontaktowe instytucji (do trzech, pierwsza jest główna).</div>
+          <div class="grid g3" id="role3"></div>
+        </div>
+        <div class="card-body tight">
+          <table class="tbl">
+            <thead>
+              <tr><th>Imię i nazwisko</th><th>Login</th><th>Rola</th><th>Ostatnie logowanie</th><th class="c">2FA</th><th></th></tr>
+            </thead>
+            <tbody id="konta"></tbody>
+          </table>
+        </div>
+        <div class="card-body">
+          <div class="note mb0">
+            Konta instytucji widzą <b>wyłącznie własnych klientów i własne projekty</b>; instytucja nie widzi innych
+            instytucji <span class="ref">D-248</span>. Na tej liście są tylko konta instytucji, bez pracowników LDIT.
+          </div>
+        </div>
+      </div>
+
+      <!-- KORESPONDENCJA -->
+      <div class="tab-pane" id="p-mail">
+        <div class="toolbar">
+          <input class="inp search" placeholder="Szukaj w temacie i treści" aria-label="Szukaj w korespondencji">
+          <select class="inp" aria-label="Kierunek">
+            <option>Kierunek: wszystkie</option><option>Przychodzące</option><option>Wychodzące</option>
+          </select>
+          <span class="sp"></span>
+          <button class="btn sm atrapa" data-tip="W aplikacji docelowej">+ Notatka z rozmowy</button>
+          <button class="btn sm primary atrapa" data-tip="W aplikacji docelowej">Nowa wiadomość</button>
+        </div>
+        <div class="card-body tight">
+          <table class="tbl">
+            <thead><tr><th style="width:38px"></th><th>Temat</th><th>Nadawca</th><th>Skrzynka</th><th>Data</th><th class="c">Zał.</th></tr></thead>
+            <tbody id="maile"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Zakladki administratora: tresc z plikow 07-konfigurator-is-panel-*.js (D-07) -->
+      <div class="tab-pane" id="p-prow"></div>
+      <div class="tab-pane" id="p-cert"></div>
+      <div class="tab-pane" id="p-fakt"></div>
+      <div class="tab-pane" id="p-form"></div>
+    </div>
+  </section>
+
+  <!-- KARTA PLANU: osobny widok, otwierany z zakladki Programy -->
+  <section id="widokPlan" hidden>
+    <button class="btn sm" type="button" style="margin-bottom:10px" onclick="zamknijKartePlanu()" id="powrotPlanu">&larr; Programy instytucji</button>
+    <div class="card mb0" id="planKarta" style="display:none"></div>
+  </section>
+
+</div>
+
+<!-- kfs:skrypty -->
+<script src="../db/sql-wasm.js"></script>
+<script src="../db/sql-wasm-data.js"></script>
+<script src="../db/seed-db.js"></script>
+<script src="../assets/sqlite.js"></script>
+<script src="../assets/store.js"></script>
+<script src="../assets/haslo.js"></script>
+<script src="../assets/funkcje.js"></script>
+<script src="../assets/auth.js"></script>
+<script src="../assets/walidacja.js"></script>
+<script src="../assets/straznik-wlasnosc.js"></script>
+<script src="../assets/straznik.js"></script>
+<script src="../assets/zakres.js"></script>
+<script src="../assets/prowizja.js"></script>
+<script src="../assets/db-format.js"></script>
+<script src="../assets/db-klienci.js"></script>
+<script src="../assets/db-instytucje.js"></script>
+<script src="../assets/db-nabory.js"></script>
+<script src="../assets/db.js"></script>
+<script src="../assets/lata.js"></script>
+<script src="../assets/nabory-import.js"></script>
+<script src="../assets/html.js"></script>
+<script src="../assets/statusy.js"></script>
+<script src="../assets/akceptacje.js"></script>
+<script src="../assets/wielowybor.js"></script>
+<script src="../assets/nawigacja.js"></script>
+<script src="../assets/podglad-roli.js"></script>
+<script src="../assets/interfejs.js"></script>
+<script src="../assets/tips.js"></script>
+<script src="../assets/boot.js" data-modul="inst"></script>
+<script src="js/06-instytucje-stan.js"></script>
+<script src="js/06-instytucje-lista.js"></script>
+<script src="js/06-instytucje-widoki.js"></script>
+<script src="js/konto-instytucji.js"></script>
+<script src="js/06-instytucje-szczegol.js"></script>
+<script src="js/06-instytucje-katalog.js"></script>
+<script src="js/06-instytucje-plan.js"></script>
+<script src="js/06-instytucje-cennik.js"></script>
+<script src="js/06-instytucje-kopia.js"></script>
+<script src="js/06-instytucje-kolor.js"></script>
+<script src="js/06-instytucje-opiekunowie.js"></script>
+<script src="js/06-instytucje-karta.js"></script>
+<script src="js/07-konfigurator-is-wspolne.js"></script>
+<script src="js/07-konfigurator-is-warunki.js"></script>
+<script src="js/07-konfigurator-is-wersje.js"></script>
+<script src="js/07-konfigurator-is-progi-dofinansowania.js"></script>
+<script src="js/07-konfigurator-is-certyfikat.js"></script>
+<script src="js/07-konfigurator-is-faktura.js"></script>
+<script src="js/07-konfigurator-is-formularz.js"></script>
+<script src="js/07-konfigurator-is-panel-prowizje.js"></script>
+<script src="js/07-konfigurator-is-panel-certyfikat.js"></script>
+<script src="js/07-konfigurator-is-panel-faktura-formularz.js"></script>
+<script src="js/07-konfigurator-is-widok.js"></script>
+<script type="text/kfs-strona">
+Array.prototype.forEach.call(document.querySelectorAll("#tabs .tab"), function (t) {
+  t.addEventListener("click", function () { wybierzZakladke06(t.getAttribute("data-p")); });
+});
+el("btnDodajPlan").addEventListener("click", pokazPlanForm);
+el("btnEdytujIS").addEventListener("click", otworzEdycjeIS);
+el("btnNowaIS").addEventListener("click", otworzNowaIS);
+["fSzukaj", "fOpiekun", "fMiasto"].forEach(function (id) {
+  el(id).addEventListener(id === "fSzukaj" ? "input" : "change", renderLista);
+});
+przygotujKonfiguracje07();
+window.addEventListener("db:changed", odswiez06);
+wybierzZAdresu06();
+odswiez06();
+</script>
+</body>
+</html>

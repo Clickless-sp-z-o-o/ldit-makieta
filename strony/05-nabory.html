@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nabory</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/style-sesja.css">
+<link rel="stylesheet" href="../assets/style-listy.css">
+<link rel="stylesheet" href="../assets/style-interfejs.css">
+<style>
+  /* Drobny wyjatek: nabory zakonczone wygaszone, brak gotowej klasy */
+  tr.past td { color: var(--ink-4); }
+  tr.past td .tag { opacity: .8; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <h1 class="page-title">Nabory<span class="tip-mark" data-tip="Lista naborow z urzedow pracy: aktualnie ogloszonych, prognozowanych i zakonczonych, w jednym miejscu (D-109). Sluzy do planowania kontaktu z klientami, ktorych urzad wlasnie otwiera nabor. Uwaga: system jest tylko odbiorca prognoz z zewnetrznej aplikacji LDIT, sam nie liczy terminow naborow.">i</span></h1>
+      <p class="page-desc">Nabory ogłoszone i prognozowane w urzędach pracy, najpilniejsze na górze.</p>
+    </div>
+    <div class="ph-actions">
+      <button class="btn atrapa" type="button" data-tip="W aplikacji docelowej">Odśwież prognozy</button>
+      <button class="btn primary atrapa" type="button" data-tip="W aplikacji docelowej">Eksport listy urzędów</button>
+    </div>
+  </div>
+
+  <div class="grid g4" style="margin-bottom:18px" id="kpi"></div>
+
+  <div class="card">
+    <div class="card-head">
+      <h3>Nabory według pilności<span class="tip-mark" data-tip="Glowna tabela naborow uporzadkowana od najpilniejszych. Kolory wierszy odpowiadaja stanowi naboru zgodnie z legenda po prawej.">i</span></h3>
+      <span class="sub" id="stanNa"></span>
+      <div class="ch-actions">
+        <div class="legend">
+          <span><i style="background:var(--pos-bg);border-color:#86efac"></i>trwa</span>
+          <span><i style="background:var(--info-bg);border-color:#7dd3fc"></i>oczekuje na start</span>
+          <span><i style="background:var(--warn-bg);border-color:#fcd34d"></i>prognozowany</span>
+          <span><i style="background:var(--surface-3);border-color:var(--line-strong)"></i>zakończony</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <input class="inp search" id="q" placeholder="Szukaj: urząd, województwo...">
+      <select class="inp" id="fStat" data-wielo>
+        <option value="">Wszystkie stany</option>
+        <option value="trwa">Trwa</option>
+        <option value="oczekuje">Oczekuje</option>
+        <option value="prognozowany">Prognozowany</option>
+        <option value="zakończony">Zakończony</option>
+      </select>
+      <select class="inp" id="fRodz" data-wielo>
+        <option value="">Ogłoszone i prognozowane</option>
+        <option value="ogloszony">Ogłoszone</option>
+        <option value="prognozowany">Prognozowane</option>
+      </select>
+      <span class="sp"></span>
+      <span class="small muted" id="licz"></span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Urząd pracy<span class="tip-mark" data-tip="Powiatowy urzad pracy (PUP), do ktorego przypisany jest nabor. Nabor zawsze nalezy do konkretnego urzedu.">i</span></th>
+            <th>Województwo<span class="tip-mark" data-tip="Wojewodztwo, w ktorym lezy urzad. Ulatwia filtrowanie regionalne.">i</span></th>
+            <th>Rodzaj<span class="tip-mark" data-tip="Zrodlo wiersza: nabor ogloszony albo prognozowany (D-271). Wszystkie nabory sa KFS.">i</span></th>
+            <th>Status<span class="tip-mark" data-tip="Trwa (termin otwarty), Oczekuje (ogloszony, start w przyszlosci), Prognozowany (tylko prognoza), Zakonczony.">i</span></th>
+            <th class="nowrap">Termin od<span class="tip-mark" data-tip="Data otwarcia naboru w urzedzie. Pusta, gdy nabor jest jeszcze tylko prognozowany.">i</span></th>
+            <th class="nowrap">Termin do<span class="tip-mark" data-tip="Data zamkniecia naboru, czyli ostatni dzien na zlozenie wniosku. Lista jest sortowana po tej dacie rosnaco, najpilniejsze na gorze (D-90).">i</span></th>
+            <th class="num">Dni<span class="tip-mark" data-tip="Liczba dni naboru, wyliczana z daty od i do (D-271).">i</span></th>
+            <th class="c">Zostało<span class="tip-mark" data-tip="Liczba dni do zamkniecia naboru. Czerwony do 3 dni, zolty do 10 dni, niebieski powyzej. Zakonczone nabory maja oznaczenie zakonczony.">i</span></th>
+            <th>Prognoza<span class="tip-mark" data-tip="Termin prognozy opisany tekstem, np. polowa pazdziernika. Data od prognozy jest w kolumnie Termin od (D-271).">i</span></th>
+            <th>Środki<span class="tip-mark" data-tip="Srodki urzedu na nabor, tekst z ogloszenia.">i</span></th>
+            <th class="num">Klientów czeka<span class="tip-mark" data-tip="Liczba klientow LDIT przypisanych do tego urzedu, ktorzy czekaja na otwarcie naboru. Wysoka wartosc to przyszly szczyt pracy.">i</span></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="body"></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="12" class="muted small" style="padding:12px" id="stopkaUrzedy"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" id="panelKlientow" style="display:none"></div>
+
+  <div class="card" id="wczytajNabory"></div>
+
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-head">
+        <h3>Prognozy na kolejne miesiące<span class="tip-mark" data-tip="Liczba urzedow z przewidywanym naborem w danym miesiacu. Dane pochodza z zewnetrznej aplikacji prognozujacej LDIT, system ich nie wylicza (D-109).">i</span></h3>
+        <span class="sub">liczba urzędów z przewidywanym naborem</span>
+      </div>
+      <div class="card-body">
+        <div class="bars" id="barsProg"></div>
+        <div class="small muted mt16">
+          Prognoza pochodzi z zewnętrznej aplikacji przewidującej terminy naborów. System jej nie liczy,
+          tylko wyświetla i wiąże z klientami.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Klienci czekający według miesiąca prognozy<span class="tip-mark" data-tip="Suma klientow przypisanych do urzedow, ktore maja prognozowany nabor w danym miesiacu. Pokazuje przyszle obciazenie praca, gdy nabory sie otworza.">i</span></h3>
+        <span class="sub">na ilu klientów przełoży się otwarcie naboru</span>
+      </div>
+      <div class="card-body">
+        <div class="bars" id="barsKl"></div>
+        <div class="small muted mt16">
+          Największa kumulacja przypada na urzędy o dużej liczbie klientów. To one wyznaczają szczyt obciążenia pracą.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h3>Nabory kończące się w najbliższych 14 dniach<span class="tip-mark" data-tip="Os czasu naborow, ktore zamykaja sie w ciagu dwoch tygodni. To lista do dzialania w systemie, nie alert wysylany mailem.">i</span></h3>
+      <span class="sub">lista do działania, nie alert mailowy</span>
+    </div>
+    <div class="card-body">
+      <div class="timeline" id="os"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h3>Rejestr urzędów pracy</h3>
+      <span class="tip-mark" data-tip="Słownik urzędów, każdy urząd raz, z najbliższym naborem ogłoszonym i prognozą (widok v_urzedy_nabory, D-272). Klik w urząd z klientami otwiera tych klientów w Bazie danych.">i</span>
+      <span class="sub" id="liczUrzedy"></span>
+    </div>
+    <div class="toolbar">
+      <input class="inp search" id="qUrzad" placeholder="Szukaj: urząd, alias, powiat...">
+      <select class="inp" id="fWoj" data-wielo data-pusty="Wszystkie województwa"></select>
+    </div>
+    <div class="card-body tight" style="max-height:360px;overflow:auto">
+      <table class="tbl">
+        <thead><tr><th>Urząd</th><th>Powiat</th><th>Województwo</th><th>Nabór ogłoszony</th><th>Prognoza</th><th class="num">Klientów</th></tr></thead>
+        <tbody id="urzedy"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>Skąd biorą się te dane.</b> Nabory nie są wprowadzane ręcznie. Dwie automatyzacje wczytują pliki Excel
+    (nabory ogłoszone i prognozy) do tabel źródłowych <code>src_</code>, a z nich powstają nabory <span class="ref">D-271</span>.
+    Urząd z pliku dopasowuje się po nazwie albo aliasie ze słownika; nieznany urząd trafia do powiadomień
+    <span class="ref">D-272</span> <span class="ref">D-297</span>. System jest <b>odbiorcą prognoz</b>, sam ich nie wylicza. <span id="notkaUrzedy"></span>
+  </div>
+
+  <div class="note">
+    <b>Instytucja szkoleniowa widzi pełną listę naborów w podglądzie <span class="ref">D-213</span>
+    <span class="ref">D-214</span></b>, co zamyka <span class="ref p">P-34</span>. Liczby klientów liczą się wyłącznie z jej własnych klientów.
+    <b>Handlowiec instytucji tej informacji nie dostaje</b> <span class="ref">D-91</span>, bo po wpłynięciu
+    formularza cały kontakt z klientem prowadzi LDIT.
+  </div>
+
+</div>
+
+<!-- kfs:skrypty -->
+<script src="../db/sql-wasm.js"></script>
+<script src="../db/sql-wasm-data.js"></script>
+<script src="../db/seed-db.js"></script>
+<script src="../assets/sqlite.js"></script>
+<script src="../assets/store.js"></script>
+<script src="../assets/haslo.js"></script>
+<script src="../assets/funkcje.js"></script>
+<script src="../assets/auth.js"></script>
+<script src="../assets/walidacja.js"></script>
+<script src="../assets/straznik-wlasnosc.js"></script>
+<script src="../assets/straznik.js"></script>
+<script src="../assets/zakres.js"></script>
+<script src="../assets/prowizja.js"></script>
+<script src="../assets/db-format.js"></script>
+<script src="../assets/db-klienci.js"></script>
+<script src="../assets/db-instytucje.js"></script>
+<script src="../assets/db-nabory.js"></script>
+<script src="../assets/db.js"></script>
+<script src="../assets/lata.js"></script>
+<script src="../assets/nabory-import.js"></script>
+<script src="../assets/html.js"></script>
+<script src="../assets/statusy.js"></script>
+<script src="../assets/akceptacje.js"></script>
+<script src="../assets/wielowybor.js"></script>
+<script src="../assets/nawigacja.js"></script>
+<script src="../assets/podglad-roli.js"></script>
+<script src="../assets/interfejs.js"></script>
+<script src="../assets/tips.js"></script>
+<script src="../assets/boot.js" data-modul="nabory"></script>
+<script src="js/05-nabory-dane.js"></script>
+<script src="js/05-nabory-tabela.js"></script>
+<script src="js/05-nabory-prognozy.js"></script>
+<script src="js/05-nabory-urzedy.js"></script>
+<script src="js/05-nabory-klienci.js"></script>
+<script src="js/05-nabory-notatka.js"></script>
+<script src="js/05-nabory-wczytaj.js"></script>
+<script type="text/kfs-strona">
+wczytajDane05();
+renderKpi05();
+podepnijFiltry05();
+renderTabela05();
+renderPrognozy05();
+renderOsCzasu05();
+podepnijUrzedy05();
+renderWczytaj05();
+</script>
+</body>
+</html>

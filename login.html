@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logowanie - System KFS</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/style-sesja.css">
+<link rel="stylesheet" href="assets/style-interfejs.css">
+</head>
+<body class="ekran-logowania">
+
+<div class="logowanie">
+
+  <form class="logowanie-panel" id="formularz" autocomplete="off">
+    <div class="logowanie-marka">
+      <img class="logo-ldit" src="assets/ldit-logo.png" alt="LDIT">
+      <div>
+        <div class="name">System KFS</div>
+        <div class="sub">LDIT &middot; zarządzanie dofinansowaniami</div>
+      </div>
+    </div>
+
+    <h1>Zaloguj się</h1>
+    <p class="muted small">
+      Rola i zakres widocznych danych wynikają z konta, nie z ustawienia w interfejsie.
+      <span class="ref">D-125</span>
+    </p>
+
+    <label class="pole">
+      <span>Adres e-mail</span>
+      <input type="email" class="inp" id="login" placeholder="imie@firma.pl" required>
+    </label>
+
+    <label class="pole">
+      <span>Hasło</span>
+      <input type="password" class="inp" id="haslo" placeholder="Hasło" required>
+    </label>
+
+    <div class="logowanie-blad" id="blad" hidden></div>
+
+    <button type="submit" class="btn primary" id="przycisk">Zaloguj się</button>
+
+    <div class="logowanie-stopka">
+      Uwierzytelnianie dwuskładnikowe jest wymagane dla kont LDIT
+      <span class="ref">D-31</span>. W makiecie drugi składnik jest pominięty.
+    </div>
+  </form>
+
+  <aside class="logowanie-konta">
+    <h2>Konta demonstracyjne</h2>
+    <p class="muted small">
+      Kliknij konto, żeby wypełnić formularz. Hasło do wszystkich kont: <b id="hasloDemo">demo</b>.
+      Każde konto pokazuje inny zakres systemu, bo uprawnienia są nadawane per rola
+      <span class="ref">D-35</span>, a widoczność danych wynika z przypisania do instytucji
+      <span class="ref">D-113</span>.
+    </p>
+    <p class="muted small">
+      Konta dla klientów końcowych nie istnieją: klient nie loguje się do systemu <span class="ref">D-252</span>.
+      Sesja wygasa po bezczynności: konta LDIT po 2 godzinach, konta instytucji po 30 minutach <span class="ref">D-250</span>.
+    </p>
+    <div id="listaKont" class="konta-lista"></div>
+  </aside>
+
+</div>
+
+<!-- kfs:skrypty -->
+<script src="db/sql-wasm.js"></script>
+<script src="db/sql-wasm-data.js"></script>
+<script src="db/seed-db.js"></script>
+<script src="assets/sqlite.js"></script>
+<script src="assets/store.js"></script>
+<script src="assets/haslo.js"></script>
+<script src="assets/funkcje.js"></script>
+<script src="assets/auth.js"></script>
+<script src="assets/walidacja.js"></script>
+<script src="assets/straznik-wlasnosc.js"></script>
+<script src="assets/straznik.js"></script>
+<script src="assets/html.js"></script>
+<script src="assets/wielowybor.js"></script>
+<script src="assets/nawigacja.js"></script>
+<script src="assets/boot.js" data-publiczna="tak"></script>
+
+<script type="text/kfs-strona">
+(function () {
+  "use strict";
+
+  /* Wylogowanie z powloki: sesja znika z bazy wczytanej przed chwila, a nie z kopii powloki */
+  if (new URLSearchParams(location.search).get("wyloguj")) {
+    Auth.wyloguj();
+    KFS.zapiszTeraz().finally(function () { location.replace("login.html"); });
+    return;
+  }
+
+  /* Konto juz zalogowane nie ma po co ogladac ekranu logowania */
+  if (Auth.zalogowany()) {
+    location.replace("index.html");
+    return;
+  }
+
+  var poleLogin = document.getElementById("login");
+  var poleHaslo = document.getElementById("haslo");
+  var poleBledu = document.getElementById("blad");
+
+  var haslo = Store.one("SELECT wartosc FROM meta WHERE klucz = 'haslo_demo'");
+  if (haslo) document.getElementById("hasloDemo").textContent = haslo.wartosc;
+
+  /* Lista kont prosto z bazy: to sa te same wiersze, ktore obsluguja logowanie */
+  var konta = Store.query(
+    "SELECT u.login, u.imie_nazwisko, r.nazwa AS rola, " +
+    "       COALESCE(i.nazwa, CASE WHEN u.wszystkie_instytucje = 1 " +
+    "                              THEN 'wszystkie instytucje' ELSE '' END) AS zakres " +
+    "FROM uzytkownicy u JOIN role r ON r.id = u.rola_id " +
+    "LEFT JOIN instytucje i ON i.id = u.instytucja_id " +
+    "ORDER BY r.id, u.imie_nazwisko");
+
+  document.getElementById("listaKont").innerHTML = konta.map(function (k) {
+    return '<button type="button" class="konto" data-login="' + esc(k.login) + '">' +
+      '<span class="konto-imie">' + esc(k.imie_nazwisko) + '</span>' +
+      '<span class="konto-rola">' + esc(k.rola) + '</span>' +
+      '<span class="konto-login">' + esc(k.login) + '</span>' +
+      (k.zakres ? '<span class="konto-zakres">' + esc(k.zakres) + '</span>' : '') +
+      '</button>';
+  }).join("");
+
+  document.getElementById("listaKont").addEventListener("click", function (e) {
+    var przycisk = e.target.closest(".konto");
+    if (!przycisk) return;
+    poleLogin.value = przycisk.getAttribute("data-login");
+    poleHaslo.value = haslo ? haslo.wartosc : "demo";
+    poleHaslo.focus();
+  });
+
+  document.getElementById("formularz").addEventListener("submit", function (e) {
+    e.preventDefault();
+    poleBledu.hidden = true;
+
+    var wynik = Auth.zaloguj(poleLogin.value, poleHaslo.value);
+    if (!wynik.ok) {
+      poleBledu.textContent = wynik.blad;
+      poleBledu.hidden = false;
+      poleHaslo.select();
+      return;
+    }
+    /* Sesja musi byc zapisana w bazie, zanim otworzy sie index.html. Opozniony zapis
+       ginal razem ze strona i index wracal na logowanie. */
+    document.getElementById("przycisk").disabled = true;
+    KFS.zapiszTeraz().finally(function () { location.replace("index.html"); });
+  });
+
+  poleLogin.focus();
+})();
+</script>
+
+</body>
+</html>

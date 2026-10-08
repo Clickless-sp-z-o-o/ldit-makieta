@@ -1,0 +1,69 @@
+/* ============================================================================
+   Poprawki interfejsu po przegladzie 08.10.2026 (docs/23): uwagi projektowe,
+   fokus, kontrast, tabele i siatki na waskim ekranie, menu na telefonie,
+   atrapy przyciskow. Ladowane po style.css na kazdej stronie i w powloce.
+   ============================================================================ */
+
+/* Kontrast tekstu pomocniczego: #64748b dawal 4,48:1 na tle strony, #5b6b80 daje 5,12:1 */
+:root { --ink-3: #5b6b80; }
+
+/* ------------------------------ uwagi projektowe ------------------------------ */
+/* Ramki z numerami decyzji i same numery widac tylko po wlaczeniu w gornym pasku (assets/interfejs.js) */
+html:not(.pokaz-uwagi) .note:has(.ref),
+html:not(.pokaz-uwagi) .ref,
+html:not(.pokaz-uwagi) .role-hint { display: none !important; }
+.ref-odstep { margin-left: 0.3em; }
+
+/* ------------------------------ fokus ------------------------------ */
+:focus-visible { outline: 2px solid var(--brand-900); outline-offset: 2px; }
+.inp:focus, .global-search input:focus, .role-switch select:focus { outline: none; }
+.inp:focus-visible, .global-search input:focus-visible, .role-switch select:focus-visible {
+  outline: 2px solid var(--brand-900); outline-offset: 1px; border-color: var(--brand-900);
+}
+.sidebar :focus-visible, .topbar .akceptacje:focus-visible { outline-color: var(--gold); }
+
+/* ------------------------------ kontrast na kolorach statusow ------------------------------ */
+tr.row-pos td .muted, tr.row-pos td.muted, tr.row-pos td .pod, tr.row-pos td .mono { color: #2f5220; }
+tr.row-neg td .pod, tr.row-neg td .mono { color: #6b3415; }
+tr.row-rez td .pod, tr.row-rez td .mono { color: #5c4a00; }
+tr.row-set td .pod, tr.row-set td .mono { color: #2b4372; }
+.nav-group-label { color: #94a3b8; }
+.lv.none, .mod-tabs .adm, .lata-tab .n { color: var(--ink-3); }
+
+/* ------------------------------ tabele i siatki na waskim ekranie ------------------------------ */
+/* Karta przycina rogi, wiec szeroka tabela przewija sie w srodku karty, zamiast znikac za krawedzia */
+.card { min-width: 0; }
+.card-body { overflow-x: auto; }
+/* Karta listy jest kolumna flex: przewijany .card-body bez tego kurczy sie do zera (panele nad tabela maja swoja wysokosc) */
+.page.lista > .card > .card-body { flex: 0 0 auto; }
+@media (max-width: 700px) {
+  .g2, .g3, .g4, .g-2-1, .g-1-2 { grid-template-columns: minmax(0, 1fr); }
+  .page { padding-left: 12px; padding-right: 12px; }
+  .page-head { flex-wrap: wrap; gap: 10px; }
+  .inp, select.inp, textarea.inp { font-size: 1rem; }
+}
+
+/* ------------------------------ menu na telefonie ------------------------------ */
+.menu-tel { display: none; }
+.przelacznik-uwag[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent-border); }
+@media (max-width: 767px) {
+  .sidebar {
+    position: fixed; inset: 0 auto 0 0; z-index: 80; width: min(300px, 86vw); flex-basis: auto;
+    transform: translateX(-100%); transition: transform .2s ease-out;
+  }
+  .app.menu-otwarte .sidebar { transform: none; box-shadow: var(--shadow-lg); }
+  .app.menu-otwarte::after { content: ""; position: fixed; inset: 0; z-index: 70; background: rgba(15, 23, 42, .45); }
+  .zwin-menu { display: none; }
+  .menu-tel { display: inline-flex; }
+  .topbar { height: auto; flex: 0 0 auto; flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+  .global-search { order: 3; flex: 1 1 100%; max-width: none; margin: 0; }
+  .uzytkownik-dane, .crumb { display: none; }
+  .wstecz { margin-right: 0; }
+}
+
+/* ------------------------------ atrapy ------------------------------ */
+/* Przycisk, ktory w makiecie nic nie robi: widac to od razu, opis w podpowiedzi */
+.atrapa { border-style: dashed !important; opacity: .75; cursor: help; }
+
+/* Litera „i” podpowiedzi to ikona, nie tekst: mniejszy znak w wiekszym kolku */
+.tip-mark { width: 16px; height: 16px; font-size: 0.625rem; }

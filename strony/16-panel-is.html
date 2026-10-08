@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel instytucji szkoleniowej</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/style-sesja.css">
+<link rel="stylesheet" href="../assets/style-interfejs.css">
+<link rel="stylesheet" href="../assets/style-ekrany-0810.css">
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <div class="small muted" style="margin-bottom:4px" id="zalogowano"></div>
+      <h1 class="page-title" id="tytul" data-tip="Panel instytucji szkoleniowej: własni klienci, wnioski, terminy i katalog szkoleń. Administrator instytucji może tu dodawać własnych pracowników (D-126).">Panel instytucji</h1>
+      <p class="page-desc">Twoi klienci, projekty i formularze.</p>
+    </div>
+    <div class="ph-actions">
+      <a class="btn primary" href="13-terminy.html">Terminy szkoleń</a>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>Zakres widoczności tego konta.</b>
+    Instytucja widzi wyłącznie <b>własnych klientów</b>, ich sprawy i statystyki, bez rozbicia na poszczególnych handlowców
+    <span class="ref">D-209</span>. Nie widzi stawek prowizji ani marżowości LDIT <span class="ref">D-07</span> <span class="ref">D-19</span>.
+    W makiecie separację robi filtr w warstwie danych (zapytania, wyszukiwarka i eksport dostają tylko wiersze tej instytucji).
+    Docelowo działają dwie warstwy: polityki w bazie oraz filtr organizacji w serwerze <span class="ref">D-179</span>.
+  </div>
+
+  <div class="note">
+    Panel daje instytucji podstawowe informacje o jej klientach i naborach oraz dodawanie danych klientów.
+    Rozbudowane funkcje dla instytucji szkoleniowych to przyszły pakiet Premium / VIP <span class="ref">D-251</span>.
+  </div>
+
+  <div class="note" id="infoHandlowiec" hidden>
+    Widzisz klientów przypisanych do Ciebie.
+  </div>
+
+  <div class="grid g4" style="margin-bottom:18px" id="kpi"></div>
+
+  <div class="card">
+    <div class="card-head">
+      <h3>Moi klienci i ich projekty</h3>
+      <span class="sub" id="subTab"></span>
+      <div class="ch-actions"><span class="tag mute dot" id="tagInst"></span></div>
+    </div>
+    <nav class="mod-tabs" id="zakladki16">
+      <a href="#" class="on" data-widok="klienci" onclick="przelaczWidok16('klienci');return false">Klienci i projekty</a>
+      <a href="#" data-widok="zlozone" onclick="przelaczWidok16('zlozone');return false">Złożone wnioski <span class="n" id="nZlozone"></span></a>
+    </nav>
+    <div class="toolbar">
+      <input class="inp search" id="szukaj" placeholder="Szukaj wśród własnych klientów...">
+      <span id="chipy16"><span class="chip on" data-f="all">Wszystkie</span>
+      <span class="chip" data-f="poz">Decyzja pozytywna</span>
+      <span class="chip" data-f="neg">Decyzja negatywna</span>
+      <span class="chip" data-f="ocz">Oczekuje na decyzję</span>
+      <span class="chip" data-f="rozl">Rozliczone</span></span>
+      <button class="btn" id="btnEksportKlientow" hidden onclick="eksportujKlientow16()"
+        title="Plik CSV do importu we własnym systemie instytucji. D-251">Eksport klientów (CSV)</button>
+    </div>
+    <div class="card-body tight">
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead id="glowa16"></thead>
+          <tbody id="wiersze"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid g-2-1">
+    <div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Moje terminy</h3>
+          <div class="ch-actions"><a class="btn sm primary" href="13-terminy.html">Otwórz terminy szkoleń</a></div>
+        </div>
+        <div class="card-body">
+          <div class="small" id="podsTerminy"></div>
+          <div class="small muted" style="margin-top:6px">Kalendarz, lista terminów i dodawanie nowych są w module Terminy szkoleń.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Katalog moich szkoleń</h3>
+          <span class="sub">instytucja sama wprowadza informacje o szkoleniach <span class="ref">D-42</span></span>
+          
+        </div>
+        <div class="card-body tight">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead>
+                <tr><th>Nazwa</th><th class="num">Godzin</th><th class="num">Dni</th><th>Tryb</th>
+                    <th class="num">Cena za osobę</th><th class="num">Projekty</th></tr>
+              </thead>
+              <tbody id="szkolenia"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card-body" style="border-top:1px solid var(--line)">
+          <div class="note warn mb0">
+            <b>Zmiana planu szkolenia czeka na akceptację administratora LDIT</b> <span class="ref">D-204</span>.
+            W makiecie konto instytucji nie edytuje katalogu, bo schemat nie ma kolejki zmian katalogu do akceptacji.
+            Standard godzinowy instytucji: <b id="standard"></b>.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Konto instytucji</h3>
+          <span class="tip-mark" data-tip="Dane Twojej instytucji, te same, które widzi pracownik LDIT w Instytucjach. Zmianę wysyłasz do akceptacji przyciskiem Zmień dane instytucji w Zgłoszeniach do LDIT. D-288, D-224.">i</span>
+        </div>
+        <div class="card-body"><dl class="dl" id="kontoInstytucji"></dl></div>
+      </div>
+
+      <div class="card" id="kartaZgloszen">
+        <div class="card-head">
+          <h3>Zgłoszenia do LDIT</h3>
+          <span class="tip-mark" data-tip="Nowego klienta (ręcznie, z pliku CSV z pobranego szablonu albo z załączonym PDF, z pełnym zestawem pól klienta, D-256, D-257), zmianę danych instytucji i zmianę danych klienta wysyłasz do akceptacji. Klient końcowy nie wypełnia formularzy (D-244). Nic nie zmienia się od razu: decyzję podejmuje pracownik LDIT albo administrator, a przy odrzuceniu zobaczysz powód. D-223, D-224, D-244.">i</span>
+        </div>
+        <div class="card-body">
+          <div class="btn-row" style="flex-wrap:wrap">
+            <button class="btn primary sm" id="btnZglosKlienta" onclick="pokazFormularzKlienta16()">+ Zgłoś klienta</button>
+            <button class="btn sm" id="btnZmianaInstytucji" onclick="pokazZmiane16('instytucje')">Zmień dane instytucji</button>
+            <button class="btn sm" id="btnZmianaKlienta" onclick="pokazZmiane16('klienci')">Zmień dane klienta</button>
+          </div>
+          <div class="small" id="komunikatZgloszen" role="status" style="margin-top:8px;color:var(--pos-ink)"></div>
+          <div id="zgloszenieForm" style="display:none;margin-top:12px"></div>
+          <table class="tbl" style="margin-top:12px">
+            <thead><tr><th>Wysłano</th><th>Zgłoszenie</th><th>Status</th></tr></thead>
+            <tbody id="mojeZgloszenia"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Formularze czekające na akceptację LDIT</h3></div>
+        <div class="card-body tight">
+          <table class="tbl">
+            <thead><tr><th>Firma</th><th class="num">Osób</th><th>Wpłynęło</th></tr></thead>
+            <tbody id="kolejka"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- kfs:skrypty -->
+<script src="../db/sql-wasm.js"></script>
+<script src="../db/sql-wasm-data.js"></script>
+<script src="../db/seed-db.js"></script>
+<script src="../assets/sqlite.js"></script>
+<script src="../assets/store.js"></script>
+<script src="../assets/haslo.js"></script>
+<script src="../assets/funkcje.js"></script>
+<script src="../assets/auth.js"></script>
+<script src="../assets/walidacja.js"></script>
+<script src="../assets/straznik-wlasnosc.js"></script>
+<script src="../assets/straznik.js"></script>
+<script src="../assets/zakres.js"></script>
+<script src="../assets/prowizja.js"></script>
+<script src="../assets/db-format.js"></script>
+<script src="../assets/db-klienci.js"></script>
+<script src="../assets/db-instytucje.js"></script>
+<script src="../assets/db-nabory.js"></script>
+<script src="../assets/db.js"></script>
+<script src="../assets/lata.js"></script>
+<script src="../assets/nabory-import.js"></script>
+<script src="../assets/html.js"></script>
+<script src="../assets/statusy.js"></script>
+<script src="../assets/akceptacje.js"></script>
+<script src="../assets/wielowybor.js"></script>
+<script src="../assets/nawigacja.js"></script>
+<script src="../assets/podglad-roli.js"></script>
+<script src="../assets/interfejs.js"></script>
+<script src="../assets/tips.js"></script>
+<script src="../assets/boot.js" data-modul="panelIS"></script>
+<script src="js/konto-instytucji.js"></script>
+<script src="js/16-panel-is-dane.js"></script>
+<script src="js/16-panel-is-klienci.js"></script>
+<script src="js/16-panel-is-zasoby.js"></script>
+<script src="js/16-panel-is-eksport.js"></script>
+<script src="js/16-formularz-csv.js"></script>
+<script src="js/16-formularz-pola.js"></script>
+<script src="js/16-formularz-zgloszenia.js"></script>
+<script src="js/16-panel-is-formularz.js"></script>
+<script src="js/16-panel-is-zgloszenia.js"></script>
+<script type="text/kfs-strona">
+if (wczytajDane16()) {
+  naglowek16();
+  renderKpi16();
+  el16("kontoInstytucji").innerHTML = kontoInstytucjiHtml(wierszeKontaInstytucji(STAN_16.inst));
+  wczytajTerminyWnioskow16();
+  podepnijFiltry16();
+  renderKlienci16();
+  renderTerminy16();
+  renderKatalog16();
+  renderKolejka16();
+  podepnijEksport16();
+  podepnijZgloszenia16();
+}
+</script>
+</body>
+</html>

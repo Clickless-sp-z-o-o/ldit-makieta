@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>System KFS - LDIT - makieta v2</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/style-sesja.css">
+<link rel="stylesheet" href="assets/style-powloka.css">
+<link rel="stylesheet" href="assets/style-interfejs.css">
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img class="logo-ldit" src="assets/ldit-logo.png" alt="LDIT">
+      <div>
+        <div class="name">System KFS</div>
+        <div class="sub">LDIT &middot; makieta v2</div>
+      </div>
+      <button class="zwin-menu" id="zwinMenu" type="button">&laquo;</button>
+    </div>
+
+    <div class="sidebar-scroll" id="nav"></div>
+
+    <div class="sidebar-foot" id="stopka">
+      Makieta poglądowa &middot; dane demonstracyjne
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <button class="btn sm menu-tel" id="menuTel" type="button" aria-expanded="false" aria-controls="nav">&#9776; Menu</button>
+      <button class="btn sm wstecz" id="wstecz" disabled data-tip="Poprzedni ekran, z tym samym filtrem i rokiem.">&larr; Wstecz</button>
+      <div class="crumb" id="crumb"><b>Dashboard</b></div>
+
+      <div class="global-search">
+        <span class="si">&#128269;</span>
+        <input type="text" placeholder="Szukaj: NIP, nazwa klienta, urząd pracy..." id="gsearch">
+      </div>
+
+      <div class="topbar-right">
+        <button class="btn sm przelacznik-uwag" id="przelacznikUwag" type="button" aria-pressed="false"
+                data-tip="Pokazuje ramki z uzasadnieniami i numery decyzji z dokumentacji. Domyślnie ukryte, żeby ekrany wyglądały jak w aplikacji.">Uwagi projektowe</button>
+        <button class="akceptacje" id="akceptacje" hidden
+                data-tip="Formularze zgloszeniowe i zmiany danych od instytucji czekajace na akceptacje LDIT. Klik otwiera ekran Do akceptacji. D-105, D-140, D-223, D-224.">&#9993;<span class="n" id="akceptacjeN"></span></button>
+        <div class="uzytkownik">
+          <div class="uzytkownik-dane">
+            <div class="uzytkownik-imie" id="imie">&nbsp;</div>
+            <div class="uzytkownik-rola" id="rola">&nbsp;</div>
+          </div>
+          <div class="avatar" id="avatar">&nbsp;</div>
+          <button class="btn sm wyloguj" id="wyloguj"
+                  data-tip="Kończy sesję i wraca do ekranu logowania. Po dłuższej bezczynności sesja wygasa sama.">Wyloguj</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="frame-wrap">
+      <iframe id="view" src="about:blank" title="Ekran systemu"></iframe>
+    </div>
+  </div>
+</div>
+
+<div class="role-hint" id="hint">
+  <span class="x" onclick="document.getElementById('hint').classList.remove('show')">&times;</span>
+  <span id="hintText"></span>
+</div>
+
+<!-- kfs:skrypty -->
+<script src="db/sql-wasm.js"></script>
+<script src="db/sql-wasm-data.js"></script>
+<script src="db/seed-db.js"></script>
+<script src="assets/sqlite.js"></script>
+<script>KFS.tylkoOdczyt = true; /* powloka nie zapisuje bazy (D-222) */</script>
+<script src="assets/store.js"></script>
+<script src="assets/haslo.js"></script>
+<script src="assets/funkcje.js"></script>
+<script src="assets/auth.js"></script>
+<script src="assets/walidacja.js"></script>
+<script src="assets/straznik-wlasnosc.js"></script>
+<script src="assets/straznik.js"></script>
+<script src="assets/zakres.js"></script>
+<script src="assets/prowizja.js"></script>
+<script src="assets/db-format.js"></script>
+<script src="assets/db-klienci.js"></script>
+<script src="assets/db-instytucje.js"></script>
+<script src="assets/db-nabory.js"></script>
+<script src="assets/db.js"></script>
+<script src="assets/lata.js"></script>
+<script src="assets/nabory-import.js"></script>
+<script src="assets/html.js"></script>
+<script src="assets/wielowybor.js"></script>
+<script src="assets/nawigacja.js"></script>
+<script src="assets/interfejs.js"></script>
+<script src="assets/tips.js"></script>
+<script src="assets/boot.js"></script>
+<script src="assets/powloka-ekran.js"></script>
+<script src="assets/powloka-menu.js"></script>
+<script src="assets/powloka-zwijanie.js"></script>
+
+<script type="text/kfs-strona">
+/* ================================================================
+   Powloka makiety.
+
+   Menu nie jest lista zaszyta w kodzie. Buduje sie z tabel role, moduly
+   i uprawnienia (D-36). Pod "Dofinansowaniami" sa lata, a pod kazdym rokiem instytucje
+   z przydzialu konta (D-112, D-113, D-129), patrz assets/powloka-menu.js. Zmiana uprawnien w module Ustawienia zmienia menu,
+   bo oba czytaja to samo zrodlo.
+   ================================================================ */
+
+var TIPY_MODULOW = {
+  dash: "Najważniejsze liczby i sprawy do zrobienia.",
+  dofin: "Wnioski z podziałem na lata i instytucje.",
+  baza: "Wszyscy klienci, jeden klient w jednym wierszu.",
+  formularz: "Dopisanie klienta ręcznie albo z pliku, do akceptacji.",
+  nabory: "Trwające i przewidywane nabory w urzędach pracy.",
+  zadania: "Plan dnia: zadania i powiadomienia.",
+  akcept: "Formularze i zmiany danych od instytucji czekające na decyzję.",
+  inst: "Instytucje szkoleniowe, ich programy, osoby i konfiguracja.",
+  komun: "Szablony maili, wysyłka i automatyczne wiadomości.",
+  admin: "Prowizje, faktury i statystyki finansowe. Tylko administrator.",
+  zglo: "Zgłoszenia incydentów i czarna lista klientów.",
+  ustaw: "Użytkownicy, role, uprawnienia i słowniki. Tylko administrator.",
+  panelIS: "Twoi klienci, projekty i formularze.",
+  terminy: "Wspólny kalendarz szkoleń instytucji."
+};
+
+var OPIS_ROLI = {
+  admin: "<b>Administrator.</b> Widzi wszystkie instytucje, dane finansowe, konfigurator prowizji i rejestry.",
+  pracownik: "<b>Pracownik LDIT.</b> Widzi instytucje przypisane do konta, bez Administracji, Ustawień i stawek prowizji.",
+  is: "<b>Instytucja szkoleniowa.</b> Wyłącznie własni klienci, bez stawek prowizji.",
+  pracownikIS: "<b>Pracownik instytucji (handlowiec).</b> Tylko dane klientów, bez kwot i numerów PESEL."
+};
+
+var sesja = Auth.sesja();
+var stan = { aktywny: null, lata: Lata.zLiczbami(DB), otwarteLata: {}, dofinOtwarte: false,
+             historia: [], poCofnieciu: false };
+stan.otwarteLata[Lata.domyslny()] = true;
+
+function instytucjeKonta() {
+  return DB.INSTYTUCJE.map(function (i) { return i.nazwa; });
+}
+
+function render() {
+  var moduly = Auth.moduly();
+  var html = "";
+  var poprzedniaGrupa = null;
+
+  moduly.forEach(function (m) {
+    if (m.grupa !== poprzedniaGrupa) {
+      html += '<div class="nav-group-label">' + esc(m.grupa) + '</div>';
+      poprzedniaGrupa = m.grupa;
+    }
+
+    var etykieta = m.nazwa;
+    /* Instytucja widzi zakladke opisana nazwa wlasnej spolki (D-76) */
+    if (m.id === "panelIS" && sesja.instytucja_nazwa) etykieta = sesja.instytucja_nazwa;
+
+    var rozwijane = m.id === "dofin" && !sesja.instytucja_id;
+    var klasy = "nav-item" + (stan.aktywny === m.id ? " active" : "") +
+                (m.poziom === "podglad" ? " tylko-podglad" : "");
+
+    html += '<div class="' + klasy + '" data-id="' + esc(m.id) + '" data-plik="' + esc(m.plik) + '"' +
+            ' data-label="' + esc(etykieta) + '" data-tip="' + esc(TIPY_MODULOW[m.id] || "") + '">' +
+            '<span class="ico">' + (m.ikona || "") + '</span><span>' + esc(etykieta) + '</span>' +
+            (rozwijane ? '<span class="chev">&#9654;</span>' : '') + '</div>';
+
+    if (rozwijane) {
+      html += htmlPodmenuDofin(stan.lata, instytucjeKonta(), stan.otwarteLata);
+    }
+  });
+
+  var nav = document.getElementById("nav");
+  nav.innerHTML = html;
+  var subDofin = document.getElementById("sub-dofin");
+  if (subDofin && stan.dofinOtwarte) {
+    subDofin.classList.add("open");
+    nav.querySelector('.nav-item[data-id="dofin"]').classList.add("open");
+  }
+
+  nav.querySelectorAll(".nav-item").forEach(function (el) {
+    el.addEventListener("click", function (e) {
+      e.stopPropagation();
+
+      var id = el.getAttribute("data-id");
+      if (id === "dofin") {
+        var sub = document.getElementById("sub-dofin");
+        if (sub) {
+          stan.dofinOtwarte = sub.classList.toggle("open");
+          el.classList.toggle("open", stan.dofinOtwarte);
+          return;   /* "Dofinansowania" tylko rozwija i zwija liste lat (D-241) */
+        }
+      }
+      /* Rok rozwija swoje instytucje i otwiera widok wszystkich; strzalka tylko zwija */
+      if (el.classList.contains("sub-rok") && !kliknietoRok(el, e.target, stan.otwarteLata)) return;
+
+      var plik = el.getAttribute("data-plik");
+      if (!plik) return;
+
+      nav.querySelectorAll(".nav-item").forEach(function (x) { x.classList.remove("active"); });
+      el.classList.add("active");
+      if (id) stan.aktywny = id;
+
+      ustawOkruszek([el.getAttribute("data-label") || el.textContent.trim()]);
+      document.getElementById("view").src = "strony/" + plik;
+    });
+  });
+}
+
+/* Uwagi projektowe: przelacznik w gornym pasku, stan wspolny z ekranami w ramce (assets/interfejs.js) */
+var przelacznikUwag = document.getElementById("przelacznikUwag");
+przelacznikUwag.setAttribute("aria-pressed", String(Interfejs.uwagiWlaczone()));
+przelacznikUwag.addEventListener("click", function () {
+  var wlaczone = !Interfejs.uwagiWlaczone();
+  Interfejs.ustawUwagi(wlaczone);
+  przelacznikUwag.setAttribute("aria-pressed", String(wlaczone));
+});
+
+document.getElementById("akceptacje").addEventListener("click", function () {
+  document.getElementById("view").src = "strony/20-akceptacje.html";
+});
+
+/* Wstecz: z paska gornego albo z przycisku na karcie (komunikat kfs:wstecz z adresem zapasowym) */
+function wstecz(zapasowy) {
+  var cel = cofnijEkran(stan.historia) || zapasowy;
+  if (!cel) return;
+  stan.poCofnieciu = true;
+  document.getElementById("view").src = "strony/" + cel;
+}
+document.getElementById("wstecz").addEventListener("click", function () { wstecz(null); });
+
+function odbierzEkran(ekran) {
+  if (ekran.lata && inneLata(ekran.lata, stan.lata)) { stan.lata = ekran.lata; render(); }
+  zapamietajEkran(stan.historia, ekran, stan.poCofnieciu);
+  stan.poCofnieciu = false;
+  document.getElementById("wstecz").disabled = stan.historia.length < 2;
+  var zaznaczone = zaznaczEkran(ekran);
+  if (zaznaczone) stan.aktywny = zaznaczone.idMenu;
+  if (zaznaczone && zaznaczone.rok) { stan.dofinOtwarte = true; stan.otwarteLata[zaznaczone.rok] = true; }
+  pokazLicznik(ekran.doAkceptacji);
+}
+
+window.addEventListener("message", function (ev) {
+  if (ev.source !== document.getElementById("view").contentWindow || !ev.data) return;
+  if (ev.data.typ === "kfs:ekran") odbierzEkran(ev.data);
+  if (ev.data.typ === "kfs:wstecz") wstecz(Nawigacja.bezpiecznyEkran(ev.data.zapasowy));
+});
+
+function pokazSesje() {
+  document.getElementById("imie").textContent = sesja.imie;
+  document.getElementById("rola").textContent =
+    sesja.rola_nazwa + (sesja.instytucja_nazwa ? " · " + sesja.instytucja_nazwa : "");
+  document.getElementById("avatar").textContent = Auth.inicjaly();
+
+  /* Konto z ograniczonym zakresem nie dowiaduje sie, ile instytucji jest w systemie */
+  var widoczne = DB.INSTYTUCJE.length;
+  document.getElementById("stopka").innerHTML =
+    "Zakres konta: " + (sesja.wszystkie_instytucje ? "wszystkie instytucje" : "instytucje: " + widoczne) +
+    "<br>Dane demonstracyjne, baza SQLite";
+
+  document.getElementById("hintText").innerHTML = OPIS_ROLI[sesja.rola_id] || "";
+  document.getElementById("hint").classList.add("show");
+}
+
+document.getElementById("wyloguj").addEventListener("click", function () {
+  /* Powloka nie zapisuje bazy: jej kopia jest z chwili logowania i nadpisalaby zmiany
+     zrobione od tego czasu w ekranach. Sesje usuwa ekran logowania na swiezej bazie. */
+  location.replace("login.html?wyloguj=1");
+});
+
+document.getElementById("gsearch").addEventListener("keydown", function (e) {
+  if (e.key === "Enter" && this.value.trim()) {
+    /* Wyszukiwarka szuka wsrod wszystkich klientow, nie tylko przed zlozeniem wniosku */
+    document.getElementById("view").src = "strony/04-baza-klientow.html" +
+      Nawigacja.zbudujZapytanie({ q: this.value.trim(), wnioski: "wszystkie" });
+    ustawOkruszek(["Wyniki wyszukiwania"]);
+  }
+});
+
+/* Ekran startowy: pierwszy modul dostepny dla roli */
+var start = Auth.moduly()[0];
+if (start) {
+  stan.aktywny = start.id;
+  ustawOkruszek([start.nazwa]);
+  document.getElementById("view").src = "strony/" + start.plik;
+}
+
+render();
+pokazSesje();
+</script>
+
+</body>
+</html>
