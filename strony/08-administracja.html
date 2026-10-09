@@ -19,7 +19,7 @@
       <p class="page-desc">Prowizje, faktury i statystyki finansowe, widoczne tylko dla administratora.</p>
     </div>
     <div class="ph-actions">
-      <button class="btn atrapa" data-tip="W aplikacji docelowej">Eksport do Excela</button>
+      <span class="eksport-ekranu" data-pozycje="prowizje,faktury"></span>
       <button class="btn primary atrapa" data-tip="W aplikacji docelowej">Wystaw fakturę prowizyjną</button>
     </div>
   </div>
@@ -65,7 +65,7 @@
         <span class="sub">podstawa do fakturowania</span>
         <div class="ch-actions">
           <select class="inp" style="width:auto" id="okres"></select><span id="zamkniecieOkresu"></span>
-          <button class="btn sm atrapa" data-tip="W aplikacji docelowej">Eksport</button>
+          <span class="eksport-ekranu" data-pozycje="prowizje"></span>
         </div>
       </div>
       <div class="card-body tight">
@@ -227,8 +227,10 @@
 <script src="../assets/haslo.js"></script>
 <script src="../assets/funkcje.js"></script>
 <script src="../assets/auth.js"></script>
+<script src="../assets/haslo-zmiana.js"></script>
 <script src="../assets/walidacja.js"></script>
 <script src="../assets/straznik-wlasnosc.js"></script>
+<script src="../assets/straznik-katalog.js"></script>
 <script src="../assets/straznik.js"></script>
 <script src="../assets/zakres.js"></script>
 <script src="../assets/prowizja.js"></script>
@@ -240,8 +242,13 @@
 <script src="../assets/lata.js"></script>
 <script src="../assets/nabory-import.js"></script>
 <script src="../assets/html.js"></script>
+<script src="../assets/powiadomienia.js"></script>
 <script src="../assets/statusy.js"></script>
 <script src="../assets/akceptacje.js"></script>
+<script src="../assets/akceptacje-edycja.js"></script>
+<script src="../assets/akceptacje-katalog.js"></script>
+<script src="../assets/xlsx.js"></script>
+<script src="../assets/eksport.js"></script>
 <script src="../assets/wielowybor.js"></script>
 <script src="../assets/nawigacja.js"></script>
 <script src="../assets/podglad-roli.js"></script>
@@ -256,6 +263,7 @@
 <script src="js/08-administracja-faktury.js"></script>
 <script src="js/08-administracja-statystyki.js"></script>
 <script src="js/08-administracja-wewnetrzne.js"></script>
+<script src="js/eksporty-ekranow.js"></script>
 <script type="text/kfs-strona">
 inicjuj08();
 Nawigacja.podlaczLinki(document.body);

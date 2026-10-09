@@ -42,7 +42,9 @@
     "18-zadania.html": "zadania",
     "19-klient.html": "baza",
     "20-akceptacje.html": "akcept",
-    "21-nowy-formularz.html": "formularz"
+    "21-nowy-formularz.html": "formularz",
+    /* Projekt i klient instytucji tylko do odczytu, otwierane z panelu instytucji (D-319) */
+    "22-projekt-is.html": "panelIS"
   };
 
   /* Ekrany, ktore w menu leza pod inna pozycja niz modul dostepu */
@@ -205,6 +207,20 @@
     return auth.widziModul("akcept") ? liczbaDoAkceptacji(db.KOLEJKA) + liczbaDoAkceptacji(db.PROPOZYCJE) : null;
   }
 
+  /* Zgloszenia nieprzeczytane przez zalogowane konto (D-315), null gdy konto nie ma dostepu (D-107) */
+  function noweZgloszenia(auth, db) {
+    if (!auth.moze("zgloszenia.dostep")) return null;
+    var przeczytane = {};
+    global.Store.query("SELECT zgloszenie_id FROM zgloszenia_odczyty WHERE uzytkownik_id = ?", [auth.sesja().uzytkownik_id])
+      .forEach(function (r) { przeczytane[r.zgloszenie_id] = true; });
+    return db.ZGLOSZENIA.filter(function (z) { return !przeczytane[z.id]; }).map(function (z) { return z.id; });
+  }
+
+  function liczbaNowychZgloszen(auth, db) {
+    var nowe = noweZgloszenia(auth, db);
+    return nowe === null ? null : nowe.length;
+  }
+
   /* Na file:// origin to "null" i nie da sie go wskazac, wtedy zostaje "*".
      W trybie serwera komunikat trafia wylacznie do powloki z tego samego originu. */
   function celKomunikatu() {
@@ -221,6 +237,9 @@
       zapytanie: global.location.search,
       tytul: document.title,
       doAkceptacji: licznikDlaPowloki(global.Auth, global.DB),
+      noweZgloszenia: liczbaNowychZgloszen(global.Auth, global.DB),
+      /* Powiadomienia instytucji (D-317): tylko konto instytucji, null dla LDIT */
+      powiadomieniaIS: global.Auth.sesja().instytucja_id ? global.Powiadomienia.nieprzeczytane().length : null,
       /* Menu Dofinansowan (lata z licznikami) odswieza sie z danych ekranu, nie z kopii powloki */
       lata: global.Auth.widziModul("dofin") ? global.Lata.zLiczbami(global.DB) : null
     }, celKomunikatu());
@@ -228,6 +247,8 @@
 
   global.Nawigacja = {
     MODUL_EKRANU: MODUL_EKRANU,
+    /* Ekrany dla kazdego zalogowanego, bez modulu: brama sprawdza tylko sesje (Moje konto, D-321) */
+    STRONY_KAZDEGO: ["23-moje-konto.html"],
     plikZAdresu: plikZAdresu,
     modulEkranu: modulEkranu,
     menuEkranu: menuEkranu,
@@ -245,6 +266,8 @@
     odczytajPrzewiniecie: odczytajPrzewiniecie,
     wstecz: wstecz,
     liczbaDoAkceptacji: liczbaDoAkceptacji,
+    noweZgloszenia: noweZgloszenia,
+    liczbaNowychZgloszen: liczbaNowychZgloszen,
     ukryjNiedostepneZakladki: ukryjNiedostepneZakladki,
     wczytajFiltry: wczytajFiltry,
     zapiszWAdresie: zapiszWAdresie,

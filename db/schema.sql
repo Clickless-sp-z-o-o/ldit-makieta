@@ -785,8 +785,11 @@ CREATE INDEX idx_formularze_inst ON formularze_oczekujace (instytucja_id, status
 CREATE TABLE propozycje_zmian (
   id               TEXT PRIMARY KEY,
   instytucja_id    TEXT NOT NULL REFERENCES instytucje (id) ON DELETE CASCADE,
-  tabela           TEXT NOT NULL CHECK (tabela IN ('instytucje','klienci')),
-  rekord_id        TEXT NOT NULL,
+  tabela           TEXT NOT NULL CHECK (tabela IN ('instytucje','klienci','katalog_szkolen')),
+  -- Katalog szkolen instytucji tez przez akceptacje (D-320): dodanie nowego szkolenia nie ma
+  -- jeszcze rekordu, usuniecie wycofuje szkolenie z katalogu; cennik w zmianach jako pole "ceny"
+  operacja         TEXT NOT NULL DEFAULT 'zmiana' CHECK (operacja IN ('zmiana','dodanie','usuniecie')),
+  rekord_id        TEXT,
   zmiany           TEXT NOT NULL,
   uzasadnienie     TEXT,
   zglosil_id       TEXT REFERENCES uzytkownicy (id) ON DELETE SET NULL,
@@ -795,7 +798,9 @@ CREATE TABLE propozycje_zmian (
                    CHECK (status IN ('oczekuje','zatwierdzona','odrzucona')),
   rozpatrzyl_id    TEXT REFERENCES uzytkownicy (id) ON DELETE SET NULL,
   rozpatrzono      TIMESTAMPTZ,
-  powod_odrzucenia TEXT
+  powod_odrzucenia TEXT,
+  CHECK ((operacja = 'dodanie') = (rekord_id IS NULL)),
+  CHECK (operacja = 'zmiana' OR tabela = 'katalog_szkolen')
 );
 CREATE INDEX idx_propozycje_inst ON propozycje_zmian (instytucja_id, status);
 
@@ -825,6 +830,17 @@ CREATE TABLE zgloszenia (
 );
 CREATE INDEX idx_zgloszenia_klient ON zgloszenia (klient_id);
 
+-- Odczyty zgloszen per konto (D-315): brak wiersza = zgloszenie nieprzeczytane przez to konto,
+-- licznik na czerwono w menu. Wiersz dopisuje tylko wlasciciel konta.
+CREATE TABLE zgloszenia_odczyty (
+  id            TEXT PRIMARY KEY,
+  uzytkownik_id TEXT NOT NULL REFERENCES uzytkownicy (id) ON DELETE CASCADE,
+  zgloszenie_id TEXT NOT NULL REFERENCES zgloszenia (id) ON DELETE CASCADE,
+  przeczytano   TIMESTAMPTZ NOT NULL,
+  UNIQUE (uzytkownik_id, zgloszenie_id)
+);
+CREATE INDEX idx_zgloszenia_odczyty_zgloszenie ON zgloszenia_odczyty (zgloszenie_id);
+
 -- Certyfikaty wystawione dla szkolen uczestnikow (D-290). Wystawia pracownik albo
 -- administrator; plik PDF trafia do paczki. Z tej tabeli wynika znacznik Certyfikat wniosku.
 CREATE TABLE certyfikaty (
@@ -843,16 +859,26 @@ CREATE INDEX idx_certyfikaty_wniosek ON certyfikaty (wniosek_id);
 
 -- Powiadomienia dla pracownikow i administratora na panelu i dashboardzie (D-297):
 -- urzad ze zrodla spoza slownika (D-272), mail pasujacy do klientow w kilku instytucjach (D-286).
+-- Powiadomienia dla instytucji szkoleniowej (D-317): decyzja o formularzu i o zmianie danych,
+-- decyzja urzedu i rozliczenie wniosku jej klienta, przypisanie terminu przez LDIT.
+-- instytucja_id NULL = powiadomienie dla LDIT; adresat_id NULL = cale konto instytucji,
+-- konto = tylko ta osoba (np. handlowiec, ktory wyslal formularz). rozwiazano = przeczytane.
 CREATE TABLE powiadomienia (
-  id           TEXT PRIMARY KEY,
-  rodzaj       TEXT NOT NULL CHECK (rodzaj IN ('nieznany_urzad','mail_niejednoznaczny')),
-  tresc        TEXT NOT NULL,
-  tabela       TEXT,          -- tabela rekordu, ktorego dotyczy
-  rekord_id    TEXT,
-  utworzono    TIMESTAMPTZ NOT NULL,
-  rozwiazano   TIMESTAMPTZ,
-  rozwiazal_id TEXT REFERENCES uzytkownicy (id) ON DELETE SET NULL
+  id            TEXT PRIMARY KEY,
+  rodzaj        TEXT NOT NULL CHECK (rodzaj IN ('nieznany_urzad','mail_niejednoznaczny',
+                  'formularz_zaakceptowany','formularz_zwrocony','formularz_odrzucony',
+                  'zmiana_zatwierdzona','zmiana_odrzucona','decyzja_urzedu','wniosek_rozliczony','termin_przypisany')),
+  tresc         TEXT NOT NULL,
+  tabela        TEXT,          -- tabela rekordu, ktorego dotyczy
+  rekord_id     TEXT,
+  instytucja_id TEXT REFERENCES instytucje (id) ON DELETE CASCADE,
+  adresat_id    TEXT REFERENCES uzytkownicy (id) ON DELETE CASCADE,
+  utworzono     TIMESTAMPTZ NOT NULL,
+  rozwiazano    TIMESTAMPTZ,
+  rozwiazal_id  TEXT REFERENCES uzytkownicy (id) ON DELETE SET NULL
 );
+CREATE INDEX idx_powiadomienia_instytucja ON powiadomienia (instytucja_id, rozwiazano);
+CREATE INDEX idx_powiadomienia_adresat ON powiadomienia (adresat_id);
 
 -- Rejestr zmian: kto, co i kiedy zmienil (D-32)
 CREATE TABLE rejestr_aktywnosci (

@@ -59,3 +59,11 @@
 .app.menu-zwiniete .zwin-menu { margin-left: 0; }
 .app.menu-zwiniete .nav-item { justify-content: center; padding: 10px 0; }
 .app.menu-zwiniete .nav-item .ico { font-size: 1rem; opacity: 1; }
+
+/* Nieprzeczytane zgloszenia (D-315): czerwona plakietka jak licznik akceptacji, w zwinietym menu przy ikonie */
+.nav-item .n-nowe {
+  margin-left: auto; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+  background: var(--neg-ink); color: #fff; font-size: 0.75rem; font-weight: 700; line-height: 18px; text-align: center;
+}
+.app.menu-zwiniete .nav-item { position: relative; }
+.app.menu-zwiniete .nav-item > .n-nowe { display: block; position: absolute; top: 3px; right: 8px; min-width: 16px; height: 16px; line-height: 16px; padding: 0 4px; }

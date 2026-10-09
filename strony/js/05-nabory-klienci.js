@@ -38,12 +38,12 @@ function wierszKlienta05(w, nabor) {
     '<td class="c">' + znacznikCzarnejListy05(k) + "</td>" +
     '<td class="strong">' + esc(k.nazwa) + "</td>" +
     '<td class="mono">' + esc(k.nip || "") + "</td>" +
-    "<td>" + (w.oddzial ? esc(w.oddzial) : '<span class="muted">&mdash;</span>') + "</td>" +
-    "<td>" + (k.osoba ? esc(k.osoba) : '<span class="muted">&mdash;</span>') + "</td>" +
-    '<td class="mono nowrap">' + (k.tel ? esc(k.tel) : '<span class="muted">&mdash;</span>') + "</td>" +
-    "<td>" + (k.mail ? esc(k.mail) : '<span class="muted">&mdash;</span>') + "</td>" +
-    '<td class="mono nowrap">' + (od ? esc(od) : '<span class="muted">&mdash;</span>') + "</td>" +
-    '<td class="mono nowrap">' + (koniec ? esc(koniec) : '<span class="muted">&mdash;</span>') + "</td>" +
+    "<td>" + (w.oddzial ? esc(w.oddzial) : '<span class="muted">-</span>') + "</td>" +
+    "<td>" + (k.osoba ? esc(k.osoba) : '<span class="muted">-</span>') + "</td>" +
+    '<td class="mono nowrap">' + (k.tel ? esc(k.tel) : '<span class="muted">-</span>') + "</td>" +
+    "<td>" + (k.mail ? esc(k.mail) : '<span class="muted">-</span>') + "</td>" +
+    '<td class="mono nowrap">' + (od ? esc(od) : '<span class="muted">-</span>') + "</td>" +
+    '<td class="mono nowrap">' + (koniec ? esc(koniec) : '<span class="muted">-</span>') + "</td>" +
     '<td class="nowrap">' + przyciskiKlienta05(k) + "</td></tr>";
 }
 

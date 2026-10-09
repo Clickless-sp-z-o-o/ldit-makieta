@@ -10,14 +10,14 @@ function wypelnijWojewodztwa05() {
 }
 
 function komorkaOgloszonego05(p) {
-  if (!p.nabor) return '<span class="muted">&mdash;</span>';
+  if (!p.nabor) return '<span class="muted">-</span>';
   var n = p.nabor;
   return tagStat(n) + ' <span class="small mono">' + esc(DB.fmtDate(n.od)) + " &ndash; " + esc(DB.fmtDate(n.do)) +
     (n.dni ? " (" + n.dni + " dni)" : "") + "</span>" + (n.srodki ? '<div class="small muted">' + esc(n.srodki) + "</div>" : "");
 }
 
 function komorkaPrognozy05(p) {
-  if (!p.prognoza) return '<span class="muted">&mdash;</span>';
+  if (!p.prognoza) return '<span class="muted">-</span>';
   return '<span class="small">' + esc(p.prognoza.opis || DB.fmtDate(p.prognoza.od)) + "</span>";
 }
 

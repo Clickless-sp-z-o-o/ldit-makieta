@@ -30,17 +30,5 @@ function csvKlientow16(klienci) {
   return "\uFEFF" + [NAGLOWKI_EKSPORTU_16.map(komorkaCsv16).join(";")].concat(wiersze).join("\r\n") + "\r\n";
 }
 
-function eksportujKlientow16() {
-  var blob = new Blob([csvKlientow16(STAN_16.KL)], { type: "text/csv;charset=utf-8" });
-  var a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "klienci-" + STAN_16.inst.id + ".csv";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(a.href);
-}
-
-function podepnijEksport16() {
-  el16("btnEksportKlientow").hidden = !Auth.moze("klienci.eksport");
-}
+/* Menu eksportow panelu (klienci, projekty, uczestnicy, terminy, katalog) jest w 16-panel-is-eksporty.js */
+function podepnijEksport16() { podepnijEksporty16(); }

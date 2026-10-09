@@ -42,11 +42,15 @@ function pokazForm() {
       '<input class="inp" id="nfDo" type="date" value="' + esc(STAN_13.DZIS) + '" title="Data do">' +
       '<input class="inp" id="nfMiejsce" placeholder="Miejsce, np. Online / adres" style="min-width:200px">' +
       '<select class="inp" id="nfStatus">' + opcjeStatus("Wolny") + '</select>' +
+      '<label class="small" style="display:flex;flex-direction:column;gap:3px"><span class="muted">Przypisz do wniosku (opcjonalnie)</span>' +
+      '<select class="inp" id="nfWniosek" style="min-width:260px"></select></label>' +
       '<input class="inp" id="nfLimit" type="number" min="1" placeholder="Limit miejsc" style="width:110px" title="Limit miejsc">' +
       '<button class="btn primary sm" onclick="zapiszNowyTermin()">Zapisz termin</button>' +
       '<button class="btn sm" onclick="ukryjForm()">Anuluj</button>' +
     '</div>';
   f.style.display = "block";
+  el("nfSzk").addEventListener("change", odswiezWnioskiDoTerminu13);
+  odswiezWnioskiDoTerminu13();
 }
 function ukryjForm() {
   var f = el("addForm");
@@ -59,13 +63,16 @@ function zapiszNowyTermin() {
   if (!szk) return;
   var od = el("nfOd").value;
   if (!od) { el("nfOd").focus(); return; }
-  Store.insert("terminy", {
+  var wniosekId = el("nfWniosek").value;
+  var nowy = Store.insert("terminy", {
     instytucja_id: szk.is, szkolenie_id: szk.id, nazwa: szk.nazwa,
     data_od: od, data_do: el("nfDo").value || od,
     miejsce: el("nfMiejsce").value.trim() || null,
-    status_realizacji: el("nfStatus").value,
+    status_realizacji: wniosekId ? "Zaplanowany" : el("nfStatus").value,
     zapisani: 0, limit_miejsc: parseInt(el("nfLimit").value, 10) || null
   }, "TR-");
+  /* Termin z wnioskiem: uczestnicy wniosku z tym szkoleniem dostaja ten termin; bez wniosku zostaje wolny termin instytucji */
+  if (wniosekId) przypiszTerminDoWniosku13(nowy.id, wniosekId, szk.id);
   ukryjForm();   /* przerysowanie nastapi przez zdarzenie db:changed */
 }
 

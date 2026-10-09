@@ -32,7 +32,7 @@ function znacznikCzarnejListy(kl) {
 
 /* Wiersz wniosku klienta: klik otwiera karte wniosku z powrotem do tego klienta */
 function wierszWniosku(w) {
-  var brak = '<span class="muted">&mdash;</span>';
+  var brak = '<span class="muted">-</span>';
   return '<tr class="' + Statusy.klasaWiersza(w) + '" data-id="' + esc(w.id) + '" data-klient="' + esc(w.klient) + '">' +
     '<td class="strong mono nowrap">' + esc(w.id) + '</td>' +
     '<td class="nowrap">' + esc(w.rok || "bez roku") + '</td>' +
@@ -90,7 +90,7 @@ function wierszKlienta(r) {
     '<td><div class="tnij" title="' + esc(r.isNazwa) + '">' + esc(r.isNazwa) + '</div></td>' +
     '<td class="nowrap muted">' + esc(String(r.pupNazwa).replace(/^PUP\s+/, "")) + '</td>' +
     '<td class="nowrap">' + tagNaboru(r) + '</td>' +
-    '<td class="mono nowrap">' + (esc(DB.fmtDate(r.koniec)) || '<span class="muted">&mdash;</span>') + tagDni(r) + '</td>' +
+    '<td class="mono nowrap">' + (esc(DB.fmtDate(r.koniec)) || '<span class="muted">-</span>') + tagDni(r) + '</td>' +
     '<td class="c">' + flagaKolejny(r) + '</td>' +
     '<td class="c">' + (r.wnioski.length ? '<b>' + r.wnioski.length + '</b>' : '<span class="muted">0</span>') + '</td>' +
     '<td class="small"><div class="tnij" title="' + esc(r.kl.osoba) + '">' + esc(r.kl.osoba) + '</div>' +

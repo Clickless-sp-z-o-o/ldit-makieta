@@ -15,7 +15,7 @@
   <div class="page-head">
     <div class="ph-text">
       <div class="small muted" style="margin-bottom:4px" id="zalogowano"></div>
-      <h1 class="page-title" id="tytul" data-tip="Panel instytucji szkoleniowej: własni klienci, wnioski, terminy i katalog szkoleń. Administrator instytucji może tu dodawać własnych pracowników (D-126).">Panel instytucji</h1>
+      <h1 class="page-title" id="tytul" data-tip="Panel instytucji szkoleniowej: własni klienci, wnioski, terminy i katalog szkoleń. Administrator instytucji zarządza tu swoimi pracownikami: rola i przypisani klienci; konta zakłada administrator LDIT (D-126, D-318).">Panel instytucji</h1>
       <p class="page-desc">Twoi klienci, projekty i formularze.</p>
     </div>
     <div class="ph-actions">
@@ -40,6 +40,13 @@
     Widzisz klientów przypisanych do Ciebie.
   </div>
 
+  <div class="card" id="powiadomienia" style="margin-bottom:18px">
+    <div class="card-head"><h3>Powiadomienia</h3><span class="sub" id="powiadomieniaInfo16"></span>
+      <div class="ch-actions"><button class="btn sm" id="btnPrzeczytane16" onclick="oznaczWszystkie16()" hidden>Oznacz wszystkie jako przeczytane</button></div></div>
+    <div class="card-body tight"><table class="tbl"><thead><tr><th>Kiedy</th><th>Co się stało</th><th><span class="sr-only">Akcje</span></th></tr></thead>
+      <tbody id="listaPowiadomien16"></tbody></table></div>
+  </div>
+
   <div class="grid g4" style="margin-bottom:18px" id="kpi"></div>
 
   <div class="card">
@@ -51,6 +58,7 @@
     <nav class="mod-tabs" id="zakladki16">
       <a href="#" class="on" data-widok="klienci" onclick="przelaczWidok16('klienci');return false">Klienci i projekty</a>
       <a href="#" data-widok="zlozone" onclick="przelaczWidok16('zlozone');return false">Złożone wnioski <span class="n" id="nZlozone"></span></a>
+      <a href="#" data-widok="uczestnicy" onclick="przelaczWidok16('uczestnicy');return false">Uczestnicy</a>
     </nav>
     <div class="toolbar">
       <input class="inp search" id="szukaj" placeholder="Szukaj wśród własnych klientów...">
@@ -59,8 +67,7 @@
       <span class="chip" data-f="neg">Decyzja negatywna</span>
       <span class="chip" data-f="ocz">Oczekuje na decyzję</span>
       <span class="chip" data-f="rozl">Rozliczone</span></span>
-      <button class="btn" id="btnEksportKlientow" hidden onclick="eksportujKlientow16()"
-        title="Plik CSV do importu we własnym systemie instytucji. D-251">Eksport klientów (CSV)</button>
+      <span id="btnEksportKlientow" hidden data-tip="Dane instytucji w CSV albo Excelu, do importu we własnym systemie."></span>
     </div>
     <div class="card-body tight">
       <div class="tbl-wrap">
@@ -71,6 +78,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Formularze panelu (zgloszenie klienta, edycja formularza, zmiana danych) na cala szerokosc strony -->
+  <div class="card form-pelny" id="zgloszenieForm" style="display:none"></div>
 
   <div class="grid g-2-1">
     <div>
@@ -89,15 +99,15 @@
       <div class="card">
         <div class="card-head">
           <h3>Katalog moich szkoleń</h3>
-          <span class="sub">instytucja sama wprowadza informacje o szkoleniach <span class="ref">D-42</span></span>
-          
+          <span class="sub">zmiany przechodzą przez akceptację LDIT <span class="ref">D-320</span></span>
+          <div class="ch-actions"><button class="btn sm" id="btnDodajSzkolenie16" onclick="dodajSzkolenie16()" hidden>+ Dodaj szkolenie</button></div>
         </div>
         <div class="card-body tight">
           <div class="tbl-wrap">
             <table class="tbl">
               <thead>
                 <tr><th>Nazwa</th><th class="num">Godzin</th><th class="num">Dni</th><th>Tryb</th>
-                    <th class="num">Cena za osobę</th><th class="num">Projekty</th></tr>
+                    <th class="num">Cena za osobę</th><th class="num">Projekty</th><th><span class="sr-only">Akcje</span></th></tr>
               </thead>
               <tbody id="szkolenia"></tbody>
             </table>
@@ -105,8 +115,8 @@
         </div>
         <div class="card-body" style="border-top:1px solid var(--line)">
           <div class="note warn mb0">
-            <b>Zmiana planu szkolenia czeka na akceptację administratora LDIT</b> <span class="ref">D-204</span>.
-            W makiecie konto instytucji nie edytuje katalogu, bo schemat nie ma kolejki zmian katalogu do akceptacji.
+            <b>Nowe szkolenie, zmiana szkolenia, cennika i usunięcie trafiają do akceptacji LDIT</b> <span class="ref">D-204</span> <span class="ref">D-320</span>.
+            Katalog zmienia się po zatwierdzeniu.
             Standard godzinowy instytucji: <b id="standard"></b>.
           </div>
         </div>
@@ -119,9 +129,10 @@
       <div class="card">
         <div class="card-head">
           <h3>Konto instytucji</h3>
-          <span class="tip-mark" data-tip="Dane Twojej instytucji, te same, które widzi pracownik LDIT w Instytucjach. Zmianę wysyłasz do akceptacji przyciskiem Zmień dane instytucji w Zgłoszeniach do LDIT. D-288, D-224.">i</span>
+          <span class="tip-mark" data-tip="Dane Twojej instytucji, te same, które widzi pracownik LDIT. Zmianę wysyłasz do akceptacji LDIT przyciskiem Edytuj dane instytucji. D-288, D-224.">i</span>
+          <div class="ch-actions"><button class="btn sm" id="btnEdytujKonto16" hidden onclick="pokazZmiane16('instytucje')">Edytuj dane instytucji</button></div>
         </div>
-        <div class="card-body"><dl class="dl" id="kontoInstytucji"></dl></div>
+        <div class="card-body"><dl class="dl" id="kontoInstytucji"></dl><div id="zmianyKonta16"></div></div>
       </div>
 
       <div class="card" id="kartaZgloszen">
@@ -136,9 +147,8 @@
             <button class="btn sm" id="btnZmianaKlienta" onclick="pokazZmiane16('klienci')">Zmień dane klienta</button>
           </div>
           <div class="small" id="komunikatZgloszen" role="status" style="margin-top:8px;color:var(--pos-ink)"></div>
-          <div id="zgloszenieForm" style="display:none;margin-top:12px"></div>
           <table class="tbl" style="margin-top:12px">
-            <thead><tr><th>Wysłano</th><th>Zgłoszenie</th><th>Status</th></tr></thead>
+            <thead><tr><th>Wysłano</th><th>Zgłoszenie</th><th>Status</th><th><span class="sr-only">Akcje</span></th></tr></thead>
             <tbody id="mojeZgloszenia"></tbody>
           </table>
         </div>
@@ -148,7 +158,7 @@
         <div class="card-head"><h3>Formularze czekające na akceptację LDIT</h3></div>
         <div class="card-body tight">
           <table class="tbl">
-            <thead><tr><th>Firma</th><th class="num">Osób</th><th>Wpłynęło</th></tr></thead>
+            <thead><tr><th>Firma</th><th class="num">Osób</th><th>Wpłynęło</th><th><span class="sr-only">Akcje</span></th></tr></thead>
             <tbody id="kolejka"></tbody>
           </table>
         </div>
@@ -157,6 +167,18 @@
     </div>
   </div>
 
+  <!-- Pracownicy instytucji: tylko Administrator IS (D-126, D-318), js/16-panel-is-pracownicy.js -->
+  <div class="card" id="kartaPracownikow16" hidden style="margin-top:18px">
+    <div class="card-head"><h3>Pracownicy instytucji</h3>
+      <span class="sub">rola i przypisani klienci; nowe konta zakłada administrator LDIT</span></div>
+    <div class="card-body tight">
+      <table class="tbl">
+        <thead><tr><th>Pracownik</th><th>Rola</th><th class="num">Klientów</th><th>Ostatnie logowanie</th><th>Konto</th><th><span class="sr-only">Akcje</span></th></tr></thead>
+        <tbody id="listaPracownikow16"></tbody>
+      </table>
+      <div id="edycjaPracownika16" style="padding:0 12px 12px"></div>
+    </div>
+  </div>
 </div>
 
 <!-- kfs:skrypty -->
@@ -168,8 +190,10 @@
 <script src="../assets/haslo.js"></script>
 <script src="../assets/funkcje.js"></script>
 <script src="../assets/auth.js"></script>
+<script src="../assets/haslo-zmiana.js"></script>
 <script src="../assets/walidacja.js"></script>
 <script src="../assets/straznik-wlasnosc.js"></script>
+<script src="../assets/straznik-katalog.js"></script>
 <script src="../assets/straznik.js"></script>
 <script src="../assets/zakres.js"></script>
 <script src="../assets/prowizja.js"></script>
@@ -181,8 +205,13 @@
 <script src="../assets/lata.js"></script>
 <script src="../assets/nabory-import.js"></script>
 <script src="../assets/html.js"></script>
+<script src="../assets/powiadomienia.js"></script>
 <script src="../assets/statusy.js"></script>
 <script src="../assets/akceptacje.js"></script>
+<script src="../assets/akceptacje-edycja.js"></script>
+<script src="../assets/akceptacje-katalog.js"></script>
+<script src="../assets/xlsx.js"></script>
+<script src="../assets/eksport.js"></script>
 <script src="../assets/wielowybor.js"></script>
 <script src="../assets/nawigacja.js"></script>
 <script src="../assets/podglad-roli.js"></script>
@@ -192,26 +221,35 @@
 <script src="js/konto-instytucji.js"></script>
 <script src="js/16-panel-is-dane.js"></script>
 <script src="js/16-panel-is-klienci.js"></script>
+<script src="js/16-panel-is-uczestnicy.js"></script>
 <script src="js/16-panel-is-zasoby.js"></script>
+<script src="js/16-panel-is-katalog.js"></script>
 <script src="js/16-panel-is-eksport.js"></script>
+<script src="js/16-panel-is-eksporty.js"></script>
 <script src="js/16-formularz-csv.js"></script>
 <script src="js/16-formularz-pola.js"></script>
 <script src="js/16-formularz-zgloszenia.js"></script>
+<script src="js/16-formularz-edycja.js"></script>
 <script src="js/16-panel-is-formularz.js"></script>
 <script src="js/16-panel-is-zgloszenia.js"></script>
+<script src="js/16-panel-is-powiadomienia.js"></script>
+<script src="js/16-panel-is-pracownicy.js"></script>
 <script type="text/kfs-strona">
 if (wczytajDane16()) {
   naglowek16();
   renderKpi16();
-  el16("kontoInstytucji").innerHTML = kontoInstytucjiHtml(wierszeKontaInstytucji(STAN_16.inst));
+  renderKonta16();
   wczytajTerminyWnioskow16();
   podepnijFiltry16();
   renderKlienci16();
   renderTerminy16();
   renderKatalog16();
+  el16("btnDodajSzkolenie16").hidden = !mozeZmieniacKatalog16();
   renderKolejka16();
   podepnijEksport16();
   podepnijZgloszenia16();
+  renderPowiadomienia16();
+  renderPracownicy16();
 }
 </script>
 </body>

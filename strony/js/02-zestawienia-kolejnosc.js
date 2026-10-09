@@ -1,6 +1,6 @@
 /* Ekran 02, czesc 9: kolejnosc wnioskow na liscie (D-261).
-   Numer wniosku (ID, kolumna Nr) jest staly. Liczba porzadkowa (Lp.) to miejsce na liscie,
-   zawsze bez luk, wyznacza ja kolumna wnioski.pozycja w obrebie roku w zakresie konta.
+   Numer wniosku (ID, kolumna Nr) jest staly. Miejsce na liscie wyznacza kolumna wnioski.pozycja,
+   zawsze bez luk, w obrebie roku w zakresie konta (kolumny Lp. nie ma od 08.10).
    Zmiana kolejnosci (strzalki albo przeciaganie wiersza) zawsze pyta o potwierdzenie,
    zapisuje pozycje przez Store.update i dopisuje wpis do rejestru aktywnosci.
    Korzysta ze STAN_02. Same deklaracje. */
@@ -66,7 +66,7 @@ function sasiadNaLiscie(idWniosku, kierunek) {
 function tekstPotwierdzeniaRuchu(idWniosku, idCelu) {
   var w = znajdzWniosek(idWniosku), cel = znajdzWniosek(idCelu);
   return "Zmienić kolejność na liście?\nWniosek " + w.nr + " (" + w.klNazwa + ") zostanie przeniesiony obok wniosku " +
-    cel.nr + " (" + cel.klNazwa + ").\nNumery wniosków (ID) się nie zmienią, zmieni się liczba porządkowa (Lp.).";
+    cel.nr + " (" + cel.klNazwa + ").\nNumery wniosków (ID) się nie zmienią, zmieni się tylko miejsce na liście.";
 }
 
 function przesunWiersz02(idWniosku, kierunek) {

@@ -30,7 +30,8 @@ function zfWybor(id, etykieta, opcje, wybrana, bezPustej) {
     }).join("") + '</select></label>';
 }
 
-function zfSiatka(pola) { return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' + pola.join("") + '</div>'; }
+/* Liczba kolumn wynika z szerokosci: formularz na calej stronie ma 3 - 4 kolumny, na telefonie jedna */
+function zfSiatka(pola) { return '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px">' + pola.join("") + '</div>'; }
 
 /* ------------------------------ uczestnicy ------------------------------ */
 
@@ -166,11 +167,14 @@ function zfBlokPliku() {
 
 function zfHtml(o) {
   var zrodla = [["reczny", "ręcznie w systemie"], ["csv", "plik CSV lub XLS z szablonu"], ["pdf", "plik PDF o stałej strukturze"]];
-  return '<div class="small strong" style="margin-bottom:8px">Nowy formularz klienta do akceptacji</div>' + zfBlokInstytucji(o) +
-    zfWybor("zfZrodlo", "Sposób wprowadzenia", zrodla, "reczny", true) + zfBlokPliku() + zfSekcjeHtml(o) +
+  /* Edycja wyslanego formularza (D-314): bez wyboru zrodla i pliku, ktore zostaja z wyslania */
+  var e = o.edycja;
+  var przycisk = !e ? "Wyślij do akceptacji LDIT" : e.zwrot ? "Zapisz i wyślij ponownie" : "Zapisz zmiany";
+  return '<div class="small strong" style="margin-bottom:8px">' + (e ? "Edycja formularza " + esc(e.id) : "Nowy formularz klienta do akceptacji") + '</div>' +
+    zfBlokInstytucji(o) + (e ? "" : zfWybor("zfZrodlo", "Sposób wprowadzenia", zrodla, "reczny", true) + zfBlokPliku()) + zfSekcjeHtml(o) +
     '<div class="small strong" style="margin-top:12px">Uczestnicy</div><div id="zfUczestnicy"></div>' +
     '<div style="margin-top:8px"><button type="button" class="btn sm" onclick="zfDodajUczestnika()">+ Dodaj uczestnika</button></div>' +
-    '<div class="btn-row" style="margin-top:10px"><button class="btn primary sm" onclick="zfWyslij()">Wyślij do akceptacji LDIT</button>' +
+    '<div class="btn-row" style="margin-top:10px"><button class="btn primary sm" onclick="zfWyslij()">' + przycisk + '</button>' +
     (o.bezAnulowania ? "" : '<button class="btn sm" onclick="zfZamknij()">Anuluj</button>') +
     '</div><div class="small" id="zfKomunikat" role="status" style="margin-top:6px"></div>';
 }
@@ -182,8 +186,9 @@ function zfPokaz(opcje) {
   var kontener = zfEl(opcje.kontener);
   kontener.innerHTML = zfHtml(opcje);
   kontener.style.display = "";
-  zfEl("zfZrodlo").addEventListener("change", zfZmienZrodlo);
+  if (zfEl("zfZrodlo")) zfEl("zfZrodlo").addEventListener("change", zfZmienZrodlo);
   zfEl("zf_zadluzenie").addEventListener("change", zfPrzelaczUgode);
+  if (opcje.edycja) zfWypelnijZFormularza(opcje.edycja.id);
   zfRenderUczestnikow();
 }
 
@@ -211,6 +216,7 @@ function tekstBrakowFormularza(braki) {
 }
 
 function zfWyslij() {
+  if (ZF.opcje.edycja) { zfZapiszEdycje(); return; }
   try {
     var nowy = Akceptacje.zglosFormularz(zfOdczytaj(), Akceptacje.ktoTeraz());
     var wiersz = DB.KOLEJKA.filter(function (k) { return k.id === nowy.id; })[0];

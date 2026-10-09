@@ -34,7 +34,7 @@ function wierszTerminu(t, idx) {
       '<td class="mono nowrap">' + esc(DB.fmtDate(t.od)) + '</td>' +
       '<td class="mono nowrap">' + esc(DB.fmtDate(t.do)) + '</td>' +
       '<td class="nowrap muted">' + esc(t.miejsce) + '</td>' +
-      '<td class="nowrap">' + tagSt(t.status, t) + '</td>' +
+      '<td class="nowrap">' + tagSt(t.status, t) + (wolnyTermin13(t) ? "<div>" + znacznikWolnego13() + "</div>" : "") + '</td>' +
       '<td><div class="progress' + klasaPaska + '"><i style="width:' + pct + '%"></i></div>' +
         '<div class="small ' + (o.stan === "przekroczony" ? "przekroczenie" : "muted") + '" style="margin-top:4px">' +
         esc(tekstObsady13(t)) + '</div></td>' +
@@ -51,14 +51,15 @@ function wierszTerminu(t, idx) {
 function renderLista() {
   var q = el("q").value.toLowerCase().trim();
   var fis = Wielowybor.wartosci(el("fIS2")), fst = Wielowybor.wartosci(el("fSt"));
-  var lista = STAN_13.T.filter(function (t) {
+  var widoczne = terminyWidoczne13();
+  var lista = widoczne.filter(function (t) {
     if (!Wielowybor.pasuje(fis, t.is)) return false;
     if (!Wielowybor.pasuje(fst, t.status)) return false;
     if (q && (t.nazwa + " " + t.miejsce + " " + t.id + " " + tekstFirmTerminu(t)).toLowerCase().indexOf(q) < 0) return false;
     return true;
   }).sort(function (a, b) { return (a.od || "") < (b.od || "") ? -1 : 1; });
 
-  el("licz").innerHTML = "<b>" + lista.length + "</b> z " + STAN_13.T.length + " terminów &middot; przypisanych uczestników: <b>" +
+  el("licz").innerHTML = "<b>" + lista.length + "</b> z " + widoczne.length + " terminów &middot; przypisanych uczestników: <b>" +
     lista.reduce(function (s, t) { return s + zapisani(t); }, 0) + "</b>";
 
   el("body").innerHTML = lista.length ? lista.map(function (t) {

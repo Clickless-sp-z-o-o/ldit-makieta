@@ -1,6 +1,6 @@
 /* Ekran Terminy: stan wspolny, stale i dane pomocnicze.
    Tylko deklaracje, bez kodu wykonywanego od razu. */
-var STAN_13 = { DZIS: null, rok: 0, mies: 0, widok: "miesiac", dzien: "", T: [], uczestnicyPoTerminie: {}, edytowany: null };
+var STAN_13 = { DZIS: null, rok: 0, mies: 0, widok: "miesiac", dzien: "", T: [], uczestnicyPoTerminie: {}, edytowany: null, filtrTerminow: "" };
 
 var MIES_NAZWY = ["styczeń", "luty", "marzec", "kwiecień", "maj", "czerwiec", "lipiec",
                   "sierpień", "wrzesień", "październik", "listopad", "grudzień"];

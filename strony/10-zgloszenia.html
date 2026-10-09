@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="../assets/style-ekrany-0810.css">
 <style>
   .zg-head { display: flex; align-items: flex-start; gap: 12px; }
+  .card.zg-nowe { box-shadow: inset 4px 0 0 var(--neg-ink), var(--shadow); }
   .zg-head .zg-t { min-width: 0; }
   .zg-head .zg-meta { margin-left: auto; display: flex; gap: 7px; align-items: center; flex: 0 0 auto; }
   .zg-powod { font-size: 15px; font-weight: 700; margin: 0 0 3px; letter-spacing: -.01em; }
@@ -32,7 +33,7 @@
       <p class="page-desc">Zgłoszenia incydentów dotyczących instytucji i klientów oraz czarna lista.</p>
     </div>
     <div class="ph-actions">
-      <button class="btn atrapa" data-tip="W aplikacji docelowej">Eksport do Excela</button>
+      <span class="eksport-ekranu" data-pozycje="zgloszenia"></span>
       <button class="btn primary" onclick="document.getElementById('formularz').scrollIntoView({behavior:'smooth'})">+ Nowe zgłoszenie</button>
     </div>
   </div>
@@ -63,6 +64,7 @@
           <span class="chip" data-typ="Instytucja">Instytucje <span class="n" id="nInst"></span></span>
           <span class="chip" data-typ="Klient">Klienci <span class="n" id="nKl"></span></span>
           <span class="sp"></span>
+          <button class="btn sm" id="btnPrzeczytane" hidden onclick="oznaczWszystkie10()">Oznacz wszystkie jako przeczytane</button>
           <span class="small muted" id="podsumFiltru"></span>
         </div>
       </div>
@@ -213,8 +215,10 @@
 <script src="../assets/haslo.js"></script>
 <script src="../assets/funkcje.js"></script>
 <script src="../assets/auth.js"></script>
+<script src="../assets/haslo-zmiana.js"></script>
 <script src="../assets/walidacja.js"></script>
 <script src="../assets/straznik-wlasnosc.js"></script>
+<script src="../assets/straznik-katalog.js"></script>
 <script src="../assets/straznik.js"></script>
 <script src="../assets/zakres.js"></script>
 <script src="../assets/prowizja.js"></script>
@@ -226,8 +230,13 @@
 <script src="../assets/lata.js"></script>
 <script src="../assets/nabory-import.js"></script>
 <script src="../assets/html.js"></script>
+<script src="../assets/powiadomienia.js"></script>
 <script src="../assets/statusy.js"></script>
 <script src="../assets/akceptacje.js"></script>
+<script src="../assets/akceptacje-edycja.js"></script>
+<script src="../assets/akceptacje-katalog.js"></script>
+<script src="../assets/xlsx.js"></script>
+<script src="../assets/eksport.js"></script>
 <script src="../assets/wielowybor.js"></script>
 <script src="../assets/nawigacja.js"></script>
 <script src="../assets/podglad-roli.js"></script>
@@ -238,6 +247,8 @@
 <script src="js/10-zgloszenia-lista.js"></script>
 <script src="js/10-zgloszenia-czarna.js"></script>
 <script src="js/10-zgloszenia-formularz.js"></script>
+<script src="js/10-zgloszenia-odczyty.js"></script>
+<script src="js/eksporty-ekranow.js"></script>
 <script type="text/kfs-strona">
 STAN_10.lokalne = lokalne();
 przygotujFormularz();

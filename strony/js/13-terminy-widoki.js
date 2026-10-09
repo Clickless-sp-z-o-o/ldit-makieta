@@ -76,7 +76,7 @@ function renderLegenda13() {
     return '<span><i style="background:' + tloZKoloru13(kolor, PRZEZROCZYSTOSC_TLA) + ';border-color:' + kolor + '"></i>' + esc(i.nazwa) + "</span>";
   }).join("");
   el("legendaKolorow").innerHTML = kolory +
-    '<span class="small muted">ramka przerywana: wolny termin, przygaszony: odbyty. Kolor ustawia się w konfiguracji instytucji i służy tylko kalendarzowi <span class="ref">D-267</span></span>';
+    '<span class="small muted">kolor: instytucja; ramka przerywana i napis: wolny termin instytucji; przygaszony: odbyty</span>';
 }
 
 function renderPrzelacznik13() {

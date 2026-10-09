@@ -191,6 +191,7 @@
     S.update("formularze_oczekujace", id, { status: "zaakceptowany", rozpatrzyl_id: kto.uzytkownik,
                                             rozpatrzono: kto.czas, klient_id: klientId });
     doRejestru(kto, "Akceptacja formularza", id, "Status", "oczekuje", "zaakceptowany, klient " + klientId);
+    global.Powiadomienia.oFormularzu(f, "formularz_zaakceptowany");
     return klientId;
   }
 
@@ -206,6 +207,7 @@
     S.update("formularze_oczekujace", id, { status: "odrzucony", rozpatrzyl_id: kto.uzytkownik,
                                             rozpatrzono: kto.czas, powod_odrzucenia: String(powod).trim() });
     doRejestru(kto, "Odrzucenie formularza", id, "Status", "oczekuje", "odrzucony: " + powod);
+    global.Powiadomienia.oFormularzu(S.find("formularze_oczekujace", id), "formularz_odrzucony", "Powód: " + String(powod).trim());
   }
 
   var PREFIKS_ZWROTU = "Niekompletne dane";
@@ -217,10 +219,11 @@
     var wiersz = (global.DB.KOLEJKA || []).filter(function (k) { return k.id === id; })[0];
     var braki = wiersz ? wiersz.braki : [];
     if (!braki.length) blad("kompletny", "Formularz jest kompletny, nie ma czego uzupełniać. Zaakceptuj go albo odrzuć z powodem.");
-    var powod = PREFIKS_ZWROTU + ". Brakuje: " + braki.join(", ") + ". Uzupełnij i wyślij formularz ponownie.";
+    var powod = PREFIKS_ZWROTU + ". Brakuje: " + braki.join(", ") + ". Uzupełnij dane przyciskiem Edytuj przy formularzu; zapis wyśle go ponownie do akceptacji.";
     S.update("formularze_oczekujace", id, { status: "odrzucony", rozpatrzyl_id: kto.uzytkownik,
                                             rozpatrzono: kto.czas, powod_odrzucenia: powod });
     doRejestru(kto, "Zwrot formularza do uzupełnienia", id, "Status", "oczekuje", "odrzucony: " + powod);
+    global.Powiadomienia.oFormularzu(S.find("formularze_oczekujace", id), "formularz_zwrocony", "Brakuje: " + braki.join(", ") + ".");
   }
 
   /* ------------------------------ zmiany danych ------------------------------ */
@@ -254,11 +257,14 @@
     var zmiany = JSON.parse(p.zmiany);
     var patch = {};
     Object.keys(zmiany).forEach(function (k) { patch[k] = zmiany[k].po; });
-    S.update(p.tabela, p.rekord_id, patch);
+    /* Katalog szkolen ma dodanie, usuniecie i cennik (assets/akceptacje-katalog.js, D-320) */
+    if (p.tabela === "katalog_szkolen") global.AkceptacjeKatalog.zatwierdz(p, kto);
+    else S.update(p.tabela, p.rekord_id, patch);
     S.update("propozycje_zmian", id, { status: "zatwierdzona", rozpatrzyl_id: kto.uzytkownik, rozpatrzono: kto.czas });
-    Object.keys(zmiany).forEach(function (k) {
+    if (p.tabela !== "katalog_szkolen") Object.keys(zmiany).forEach(function (k) {
       doRejestru(kto, "Zatwierdzenie zmiany danych", p.rekord_id, (POLA[p.tabela][k] || k), zmiany[k].przed, zmiany[k].po);
     });
+    global.Powiadomienia.oZmianie(p, true);
   }
 
   function odrzucZmiane(id, powod, kto) {
@@ -267,6 +273,7 @@
     S.update("propozycje_zmian", id, { status: "odrzucona", rozpatrzyl_id: kto.uzytkownik, rozpatrzono: kto.czas,
                                        powod_odrzucenia: String(powod).trim() });
     doRejestru(kto, "Odrzucenie zmiany danych", id, "Status", "oczekuje", "odrzucona: " + powod);
+    global.Powiadomienia.oZmianie(S.find("propozycje_zmian", id), false, String(powod).trim());
   }
 
   /* Kto wykonuje operacje, z zalogowanej sesji */
@@ -283,6 +290,8 @@
     klientWZakresieZNip: function (nip, instytucjaId) { return klientDoPowiazania({ nip: nip, instytucja_id: instytucjaId }); },
     zglosFormularz: zglosFormularz, zaakceptujFormularz: zaakceptujFormularz, odrzucFormularz: odrzucFormularz,
     zwrocFormularz: zwrocFormularz, PREFIKS_ZWROTU: PREFIKS_ZWROTU,
-    zglosZmiane: zglosZmiane, zatwierdzZmiane: zatwierdzZmiane, odrzucZmiane: odrzucZmiane
+    zglosZmiane: zglosZmiane, zatwierdzZmiane: zatwierdzZmiane, odrzucZmiane: odrzucZmiane,
+    /* Dla assets/akceptacje-edycja.js (edycja wyslanego formularza), nie do uzycia na ekranach */
+    wspolne: { blad: blad, doRejestru: doRejestru, czystyUczestnicy: czystyUczestnicy }
   };
 })(window);

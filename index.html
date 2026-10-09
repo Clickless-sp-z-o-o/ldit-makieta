@@ -51,7 +51,7 @@
             <div class="uzytkownik-imie" id="imie">&nbsp;</div>
             <div class="uzytkownik-rola" id="rola">&nbsp;</div>
           </div>
-          <div class="avatar" id="avatar">&nbsp;</div>
+          <button class="avatar" id="avatar" type="button" aria-label="Moje konto: dane i zmiana hasła" data-tip="Moje konto: dane i zmiana hasła">&nbsp;</button>
           <button class="btn sm wyloguj" id="wyloguj"
                   data-tip="Kończy sesję i wraca do ekranu logowania. Po dłuższej bezczynności sesja wygasa sama.">Wyloguj</button>
         </div>
@@ -165,7 +165,8 @@ function render() {
 
     html += '<div class="' + klasy + '" data-id="' + esc(m.id) + '" data-plik="' + esc(m.plik) + '"' +
             ' data-label="' + esc(etykieta) + '" data-tip="' + esc(TIPY_MODULOW[m.id] || "") + '">' +
-            '<span class="ico">' + (m.ikona || "") + '</span><span>' + esc(etykieta) + '</span>' +
+            /* &#xFE0E; wymusza wariant tekstowy znaku, zeby ikony nie byly kolorowymi emoji roznej wielkosci */
+            '<span class="ico" aria-hidden="true">' + (m.ikona ? m.ikona + "&#xFE0E;" : "") + '</span><span>' + esc(etykieta) + '</span>' +
             (rozwijane ? '<span class="chev">&#9654;</span>' : '') + '</div>';
 
     if (rozwijane) {
@@ -240,7 +241,7 @@ function odbierzEkran(ekran) {
   var zaznaczone = zaznaczEkran(ekran);
   if (zaznaczone) stan.aktywny = zaznaczone.idMenu;
   if (zaznaczone && zaznaczone.rok) { stan.dofinOtwarte = true; stan.otwarteLata[zaznaczone.rok] = true; }
-  pokazLicznik(ekran.doAkceptacji);
+  pokazLicznik(ekran.doAkceptacji); pokazNoweZgloszenia(ekran.noweZgloszenia); pokazPowiadomieniaIS(ekran.powiadomieniaIS);
 }
 
 window.addEventListener("message", function (ev) {
@@ -265,6 +266,7 @@ function pokazSesje() {
   document.getElementById("hint").classList.add("show");
 }
 
+document.getElementById("avatar").addEventListener("click", function () { document.getElementById("view").src = "strony/23-moje-konto.html"; });
 document.getElementById("wyloguj").addEventListener("click", function () {
   /* Powloka nie zapisuje bazy: jej kopia jest z chwili logowania i nadpisalaby zmiany
      zrobione od tego czasu w ekranach. Sesje usuwa ekran logowania na swiezej bazie. */
@@ -288,7 +290,7 @@ if (start) {
   document.getElementById("view").src = "strony/" + start.plik;
 }
 
-render();
+render(); pokazNoweZgloszenia(Nawigacja.liczbaNowychZgloszen(Auth, DB));
 pokazSesje();
 </script>
 

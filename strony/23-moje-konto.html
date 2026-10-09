@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moje konto</title>
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/style-sesja.css">
+<link rel="stylesheet" href="../assets/style-interfejs.css">
+<style>
+  .konto-uklad { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+  .haslo-form .field input { width: 100%; max-width: 360px; }
+  .haslo-form .blad { color: var(--neg-ink); font-size: 0.8125rem; margin-top: 4px; }
+  .haslo-form input[aria-invalid="true"] { border-color: var(--neg-ink); }
+  @media (max-width: 700px) { .konto-uklad { grid-template-columns: minmax(0, 1fr); } }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-head">
+    <div class="ph-text">
+      <h1 class="page-title">Moje konto</h1>
+      <p class="page-desc">Dane Twojego konta i zmiana hasła.</p>
+    </div>
+  </div>
+
+  <div class="konto-uklad">
+    <div class="card">
+      <div class="card-head"><h3>Dane konta</h3></div>
+      <div class="card-body"><dl class="dl" id="daneKonta23"></dl></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>Zmiana hasła</h3></div>
+      <div class="card-body">
+        <form class="haslo-form" id="formHasla23" novalidate>
+          <input type="text" name="username" id="login23" autocomplete="username" hidden>
+          <div class="field">
+            <label for="obecne23">Obecne hasło</label>
+            <input class="inp" type="password" id="obecne23" name="obecne" autocomplete="current-password" aria-describedby="bladObecne23">
+            <div class="blad" id="bladObecne23"></div>
+          </div>
+          <div class="field">
+            <label for="nowe23">Nowe hasło</label>
+            <input class="inp" type="password" id="nowe23" name="nowe" autocomplete="new-password" aria-describedby="politykaHasla23 bladNowe23">
+            <div class="hint" id="politykaHasla23"></div>
+            <div class="blad" id="bladNowe23"></div>
+          </div>
+          <div class="field">
+            <label for="powtorzone23">Powtórz nowe hasło</label>
+            <input class="inp" type="password" id="powtorzone23" name="powtorzone" autocomplete="new-password" aria-describedby="bladPowtorzone23">
+            <div class="blad" id="bladPowtorzone23"></div>
+          </div>
+          <div class="btn-row"><button class="btn primary sm" type="submit">Zmień hasło</button></div>
+          <div class="small" id="komunikat23" role="status" style="margin-top:8px"></div>
+          <p class="small muted" style="margin:10px 0 0">Po zmianie hasła wylogujemy Cię na innych urządzeniach. W makiecie zmiana dotyczy tej przeglądarki.</p>
+        </form>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- kfs:skrypty -->
+<script src="../db/sql-wasm.js"></script>
+<script src="../db/sql-wasm-data.js"></script>
+<script src="../db/seed-db.js"></script>
+<script src="../assets/sqlite.js"></script>
+<script src="../assets/store.js"></script>
+<script src="../assets/haslo.js"></script>
+<script src="../assets/funkcje.js"></script>
+<script src="../assets/auth.js"></script>
+<script src="../assets/haslo-zmiana.js"></script>
+<script src="../assets/walidacja.js"></script>
+<script src="../assets/straznik-wlasnosc.js"></script>
+<script src="../assets/straznik-katalog.js"></script>
+<script src="../assets/straznik.js"></script>
+<script src="../assets/zakres.js"></script>
+<script src="../assets/prowizja.js"></script>
+<script src="../assets/db-format.js"></script>
+<script src="../assets/db-klienci.js"></script>
+<script src="../assets/db-instytucje.js"></script>
+<script src="../assets/db-nabory.js"></script>
+<script src="../assets/db.js"></script>
+<script src="../assets/lata.js"></script>
+<script src="../assets/nabory-import.js"></script>
+<script src="../assets/html.js"></script>
+<script src="../assets/powiadomienia.js"></script>
+<script src="../assets/statusy.js"></script>
+<script src="../assets/akceptacje.js"></script>
+<script src="../assets/akceptacje-edycja.js"></script>
+<script src="../assets/akceptacje-katalog.js"></script>
+<script src="../assets/xlsx.js"></script>
+<script src="../assets/eksport.js"></script>
+<script src="../assets/wielowybor.js"></script>
+<script src="../assets/nawigacja.js"></script>
+<script src="../assets/podglad-roli.js"></script>
+<script src="../assets/interfejs.js"></script>
+<script src="../assets/tips.js"></script>
+<script src="../assets/boot.js"></script>
+<script src="js/23-moje-konto.js"></script>
+<script type="text/kfs-strona">
+inicjuj23();
+</script>
+</body>
+</html>

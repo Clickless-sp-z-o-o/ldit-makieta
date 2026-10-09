@@ -12,7 +12,7 @@ function uczestnicyKlienta19() {
 }
 
 function wierszUczestnika19(u) {
-  var brak = '<span class="muted">&mdash;</span>';
+  var brak = '<span class="muted">-</span>';
   var ostrz = KlientLogika.ostrzezenieUmowy(u, new Date().toISOString().slice(0, 10));
   return '<tr data-uk="' + esc(u.id) + '">' +
     '<td class="strong">' + esc(u.imie) + (ostrz ? '<div class="small" style="color:var(--neg,#b91c1c)">&#9888; ' + esc(ostrz) + '</div>' : "") + '</td>' +

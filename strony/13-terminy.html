@@ -11,6 +11,11 @@
 <style>
   /* Drobny wyjatek: wiersz rozwijany z lista osob zapisanych */
   tr.osoby td { background: var(--surface-2); }
+  /* Wolny termin instytucji (bez wniosku): przerywana ramka i napis, nie wyglada jak wydarzenie wniosku */
+  .ev.bez-wniosku { background: #fff !important; border: 1px dashed var(--line-strong); border-left-width: 3px; border-left-style: dashed; }
+  .ev.bez-wniosku .ev-firma { font-style: italic; color: var(--ink-3); }
+  .filtr-terminow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--line); }
+  .filtr-terminow select { min-width: 0; max-width: 100%; }
 </style>
 </head>
 <body>
@@ -37,6 +42,13 @@
   <div class="grid g4" style="margin-bottom:18px" id="kpi"></div>
 
   <div class="card" style="padding:0">
+    <div class="filtr-terminow">
+      <label class="small strong" for="fTerminy">Pokaż</label>
+      <select class="inp" id="fTerminy" style="width:auto">
+        <option value="">terminy z wnioskiem</option>
+        <option value="wszystkie">wszystkie, także wolne terminy instytucji</option>
+      </select>
+    </div>
     <div class="tabs">
       <button class="tab on" data-t="t1">Kalendarz</button>
       <button class="tab" data-t="t2">Lista terminów</button>
@@ -58,9 +70,7 @@
       <div class="card-body">
         <div class="cal" id="cal"></div>
         <div class="small muted mt16">
-          Termin wielodniowy pokazywany jest w każdym dniu swojego trwania, dlatego kursy długie
-          (na przykład spawanie MAG, 15 dni) zajmują ciągły blok w kalendarzu.
-          Kafelek pokazuje <b>firmę klienta i wykonawcę</b> szkolenia, a kolor oznacza instytucję (<span class="ref">D-267</span>). Po najechaniu widać szkolenie, obłożenie i miejsce, a <b>kliknięcie otwiera wniosek</b> (przy kilku wnioskach w terminie lista do wyboru). Przy więcej niż trzech szkoleniach w dniu widoku miesięcznego reszta kryje się pod „+N więcej”, które otwiera widok dnia.
+          Kafelek pokazuje firmę klienta i wykonawcę, a kliknięcie otwiera wniosek.
         </div>
 
         <div class="note">
@@ -194,8 +204,10 @@
 <script src="../assets/haslo.js"></script>
 <script src="../assets/funkcje.js"></script>
 <script src="../assets/auth.js"></script>
+<script src="../assets/haslo-zmiana.js"></script>
 <script src="../assets/walidacja.js"></script>
 <script src="../assets/straznik-wlasnosc.js"></script>
+<script src="../assets/straznik-katalog.js"></script>
 <script src="../assets/straznik.js"></script>
 <script src="../assets/zakres.js"></script>
 <script src="../assets/prowizja.js"></script>
@@ -207,8 +219,13 @@
 <script src="../assets/lata.js"></script>
 <script src="../assets/nabory-import.js"></script>
 <script src="../assets/html.js"></script>
+<script src="../assets/powiadomienia.js"></script>
 <script src="../assets/statusy.js"></script>
 <script src="../assets/akceptacje.js"></script>
+<script src="../assets/akceptacje-edycja.js"></script>
+<script src="../assets/akceptacje-katalog.js"></script>
+<script src="../assets/xlsx.js"></script>
+<script src="../assets/eksport.js"></script>
 <script src="../assets/wielowybor.js"></script>
 <script src="../assets/nawigacja.js"></script>
 <script src="../assets/podglad-roli.js"></script>
@@ -216,6 +233,8 @@
 <script src="../assets/tips.js"></script>
 <script src="../assets/boot.js" data-modul="terminy"></script>
 <script src="js/13-terminy-stan.js"></script>
+<script src="js/13-terminy-filtr.js"></script>
+<script src="js/13-terminy-przypisanie.js"></script>
 <script src="js/13-terminy-firmy.js"></script>
 <script src="js/13-terminy-kalendarz.js"></script>
 <script src="js/13-terminy-kafelki.js"></script>
@@ -237,6 +256,7 @@ document.querySelectorAll(".tab").forEach(function (t) {
 el("btnNowy").addEventListener("click", pokazForm);
 window.addEventListener("db:changed", odswiez13);
 inicjujStan13();
+inicjujFiltrTerminow13();
 odswiez13();
 </script>
 </body>

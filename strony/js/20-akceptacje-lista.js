@@ -51,8 +51,17 @@ function wierszFormularza20(f) {
 
 function opisRekordu20(p) {
   if (p.tabela === "instytucje") return "dane instytucji";
+  if (p.tabela === "katalog_szkolen") return opisKatalogu20(p);
   var k = DB.KLIENCI.filter(function (x) { return x.id === p.rekord; })[0];
   return "klient " + (k ? k.nazwa : p.rekord);
+}
+
+/* Zmiana katalogu szkolen (D-320): rodzaj operacji i nazwa szkolenia (nowa, gdy zmieniana) */
+function opisKatalogu20(p) {
+  var rodzaj = { dodanie: "nowe szkolenie", usuniecie: "usunięcie szkolenia", zmiana: "szkolenie" }[p.operacja] || "szkolenie";
+  var szk = DB.SZKOLENIA.filter(function (s) { return s.id === p.rekord; })[0];
+  var nazwa = p.zmiany.nazwa ? (p.zmiany.nazwa.po || p.zmiany.nazwa.przed) : (szk ? szk.nazwa : p.rekord);
+  return rodzaj + ": " + nazwa;
 }
 
 function wierszZmiany20(p) {

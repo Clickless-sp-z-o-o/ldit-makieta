@@ -29,3 +29,6 @@
 
 /* Przycisk rozwijania wnioskow w Bazie: ten sam rozmiar co male przyciski akcji na liscie wnioskow */
 .exp-btn { min-width: 24px; min-height: 24px; }
+
+/* Uchwyt przeciagania w trybie kolejnosci (pierwsza kolumna, obok Szczegolow; kolumny Lp. nie ma) */
+.lp-kolejnosc .uchwyt { display: inline-block; margin: 0 2px; color: var(--ink-3); cursor: grab; letter-spacing: -0.25em; }

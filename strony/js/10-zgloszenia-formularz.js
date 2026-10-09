@@ -63,7 +63,9 @@ function dodaj() {
       '<div class="note warn mt16 mb0">Powód i opis są wymagane. Zgłoszenie bez opisu jest bezużyteczne po roku.</div>';
     return;
   }
-  Store.insert("zgloszenia", wierszZgloszenia(powod, opis), "ZG-");
+  /* Wlasne zgloszenie autor ma od razu przeczytane (D-315) */
+  var nowe = Store.insert("zgloszenia", wierszZgloszenia(powod, opis), "ZG-");
+  zapiszOdczyt10(nowe.id);
   document.getElementById("nPowod").value = "";
   document.getElementById("nOpis").value = "";
   odswiezInfoCzarnaLista();

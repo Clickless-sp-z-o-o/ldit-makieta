@@ -238,7 +238,7 @@
     /* Zmiany danych zgloszone przez instytucje, czekajace na zatwierdzenie LDIT (D-224) */
     DB.PROPOZYCJE = S.get("propozycje_zmian").map(function (p) {
       return { id: p.id, isId: p.instytucja_id, is: (instById[p.instytucja_id] || {}).nazwa || "-",
-               tabela: p.tabela, rekord: p.rekord_id, zmiany: JSON.parse(p.zmiany || "{}"),
+               tabela: p.tabela, operacja: p.operacja || "zmiana", rekord: p.rekord_id, zmiany: JSON.parse(p.zmiany || "{}"),
                uzasadnienie: p.uzasadnienie, zglosil: p.zglosil_id, zgloszono: p.zgloszono, status: p.status,
                rozpatrzyl: p.rozpatrzyl_id, rozpatrzono: p.rozpatrzono, powod: p.powod_odrzucenia };
     });

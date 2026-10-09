@@ -30,12 +30,12 @@ function tagRealizacji16(w) {
   if (w.rozliczenie === "Rozliczone") return '<span class="tag set dot">rozliczone</span>';
   if (w.rozliczenie === "Zafakturowany") return '<span class="tag info dot">szkolenie odbyte</span>';
   if (w.rozliczenie === "Oczekuje") return '<span class="tag warn dot">czeka na realizację</span>';
-  return '<span class="muted">&mdash;</span>';
+  return '<span class="muted">-</span>';
 }
 
 var NAGLOWKI_16 = {
-  klienci: "<tr><th>Klient</th><th>Urząd</th><th>Szkolenie</th><th class=\"num\">Osób</th><th>Status wniosku</th><th>Termin szkolenia</th><th>Realizacja</th></tr>",
-  zlozone: "<tr><th>Klient</th><th>Urząd</th><th>Szkolenie</th><th class=\"num\">Osób</th><th>Data złożenia</th><th>Decyzja</th></tr>"
+  klienci: "<tr><th>Klient</th><th>Urząd</th><th>Szkolenie</th><th class=\"num\">Osób</th><th>Status wniosku</th><th>Termin szkolenia</th><th>Realizacja</th><th><span class=\"sr-only\">Projekt</span></th></tr>",
+  zlozone: "<tr><th>Klient</th><th>Urząd</th><th>Szkolenie</th><th class=\"num\">Osób</th><th>Data złożenia</th><th>Decyzja</th><th><span class=\"sr-only\">Projekt</span></th></tr>"
 };
 
 function klasaWiersza16(w) {
@@ -43,7 +43,7 @@ function klasaWiersza16(w) {
 }
 
 function komorkiWspolne16(w) {
-  return '<td class="strong">' + esc(w.klNazwa) + '</td><td class="small">' + esc(w.pupNazwa || "-") + '</td><td>' + esc(w.szkolenie) + '</td>' +
+  return '<td class="strong"><a href="22-projekt-is.html?klient=' + encodeURIComponent(w.klient) + '">' + esc(w.klNazwa) + '</a></td><td class="small">' + esc(w.pupNazwa || "-") + '</td><td>' + esc(w.szkolenie) + '</td>' +
     '<td class="num">' + esc(w.osobZakw) + (w.osobZakw < w.osob ? ' <span class="muted small">z ' + esc(w.osob) + '</span>' : '') + '</td>';
 }
 
@@ -52,18 +52,19 @@ function wierszWniosku16(w) {
   return '<tr class="' + klasaWiersza16(w) + '">' + komorkiWspolne16(w) +
     '<td>' + tagStatusWniosku16(w) + '</td>' +
     '<td class="nowrap small">' + (t ? esc(DB.fmtDate(t.od)) + " &rsaquo; " + esc(DB.fmtDate(t.do)) : '<span class="muted">termin nieustalony</span>') + '</td>' +
-    '<td>' + tagRealizacji16(w) + '</td></tr>';
+    '<td>' + tagRealizacji16(w) + '</td>' + komorkaProjektu16(w) + '</tr>';
 }
 
 function wierszZlozonego16(w) {
   return '<tr class="' + klasaWiersza16(w) + '">' + komorkiWspolne16(w) +
     '<td class="nowrap small">' + esc(w.dataWniosku ? DB.fmtDate(w.dataWniosku) : "-") + '</td>' +
-    '<td>' + tagStatusWniosku16(w) + '</td></tr>';
+    '<td>' + tagStatusWniosku16(w) + '</td>' + komorkaProjektu16(w) + '</tr>';
 }
 
 function zlozone16() { return STAN_16.W.filter(function (w) { return w.statusSkl === "Złożony"; }); }
 
 function renderKlienci16() {
+  if (STAN_16.widok === "uczestnicy") { renderUczestnicy16(); return; }
   var zlozoneWidok = STAN_16.widok === "zlozone";
   var W = zlozoneWidok ? zlozone16() : STAN_16.W;
   var q = el16("szukaj").value.trim().toLowerCase();
@@ -76,7 +77,7 @@ function renderKlienci16() {
   el16("chipy16").hidden = zlozoneWidok;
   el16("subTab").textContent = lista.length + " z " + W.length + (zlozoneWidok ? " złożonych wniosków" : " projektów instytucji");
   el16("wiersze").innerHTML = lista.length ? wiersze16(lista, zlozoneWidok ? wierszZlozonego16 : wierszWniosku16) :
-    '<tr><td colspan="7"><div class="empty"><div class="ei">&#9788;</div>' +
+    '<tr><td colspan="8"><div class="empty"><div class="ei">&#9788;</div>' +
     '<div class="et">Brak wyników w Twoim katalogu</div>Wyszukiwarka nie sięga poza dane tej instytucji.</div></td></tr>';
 }
 

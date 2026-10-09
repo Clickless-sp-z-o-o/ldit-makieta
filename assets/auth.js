@@ -174,6 +174,8 @@
       przebudujDane();
     },
 
+    zmienHaslo: /* wlasne haslo, opis w assets/haslo-zmiana.js (D-321) */ function (obecne, nowe, powtorzone) { return global.ZmianaHasla.wykonaj(this.sesja(), czytajToken() || pamiec.token, obecne, nowe, powtorzone, systemowo); },
+
     sesja: function () {
       var token = czytajToken() || pamiec.token;
       if (!token) return null;

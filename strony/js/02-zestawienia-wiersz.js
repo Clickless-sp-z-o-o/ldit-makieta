@@ -4,7 +4,7 @@
    Do szczegolow prowadzi wylacznie przycisk "Szczegoly" (D-262): klik w wiersz, nazwe firmy
    czy kolumne nigdzie nie przenosi. Kolejnosc wierszy: 02-zestawienia-kolejnosc.js. Same deklaracje. */
 
-var BRAK_02 = '<span class="muted">&mdash;</span>';
+var BRAK_02 = '<span class="muted">-</span>';
 var LICZBA_KOLUMN_02 = 18;
 
 /* Pierwszy kontakt wniosku, a gdy wniosek go nie ma, kontakt klienta */
@@ -54,14 +54,16 @@ function kwotaPoDecyzji(w, kwota) {
   return w.statusDec === "Pozytywna" && kwota != null ? DB.fmtPLN(kwota) : BRAK_02;
 }
 
-/* Lp. liczona z kolejnosci na liscie (D-261). Przyciski Wyzej/Nizej i przeciaganie sa tylko
-   w trybie "Ustaw kolejnosc", zeby lista nie miala dwoch malych strzalek w kazdym wierszu (przeglad 08.10) */
-function komorkaLp(lp, w, trybKolejnosci) {
-  if (!trybKolejnosci) return '<td class="c muted"><span class="lp-nr">' + lp + '</span></td>';
+/* Pierwsza kolumna: Szczegoly (uwaga 08.10, bez kolumny Lp.). Przyciski Wyzej/Nizej i uchwyt przeciagania
+   sa tylko w trybie "Ustaw kolejnosc" (D-261), zeby lista nie miala strzalek w kazdym wierszu */
+function komorkaSzczegolow02(w, trybKolejnosci) {
   var nr = esc(w.nr);
-  return '<td class="c nowrap lp-kolejnosc"><button type="button" class="ruch" data-ruch="gora" aria-label="Przesuń wniosek ' + nr + ' wyżej" title="Wyżej (z potwierdzeniem)">&#9650;</button>' +
-    '<span class="lp-nr" title="Przeciągnij wiersz, aby zmienić kolejność">' + lp + '</span>' +
-    '<button type="button" class="ruch" data-ruch="dol" aria-label="Przesuń wniosek ' + nr + ' niżej" title="Niżej (z potwierdzeniem)">&#9660;</button></td>';
+  var szczegoly = '<a class="btn xs" aria-label="Szczegóły wniosku ' + nr + '" title="Szczegóły i edycja wniosku" href="' +
+    esc(adresKarty02(w.id)) + '">&#9998; Szczegóły</a>';
+  if (!trybKolejnosci) return '<td class="nowrap">' + szczegoly + '</td>';
+  return '<td class="nowrap lp-kolejnosc"><button type="button" class="ruch" data-ruch="gora" aria-label="Przesuń wniosek ' + nr + ' wyżej" title="Wyżej (z potwierdzeniem)">&#9650;</button>' +
+    '<span class="uchwyt" aria-hidden="true" title="Przeciągnij wiersz, aby zmienić kolejność">&#8942;&#8942;</span>' +
+    '<button type="button" class="ruch" data-ruch="dol" aria-label="Przesuń wniosek ' + nr + ' niżej" title="Niżej (z potwierdzeniem)">&#9660;</button> ' + szczegoly + '</td>';
 }
 
 /* Status jako znacznik z kolorem; zmiana z menu wiersza (02-zestawienia-status.js), bez pola wyboru w kazdym wierszu */
@@ -76,17 +78,17 @@ function przyciskiAkcji(w, mozeEdytowac) {
   var nr = esc(w.nr);
   var usun = mozeEdytowac
     ? ' <button class="btn xs" data-usun="' + esc(w.id) + '" aria-label="Usuń wniosek ' + nr + ' z listy" title="Usuń wniosek z listy (klient zostaje w Bazie danych)">Usuń</button>' : "";
-  return '<td class="right nowrap"><button class="btn xs" data-historia="' + esc(w.id) + '" aria-label="Historia zmian wniosku ' + nr + '" title="Historia zmian wniosku">Historia</button> ' +
-    '<a class="btn xs" aria-label="Szczegóły wniosku ' + nr + '" title="Szczegóły i edycja wniosku" href="' + esc(adresKarty02(w.id)) + '">&#9998; Szczegóły</a>' + usun + '</td>';
+  return '<td class="right nowrap"><button class="btn xs" data-historia="' + esc(w.id) + '" aria-label="Historia zmian wniosku ' + nr + '" title="Historia zmian wniosku">Historia</button>' +
+    usun + '</td>';
 }
 
-function wierszWniosku(w, lp) {
+function wierszWniosku(w) {
   var ukryjIS = STAN_02.forcedInst ? ' style="display:none"' : "";
   var kontakt = kontaktWniosku(w);
   var edycja = Auth.edytujeModul("dofin");
   var kolejnosc = edycja && STAN_02.trybKolejnosci;
   return '<tr class="' + Statusy.klasaWiersza(w) + '" data-id="' + esc(w.id) + '"' + (kolejnosc ? ' draggable="true"' : "") + '>' +
-    komorkaLp(lp == null ? "" : lp, w, kolejnosc) +
+    komorkaSzczegolow02(w, kolejnosc) +
     '<td class="strong nowrap">' + esc(w.nr) + '</td>' +
     '<td class="strong"><div class="tnij" title="' + esc(w.klNazwa) + '">' + esc(w.klNazwa) + '</div>' +
       '<span class="pod mono">' + esc(w.nip) + '</span></td>' +

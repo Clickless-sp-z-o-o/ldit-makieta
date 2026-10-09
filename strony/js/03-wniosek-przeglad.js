@@ -28,6 +28,6 @@ function renderMaile() {
       '<td class="strong">' + esc(m.temat) + '</td>' +
       '<td class="small muted">' + esc(m.skrz) + '</td>' +
       '<td class="small nowrap">' + esc(DB.fmtDate(m.data)) + '</td>' +
-      '<td class="c">' + (m.zal ? '<span class="pill">' + esc(m.zal) + '</span>' : '<span class="muted">&mdash;</span>') + '</td></tr>';
+      '<td class="c">' + (m.zal ? '<span class="pill">' + esc(m.zal) + '</span>' : '<span class="muted">-</span>') + '</td></tr>';
   }).join("") : '<tr><td colspan="5" class="muted">Brak korespondencji tego klienta.</td></tr>';
 }

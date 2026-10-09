@@ -50,21 +50,48 @@ function panelFormularza20(f) {
   var duplikat = f.status === "oczekuje" ? Akceptacje.klientWZakresieZNip(f.nip, f.isId) : null;
   el20("tytulPanelu").textContent = f.firma;
   el20("subPanelu").textContent = "formularz " + f.id;
-  el20("panel").innerHTML = notaBrakow20(f) + daneFirmy20(f) +
+  el20("panel").innerHTML = przyciskEdycji20(f) + notaBrakow20(f) + daneFirmy20(f) +
     '<div class="small strong" style="margin-top:12px">Uczestnicy (' + f.uczestnicy.length + ')</div>' + tabelaUczestnikow20(f.uczestnicy) +
     (duplikat ? ostrzezenieDuplikatu20(f, duplikat) : "") +
     (f.status === "oczekuje" ? decyzja20("Akceptuj i dodaj do bazy klientów", "Akceptacja tworzy klienta w Bazie klientów (albo dopisuje istniejącego), przenosi na jego kartę komplet danych z formularza i uczestników oraz przypisuje go do instytucji. Po akceptacji założysz projekt tą samą ścieżką co ręcznie, z danymi z formularza. Niekompletny formularz możesz zwrócić instytucji do uzupełnienia.", f.braki.length ? zwrotFormularza20() : "")
       : rozpatrzenie20(f));
 }
 
+/* Formularz zajmuje cala szerokosc strony: lista i panel szczegolow chowaja sie na czas wpisywania */
+function pokazFormularz20(otwarty) {
+  el20("uklad20").hidden = otwarty;
+  if (otwarty) el20("zfKontener20").scrollIntoView({ block: "start" });
+}
+
+/* Edycja danych formularza przed decyzja (D-314): ten sam formularz co przy wprowadzaniu, z danymi */
+function przyciskEdycji20(f) {
+  if (!Akceptacje.edycjaFormularza(Store.find("formularze_oczekujace", f.id)).mozna) return "";
+  return '<div class="btn-row" style="margin-bottom:10px"><button class="btn sm" onclick="edytujFormularz20(\'' + escJs(f.id) + '\')">Edytuj dane formularza</button></div>';
+}
+
+function edytujFormularz20(id) {
+  var wiersz = Store.find("formularze_oczekujace", id);
+  var ocena = Akceptacje.edycjaFormularza(wiersz);
+  if (!ocena.mozna) return;
+  var instytucja = DB.INSTYTUCJE.filter(function (i) { return i.id === wiersz.instytucja_id; })[0];
+  pokazFormularz20(true);
+  zfPokaz({
+    kontener: "zfKontener20", instytucjaId: wiersz.instytucja_id, instytucjaNazwa: instytucja ? instytucja.nazwa : wiersz.instytucja_id,
+    szkolenia: DB.SZKOLENIA.filter(function (s) { return s.is === wiersz.instytucja_id; }).map(function (s) { return [s.nazwa, s.nazwa]; }),
+    edycja: { id: id, zwrot: ocena.zwrot },
+    poZamknieciu: function () { pokazFormularz20(false); },
+    poZapisie: function () { zfZamknij(); STAN_20.wybrany = id; render20(); }
+  });
+}
+
 /* Wprowadzanie formularza przez LDIT lub instytucje; panel szczegolow na czas wpisywania znika */
 function nowyFormularz20() {
-  el20("panel").hidden = true;
+  pokazFormularz20(true);
   zfPokaz({
     kontener: "zfKontener20",
     instytucje: DB.INSTYTUCJE.map(function (i) { return [i.id, i.nazwa]; }),
     szkolenia: DB.SZKOLENIA.map(function (s) { return [s.nazwa, s.nazwa]; }),
-    poZamknieciu: function () { el20("panel").hidden = false; },
+    poZamknieciu: function () { pokazFormularz20(false); },
     poWyslaniu: function (nowy, braki) {
       POWIADOMIENIE_20 = { id: nowy.id };
       STAN_20.widok = "formularze";

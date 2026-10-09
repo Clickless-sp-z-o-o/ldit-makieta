@@ -34,7 +34,10 @@
     <a href="#" data-widok="zmiany" onclick="przelaczWidok20('zmiany');return false">Zmiany danych od instytucji <span class="n" id="nZmiany"></span></a>
   </nav>
 
-  <div class="akc-uklad">
+  <!-- Wprowadzanie i edycja formularza na cala szerokosc strony; lista i panel chowaja sie na ten czas -->
+  <div class="card form-pelny" id="zfKontener20" style="display:none"></div>
+
+  <div class="akc-uklad" id="uklad20">
     <div class="card">
       <div class="toolbar">
         <input class="inp search" id="q" placeholder="Szukaj: firma, NIP, instytucja...">
@@ -58,7 +61,7 @@
 
     <div class="card">
       <div class="card-head"><h3 id="tytulPanelu">Szczegóły</h3><span class="sub" id="subPanelu"></span></div>
-      <div class="card-body akc-panel" id="panelFormularza"><div id="zfKontener20" style="display:none"></div>
+      <div class="card-body akc-panel" id="panelFormularza">
       <div id="panel">
         <div class="empty"><div class="ei">&#10003;</div><div class="et">Wybierz zgłoszenie z listy</div>Kliknij wiersz, żeby zobaczyć szczegóły i podjąć decyzję.</div>
       </div></div>
@@ -76,8 +79,10 @@
 <script src="../assets/haslo.js"></script>
 <script src="../assets/funkcje.js"></script>
 <script src="../assets/auth.js"></script>
+<script src="../assets/haslo-zmiana.js"></script>
 <script src="../assets/walidacja.js"></script>
 <script src="../assets/straznik-wlasnosc.js"></script>
+<script src="../assets/straznik-katalog.js"></script>
 <script src="../assets/straznik.js"></script>
 <script src="../assets/zakres.js"></script>
 <script src="../assets/prowizja.js"></script>
@@ -89,8 +94,13 @@
 <script src="../assets/lata.js"></script>
 <script src="../assets/nabory-import.js"></script>
 <script src="../assets/html.js"></script>
+<script src="../assets/powiadomienia.js"></script>
 <script src="../assets/statusy.js"></script>
 <script src="../assets/akceptacje.js"></script>
+<script src="../assets/akceptacje-edycja.js"></script>
+<script src="../assets/akceptacje-katalog.js"></script>
+<script src="../assets/xlsx.js"></script>
+<script src="../assets/eksport.js"></script>
 <script src="../assets/wielowybor.js"></script>
 <script src="../assets/nawigacja.js"></script>
 <script src="../assets/podglad-roli.js"></script>
@@ -100,6 +110,7 @@
 <script src="js/16-formularz-csv.js"></script>
 <script src="js/16-formularz-pola.js"></script>
 <script src="js/16-formularz-zgloszenia.js"></script>
+<script src="js/16-formularz-edycja.js"></script>
 <script src="js/20-akceptacje-lista.js"></script>
 <script src="js/20-akceptacje-sekcje.js"></script>
 <script src="js/20-akceptacje-szczegoly.js"></script>

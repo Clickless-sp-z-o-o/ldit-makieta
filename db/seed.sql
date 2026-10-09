@@ -5294,9 +5294,10 @@ INSERT INTO instytucja_opiekunowie (id, instytucja_id, uzytkownik_id) VALUES ('I
 
 -- notatki_wniosku: brak danych startowych
 
--- propozycje_zmian (2)
-INSERT INTO propozycje_zmian (id, instytucja_id, tabela, rekord_id, zmiany, uzasadnienie, zglosil_id, zgloszono, status) VALUES ('PZ-0001', 'IS-01', 'instytucje', 'IS-01', '{"telefon":{"przed":"601 002 118","po":"58 555 20 20"}}', 'Nowy numer recepcji.', 'biuro@odczarujpowerbi.pl', '2026-09-29 14:10', 'oczekuje');
-INSERT INTO propozycje_zmian (id, instytucja_id, tabela, rekord_id, zmiany, uzasadnienie, zglosil_id, zgloszono, status) VALUES ('PZ-0002', 'IS-01', 'klienci', 'KL-0002', '{"osoba_kontaktowa":{"przed":"Rafał Pawlak","po":"Anna Zielińska"}}', 'Zmiana osoby po stronie klienta.', 'biuro@odczarujpowerbi.pl', '2026-09-29 14:10', 'oczekuje');
+-- propozycje_zmian (3)
+INSERT INTO propozycje_zmian (id, instytucja_id, tabela, operacja, rekord_id, zmiany, uzasadnienie, zglosil_id, zgloszono, status) VALUES ('PZ-0001', 'IS-01', 'instytucje', 'zmiana', 'IS-01', '{"telefon":{"przed":"601 002 118","po":"58 555 20 20"}}', 'Nowy numer recepcji.', 'biuro@odczarujpowerbi.pl', '2026-09-29 14:10', 'oczekuje');
+INSERT INTO propozycje_zmian (id, instytucja_id, tabela, operacja, rekord_id, zmiany, uzasadnienie, zglosil_id, zgloszono, status) VALUES ('PZ-0002', 'IS-01', 'klienci', 'zmiana', 'KL-0002', '{"osoba_kontaktowa":{"przed":"Rafał Pawlak","po":"Anna Zielińska"}}', 'Zmiana osoby po stronie klienta.', 'biuro@odczarujpowerbi.pl', '2026-09-29 14:10', 'oczekuje');
+INSERT INTO propozycje_zmian (id, instytucja_id, tabela, operacja, rekord_id, zmiany, uzasadnienie, zglosil_id, zgloszono, status) VALUES ('PZ-0003', 'IS-01', 'katalog_szkolen', 'dodanie', NULL, '{"nazwa":{"przed":null,"po":"Power BI dla zarządu"},"liczba_godzin":{"przed":null,"po":8},"liczba_dni":{"przed":null,"po":1},"tryb":{"przed":null,"po":"Online"},"ceny":{"przed":null,"po":[2400]}}', 'Nowe szkolenie na prośbę klientów.', 'biuro@odczarujpowerbi.pl', '2026-09-29 14:10', 'oczekuje');
 
 -- korespondencja (8)
 INSERT INTO korespondencja (id, klient_id, instytucja_id, data, kierunek, od_kogo, temat, skrzynka, zalaczniki, adres_email, id_m365, przypisanie) VALUES ('KOR-0001', NULL, NULL, '2026-08-28 14:22', 'przychodzacy', 'kontakt@stalmet.pl', 'Stalmet - komplet dokumentów', 'lucja@ldit.pl', 2, NULL, NULL, 'przypisany');
@@ -5336,9 +5337,17 @@ INSERT INTO zgloszenia (id, data, podmiot_typ, podmiot, typ, powod, opis, autor,
 INSERT INTO zgloszenia (id, data, podmiot_typ, podmiot, typ, powod, opis, autor, waga, klient_id) VALUES ('ZG-K03', '2026-03-10', 'klient', 'Nordika sp.j.', 'Klient', 'Niezłożony wniosek', 'Wniosek przygotowany na nabór, klient nie złożył go w urzędzie.', 'Bartłomiej Olejnik', 'średnia', 'KL-0002');
 INSERT INTO zgloszenia (id, data, podmiot_typ, podmiot, typ, powod, opis, autor, waga, klient_id) VALUES ('ZG-K04', '2026-07-14', 'klient', 'Nordika sp.j.', 'Klient', 'Niezłożony wniosek', 'Wniosek przygotowany na nabór, klient nie złożył go w urzędzie.', 'Bartłomiej Olejnik', 'wysoka', 'KL-0002');
 
--- powiadomienia (2)
-INSERT INTO powiadomienia (id, rodzaj, tresc, tabela, rekord_id, utworzono, rozwiazano, rozwiazal_id) VALUES ('POW-0001', 'nieznany_urzad', 'Nabór z pliku nabory-ogloszone.xlsx wskazuje urząd „Urząd Pracy Gdańsk Oliwa”, którego nie ma w słowniku urzędów ani w aliasach. Dodaj alias w Ustawieniach > Słowniki albo popraw plik.', 'src_nabory_ogloszone', 'SRO-9001', '2026-08-29T06:00:00Z', NULL, NULL);
-INSERT INTO powiadomienia (id, rodzaj, tresc, tabela, rekord_id, utworzono, rozwiazano, rozwiazal_id) VALUES ('POW-0002', 'mail_niejednoznaczny', 'Mail od kontakt@stalmet.pl pasuje do klienta Stalmet sp. z o.o. sp.k. w 2 instytucjach. Przypisz go ręcznie do właściwego klienta.', 'korespondencja', 'KOR-9001', '2026-08-29T07:00:00Z', NULL, NULL);
+-- powiadomienia (10)
+INSERT INTO powiadomienia (id, rodzaj, tresc, tabela, rekord_id, instytucja_id, adresat_id, utworzono, rozwiazano, rozwiazal_id) VALUES ('POW-0001', 'nieznany_urzad', 'Nabór z pliku nabory-ogloszone.xlsx wskazuje urząd „Urząd Pracy Gdańsk Oliwa”, którego nie ma w słowniku urzędów ani w aliasach. Dodaj alias w Ustawieniach > Słowniki albo popraw plik.', 'src_nabory_ogloszone', 'SRO-9001', NULL, NULL, '2026-08-29T06:00:00Z', NULL, NULL);
+INSERT INTO powiadomienia (id, rodzaj, tresc, tabela, rekord_id, instytucja_id, adresat_id, utworzono, rozwiazano, rozwiazal_id) VALUES ('POW-0002', 'mail_niejednoznaczny', 'Mail od kontakt@stalmet.pl pasuje do klienta Stalmet sp. z o.o. sp.k. w 2 instytucjach. Przypisz go ręcznie do właściwego klienta.', 'korespondencja', 'KOR-9001', NULL, NULL, '2026-08-29T07:00:00Z', NULL, NULL);
+INSERT INTO powiadomienia (id, rodzaj, tresc, tabela, rekord_id, instytucja_id, adresat_id, utworzono, rozwiazano, rozwiazal_id) VALUES ('POW-I001', 'decyzja_urzedu', 'Decyzja pozytywna urzędu: Termex sp.j. (wniosek 5).', 'wnioski', 'PR-26-0005', 'IS-01', NULL, '2026-08-26T10:00:00Z', NULL, NULL);
+INSERT INTO powiadomienia (id, rodzaj, tresc, tabela, rekord_id, instytucja_id, adresat_id, utworzono, rozwiazano, rozwiazal_id) VALUES ('POW-I002', 'decyzja_urzedu', 'Decyzja negatywna urzędu: Fit Studio sp. z o.o. sp.k. (wniosek 7).', 'wnioski', 'PR-26-0007', 'IS-01', NULL, '2026-08-27T10:00:00Z', NULL, NULL);
+INSERT INTO powiadomienia (id, rodzaj, tresc, tabela, rekord_id, instytucja_id, adresat_id, utworzono, rozwiazano, rozwiazal_id) VALUES ('POW-I003', 'zmiana_zatwierdzona', 'Zmiana danych instytucji zatwierdzona.', NULL, NULL, 'IS-01', NULL, '2026-08-18T09:00:00Z', '2026-08-18T12:00:00Z', 'biuro@odczarujpowerbi.pl');
+INSERT INTO powiadomienia (id, rodzaj, tresc, tabela, rekord_id, instytucja_id, adresat_id, utworzono, rozwiazano, rozwiazal_id) VALUES ('POW-I004', 'zmiana_odrzucona', 'Zmiana danych klienta odrzucona. Powód: numer telefonu nie należy do firmy.', NULL, NULL, 'IS-01', 'terminy@odczarujpowerbi.pl', '2026-08-28T15:00:00Z', NULL, NULL);
+INSERT INTO powiadomienia (id, rodzaj, tresc, tabela, rekord_id, instytucja_id, adresat_id, utworzono, rozwiazano, rozwiazal_id) VALUES ('POW-I005', 'decyzja_urzedu', 'Decyzja pozytywna urzędu: Agrotech sp. z o.o. (wniosek 11).', 'wnioski', 'PR-26-0011', 'IS-03', NULL, '2026-08-26T10:00:00Z', NULL, NULL);
+INSERT INTO powiadomienia (id, rodzaj, tresc, tabela, rekord_id, instytucja_id, adresat_id, utworzono, rozwiazano, rozwiazal_id) VALUES ('POW-I006', 'decyzja_urzedu', 'Decyzja negatywna urzędu: Kompas Biuro sp. z o.o. (wniosek 10).', 'wnioski', 'PR-26-0010', 'IS-03', NULL, '2026-08-27T10:00:00Z', NULL, NULL);
+INSERT INTO powiadomienia (id, rodzaj, tresc, tabela, rekord_id, instytucja_id, adresat_id, utworzono, rozwiazano, rozwiazal_id) VALUES ('POW-I007', 'zmiana_zatwierdzona', 'Zmiana danych instytucji zatwierdzona.', NULL, NULL, 'IS-03', NULL, '2026-08-19T09:00:00Z', '2026-08-19T12:00:00Z', 'kontakt@dronfortech.pl');
+INSERT INTO powiadomienia (id, rodzaj, tresc, tabela, rekord_id, instytucja_id, adresat_id, utworzono, rozwiazano, rozwiazal_id) VALUES ('POW-I008', 'zmiana_odrzucona', 'Zmiana danych klienta odrzucona. Powód: numer telefonu nie należy do firmy.', NULL, NULL, 'IS-03', 'mirka@dronfortech.pl', '2026-08-28T15:00:00Z', NULL, NULL);
 
 -- rejestr_aktywnosci (10)
 INSERT INTO rejestr_aktywnosci (id, czas, kto, typ, obiekt, pole, przed, po, tabela, rekord_id) VALUES ('AKT-0001', '2026-08-29 10:42', 'Łucja Wierzbicka', 'Zmiana kwoty', 'PR-26-0141', 'Kwota dopłaty dodatkowej', '0 zł', '8 000 zł', 'wnioski', 'PR-26-0141');
@@ -5402,6 +5411,13 @@ INSERT INTO meta (klucz, wartosc) VALUES ('haslo_demo', 'demo');
 
 -- pliki (1)
 INSERT INTO pliki (id, instytucja_id, formularz_id, nazwa, typ, rozmiar, rodzaj, tresc, dodano, dodal_id) VALUES ('PLK-0001', 'IS-05', 'FO-004', 'formularz-FO-004.csv', 'text/csv', 67, 'formularz', 'ZmlybWE7bmlwO2tvbnRha3QKR2FzdHJvIE1peCBzcC4geiBvLm8uOzg5OTIwMDExODg7TWljaGHFgiBHw7Nyc2tpCg==', '2026-08-28 14:03', NULL);
+
+-- zgloszenia_odczyty (5)
+INSERT INTO zgloszenia_odczyty (id, uzytkownik_id, zgloszenie_id, przeczytano) VALUES ('ZGO-0001', 'bartek@ldit.pl', 'ZG-005', '2026-06-30T09:00:00Z');
+INSERT INTO zgloszenia_odczyty (id, uzytkownik_id, zgloszenie_id, przeczytano) VALUES ('ZGO-0002', 'bartek@ldit.pl', 'ZG-004', '2026-05-19T09:00:00Z');
+INSERT INTO zgloszenia_odczyty (id, uzytkownik_id, zgloszenie_id, przeczytano) VALUES ('ZGO-0003', 'bartek@ldit.pl', 'ZG-003', '2026-04-08T09:00:00Z');
+INSERT INTO zgloszenia_odczyty (id, uzytkownik_id, zgloszenie_id, przeczytano) VALUES ('ZGO-0004', 'bartek@ldit.pl', 'ZG-K01', '2026-03-10T09:00:00Z');
+INSERT INTO zgloszenia_odczyty (id, uzytkownik_id, zgloszenie_id, przeczytano) VALUES ('ZGO-0005', 'bartek@ldit.pl', 'ZG-K03', '2026-03-10T09:00:00Z');
 
 COMMIT;
 PRAGMA foreign_keys = ON;

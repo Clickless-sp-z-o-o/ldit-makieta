@@ -11,7 +11,7 @@ function renderTerminy16() {
     : '<span class="muted">Instytucja nie ma jeszcze wystawionych terminów.</span>';
 }
 
-/* Katalog szkolen (tylko odczyt) */
+/* Katalog szkolen; zmiany przez akceptacje LDIT w 16-panel-is-katalog.js (D-320) */
 function wierszSzkolenia16(s) {
   var ile = STAN_16.W.filter(function (w) { return w.szkId === s.id; }).length;
   return '<tr>' +
@@ -20,10 +20,10 @@ function wierszSzkolenia16(s) {
     '<td class="num">' + esc(s.dni) + '</td>' +
     '<td><span class="pill w">' + esc(s.tryb) + '</span></td>' +
     '<td class="num">' + (s.ceny.length ? s.ceny.map(DB.fmtPLN).join(", ") : "brak") + '</td>' +
-    '<td class="num">' + ile + '</td></tr>';
+    '<td class="num">' + ile + '</td><td class="right nowrap">' + akcjeSzkolenia16(s) + '</td></tr>';
 }
 
 function renderKatalog16() {
   el16("szkolenia").innerHTML = STAN_16.SZ.length ? wiersze16(STAN_16.SZ, wierszSzkolenia16) :
-    '<tr><td colspan="6"><div class="empty"><div class="et">Katalog pusty</div>Instytucja nie ma jeszcze szkoleń w katalogu.</div></td></tr>';
+    '<tr><td colspan="7"><div class="empty"><div class="et">Katalog pusty</div>Instytucja nie ma jeszcze szkoleń w katalogu.</div></td></tr>';
 }

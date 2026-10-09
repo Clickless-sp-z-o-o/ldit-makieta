@@ -17,7 +17,7 @@
     <h1 class="page-title">Dofinansowania</h1>
     <span class="tip-mark" data-tip="Wnioski wybranego roku w układzie z Excela. Status zmieniasz przyciskiem Zmień w wierszu, a do wniosku przechodzisz przyciskiem Szczegóły.">i</span>
     <div class="ph-actions">
-      <button class="btn sm atrapa" data-tip="W aplikacji docelowej">Eksport</button>
+      <span class="eksport-ekranu" data-pozycje="wnioski"></span>
       <button class="btn primary sm" id="btnNowyProjekt" data-tip="Przenosi na ekran Nowy formularz, zakładka Nowy projekt, z wybranym rokiem i instytucją.">+ Nowy projekt</button>
     </div>
   </div>
@@ -70,7 +70,7 @@
       <table class="tbl bez-klikania" id="tab">
         <thead>
           <tr>
-            <th class="c" style="width:70px">Lp.<span class="tip-mark" data-tip="Liczba porządkowa na liście, zawsze bez luk. Zmieniasz ją po włączeniu Ustaw kolejność, przyciskami albo przeciągnięciem wiersza, zawsze z potwierdzeniem (D-261).">i</span></th>
+            <th><span class="sr-only">Szczegóły</span><span class="tip-mark" data-tip="Szczegóły i edycja wniosku. Kolejność wierszy zmieniasz po włączeniu Ustaw kolejność, przyciskami albo przeciągnięciem wiersza, zawsze z potwierdzeniem (D-261).">i</span></th>
             <th style="width:36px">Nr<span class="tip-mark" data-tip="Numer wniosku (ID) jest stały, trafia na fakturę i nie zmienia się przy zmianie kolejności (D-112, D-261).">i</span></th>
             <th>Klient</th>
             <th class="kol-is">Instytucja</th>
@@ -87,7 +87,7 @@
             <th>Dokumenty<span class="tip-mark" data-tip="U: umowa (z urzędem pracy), F: faktura, C: certyfikat. Znaczniki tylko do podglądu, edycja wyłącznie w Szczegółach wniosku (D-232, D-263).">i</span></th>
             <th>Przygotował<span class="tip-mark" data-tip="Kto przygotował wniosek (jedna osoba). Nie zawsze jest to opiekun instytucji (D-233, D-260).">i</span></th>
             <th>Opiekunowie<span class="tip-mark" data-tip="Opiekunowie wniosku, może być kilku (np. zastępstwo). Ustawiasz ich w Szczegółach wniosku (D-260).">i</span></th>
-            <th></th>
+            <th><span class="sr-only">Akcje</span></th>
           </tr>
         </thead>
         <tbody id="body"></tbody>
@@ -106,8 +106,10 @@
 <script src="../assets/haslo.js"></script>
 <script src="../assets/funkcje.js"></script>
 <script src="../assets/auth.js"></script>
+<script src="../assets/haslo-zmiana.js"></script>
 <script src="../assets/walidacja.js"></script>
 <script src="../assets/straznik-wlasnosc.js"></script>
+<script src="../assets/straznik-katalog.js"></script>
 <script src="../assets/straznik.js"></script>
 <script src="../assets/zakres.js"></script>
 <script src="../assets/prowizja.js"></script>
@@ -119,8 +121,13 @@
 <script src="../assets/lata.js"></script>
 <script src="../assets/nabory-import.js"></script>
 <script src="../assets/html.js"></script>
+<script src="../assets/powiadomienia.js"></script>
 <script src="../assets/statusy.js"></script>
 <script src="../assets/akceptacje.js"></script>
+<script src="../assets/akceptacje-edycja.js"></script>
+<script src="../assets/akceptacje-katalog.js"></script>
+<script src="../assets/xlsx.js"></script>
+<script src="../assets/eksport.js"></script>
 <script src="../assets/wielowybor.js"></script>
 <script src="../assets/nawigacja.js"></script>
 <script src="../assets/podglad-roli.js"></script>
@@ -138,6 +145,7 @@
 <script src="js/02-zestawienia-kolejnosc.js"></script>
 <script src="js/02-zestawienia-status.js"></script>
 <script src="js/02-zestawienia-usuwanie.js"></script>
+<script src="js/eksporty-ekranow.js"></script>
 <script type="text/kfs-strona">
 inicjuj02();
 otworzNowyProjektZAdresu();

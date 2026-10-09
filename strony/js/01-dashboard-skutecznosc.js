@@ -20,7 +20,7 @@ function wierszSkutecznosci(r) {
     '<td class="num">' + liczbaZLinkiem(r.przygotowane, r, "") + '</td>' +
     '<td class="num">' + liczbaZLinkiem(r.pozytywne, r, "Pozytywna") + '</td>' +
     '<td class="num">' + liczbaZLinkiem(r.negatywne, r, "Negatywna") + '</td>' +
-    '<td class="num strong">' + (r.proc == null ? '<span class="muted">&mdash;</span>' : esc(DB.fmtPct(r.proc))) + '</td>' +
+    '<td class="num strong">' + (r.proc == null ? '<span class="muted">-</span>' : esc(DB.fmtPct(r.proc))) + '</td>' +
     '<td style="width:24%"><div style="background:var(--surface-2);border-radius:4px;height:8px">' +
     '<div style="width:' + Math.max(0, Math.min(100, proc)) + '%;background:var(--st-poz-mark);height:8px;border-radius:4px"></div></div></td>' +
     '<td class="c">' + (Auth.widziModul("dofin") && r.przygotowane

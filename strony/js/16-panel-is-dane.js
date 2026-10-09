@@ -49,7 +49,7 @@ function renderKpi16() {
   var zrealizowane = W.filter(function (w) { return w.rozliczenie === "Rozliczone" || w.rozliczenie === "Zafakturowany"; });
   var osobyPoz = poz.reduce(function (s, w) { return s + w.osobZakw; }, 0);
   el16("kpi").innerHTML =
-    kartaKpi16("Moi klienci", DB.fmtNum(STAN_16.KL.length), "przypisani do instytucji") +
+    kartaKpi16("Moi klienci", DB.fmtNum(STAN_16.KL.length), Auth.handlowiec() ? "przypisani do Ciebie" : "przypisani do instytucji") +
     kartaKpi16("Wnioski złożone", DB.fmtNum(zlozone.length), "z " + W.length + " projektów") +
     kartaKpi16("Decyzje pozytywne", DB.fmtNum(poz.length),
         '<span class="tag pos dot">' + (zlozone.length ? Math.round(poz.length / zlozone.length * 100) : 0) + '% skuteczności</span>') +

@@ -5,7 +5,8 @@
    kolumny w formacie tekstowym, zeby Excel nie gubil zer na poczatku PESEL i NIP.
 
    XlsxPlik.naCsv(arrayBuffer) -> Promise<string>      (blad: XlsxError)
-   XlsxPlik.szablon(naglowki, wiersze) -> Uint8Array pliku .xlsx (wiersze danych opcjonalne) */
+   XlsxPlik.szablon(naglowki, wiersze, arkusz) -> Uint8Array pliku .xlsx (wiersze i nazwa arkusza opcjonalne)
+   Wspolny dla formularzy (21) i eksportow (assets/eksport.js), dlatego lezy w assets. */
 (function (global) {
   "use strict";
 
@@ -155,8 +156,14 @@
     return '<row r="' + nr + '">' + wartosci.map(function (n) { return '<c t="inlineStr" s="1"><is><t>' + escXml(n) + "</t></is></c>"; }).join("") + "</row>";
   }
 
-  /* wiersze: opcjonalne wiersze danych pod naglowkiem (tablice tekstow) */
-  function szablon(naglowki, wiersze) {
+  /* Nazwa arkusza w Excelu: do 31 znakow, bez znakow zabronionych \ / ? * [ ] : */
+  function nazwaArkusza(arkusz) {
+    var n = String(arkusz || "Formularz").replace(/[\\\/?*\[\]:]/g, " ").trim().slice(0, 31);
+    return n || "Arkusz";
+  }
+
+  /* wiersze: opcjonalne wiersze danych pod naglowkiem (tablice tekstow), arkusz: nazwa arkusza */
+  function szablon(naglowki, wiersze, arkusz) {
     var komorki = [naglowki].concat(wiersze || []).map(function (w, i) { return wierszXml(w, i + 1); }).join("");
     var pliki = [
       { nazwa: "[Content_Types].xml", tresc: '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
@@ -166,7 +173,7 @@
         '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>' },
       { nazwa: "_rels/.rels", tresc: '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
         '<Relationship Id="rId1" Type="' + REL + '/officeDocument" Target="xl/workbook.xml"/></Relationships>' },
-      { nazwa: "xl/workbook.xml", tresc: '<?xml version="1.0" encoding="UTF-8"?><workbook ' + NS + ' xmlns:r="' + REL + '"><sheets><sheet name="Formularz" sheetId="1" r:id="rId1"/></sheets></workbook>' },
+      { nazwa: "xl/workbook.xml", tresc: '<?xml version="1.0" encoding="UTF-8"?><workbook ' + NS + ' xmlns:r="' + REL + '"><sheets><sheet name="' + escXml(nazwaArkusza(arkusz)) + '" sheetId="1" r:id="rId1"/></sheets></workbook>' },
       { nazwa: "xl/_rels/workbook.xml.rels", tresc: '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
         '<Relationship Id="rId1" Type="' + REL + '/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="' + REL + '/styles" Target="styles.xml"/></Relationships>' },
       /* Styl 1 = format tekstowy (numFmtId 49): PESEL i NIP zostaja tekstem */

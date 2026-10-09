@@ -16,7 +16,15 @@ function wybor16(id, etykieta, opcje, wybrana) {
       return '<option value="' + esc(o[0]) + '"' + (o[0] === wybrana ? " selected" : "") + '>' + esc(o[1]) + '</option>';
     }).join("") + '</select></label>';
 }
-function siatka16(pola) { return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' + pola.join("") + '</div>'; }
+function siatka16(pola) { return '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px">' + pola.join("") + '</div>'; }
+
+/* Formularze panelu otwieraja sie w bloku na cala szerokosc strony, nad siatka (uwaga 08.10) */
+function pokazBlokFormularza16() { el16("zgloszenieForm").scrollIntoView({ block: "start" }); }
+
+/* Dane instytucji zmienia tylko konto calej instytucji (Administrator IS), nie pracownik ani handlowiec */
+function mozeZmieniacInstytucje16() {
+  return Auth.moze("zmiany.zglaszanie") && Auth.moze("zakres.cala_instytucja") && Auth.handlowiec() === null;
+}
 function przyciski16(zapisz) {
   return '<div class="btn-row" style="margin-top:10px"><button class="btn primary sm" onclick="' + zapisz + '()">Wyślij do akceptacji LDIT</button>' +
     '<button class="btn sm" onclick="zamknijZgloszenie16()">Anuluj</button></div><div class="small" id="komunikat16" style="margin-top:6px"></div>';
@@ -31,6 +39,7 @@ function pokazFormularzKlienta16() {
       el16("komunikatZgloszen").style.color = braki.length ? "var(--neg-ink)" : "var(--pos-ink)";
     }
   });
+  pokazBlokFormularza16();
 }
 
 /* Formularz zmiany: aktualne wartosci pol z Akceptacje.POLA, do propozycji trafia roznica */
@@ -43,6 +52,7 @@ function pokazZmiane16(tabela) {
   el16("zgloszenieForm").style.display = "";
   if (tabela === "instytucje") rysujPolaZmiany16("instytucje", STAN_16.inst.id);
   else el16("zmKlient").addEventListener("change", function () { rysujPolaZmiany16("klienci", this.value); });
+  pokazBlokFormularza16();
 }
 
 function rysujPolaZmiany16(tabela, id) {
@@ -82,6 +92,7 @@ function wyslij16(akcja) {
     akcja();
     zamknijZgloszenie16();
     el16("komunikatZgloszen").textContent = "Wysłano do akceptacji LDIT. Status zobaczysz w liście poniżej.";
+    renderKonta16();
   } catch (e) {
     if (!(e instanceof Akceptacje.AkceptacjeError) && e.name !== "StraznikError") throw e;
     el16("komunikat16").textContent = e.message;
@@ -97,26 +108,58 @@ function tagStatusu16(status, powod) {
   return '<span class="tag ' + klasa + ' dot">' + esc(zwrot ? "zwrócony do uzupełnienia" : status) + '</span>';
 }
 
+/* Edycja wyslanego formularza w panelu (D-314): autor poprawia czekajacy albo zwrocony formularz */
+function przyciskEdycji16(id) {
+  if (!Akceptacje.edycjaFormularza(Store.find("formularze_oczekujace", id)).mozna) return "";
+  return '<button class="btn xs" onclick="edytujFormularz16(\'' + escJs(id) + '\')">Edytuj</button>';
+}
+
+function edytujFormularz16(id) {
+  var ocena = Akceptacje.edycjaFormularza(Store.find("formularze_oczekujace", id));
+  if (!ocena.mozna) return;
+  zfPokaz({
+    kontener: "zgloszenieForm", instytucjaId: STAN_16.inst.id,
+    szkolenia: STAN_16.SZ.map(function (x) { return [x.nazwa, x.nazwa]; }), edycja: { id: id, zwrot: ocena.zwrot },
+    poZapisie: function (wiersz) {
+      zfZamknij();
+      el16("komunikatZgloszen").textContent = ocena.zwrot && wiersz.status === "oczekuje" ? "Formularz wysłany ponownie do akceptacji LDIT." : "Zapisano zmiany formularza.";
+      el16("komunikatZgloszen").style.color = "var(--pos-ink)";
+      renderMojeZgloszenia16();
+    }
+  });
+  pokazBlokFormularza16();
+}
+
 function renderMojeZgloszenia16() {
   var formularze = DB.KOLEJKA.filter(function (k) { return k.isId === STAN_16.inst.id; })
-    .map(function (k) { return { data: k.data, co: "Klient: " + k.firma, status: k.status, powod: k.powod }; });
+    .map(function (k) { return { data: k.data, co: "Klient: " + k.firma, status: k.status, powod: k.powod, akcja: przyciskEdycji16(k.id) }; });
   var zmiany = DB.PROPOZYCJE.filter(function (p) { return p.isId === STAN_16.inst.id; }).map(function (p) {
-    return { data: p.zgloszono, co: "Zmiana " + (p.tabela === "instytucje" ? "danych instytucji" : "danych klienta") + ": " +
-      Object.keys(p.zmiany).map(function (k) { return Akceptacje.POLA[p.tabela][k] || k; }).join(", "), status: p.status, powod: p.powod };
+    var katalog = p.tabela === "katalog_szkolen", pola = katalog ? AkceptacjeKatalog.POLA : Akceptacje.POLA[p.tabela];
+    return { data: p.zgloszono, co: (katalog ? "Katalog szkoleń (" + { dodanie: "nowe", usuniecie: "usunięcie", zmiana: "zmiana" }[p.operacja] + ")"
+      : "Zmiana " + (p.tabela === "instytucje" ? "danych instytucji" : "danych klienta")) + ": " +
+      Object.keys(p.zmiany).map(function (k) { return pola[k] || k; }).join(", "), status: p.status, powod: p.powod };
   });
   var lista = formularze.concat(zmiany).sort(function (a, b) { return b.data < a.data ? -1 : 1; });
   el16("mojeZgloszenia").innerHTML = lista.length ? lista.map(function (z) {
     return '<tr><td class="small nowrap mono">' + esc(DB.fmtDate(z.data)) + '</td><td>' + esc(z.co) +
-      (z.powod ? '<div class="small" style="color:var(--neg-ink)">Powód: ' + esc(z.powod) + '</div>' : "") + '</td><td>' + tagStatusu16(z.status, z.powod) + '</td></tr>';
-  }).join("") : '<tr><td colspan="3" class="small muted">Brak zgłoszeń wysłanych z panelu.</td></tr>';
+      (z.powod ? '<div class="small" style="color:var(--neg-ink)">Powód: ' + esc(z.powod) + '</div>' : "") + '</td><td>' + tagStatusu16(z.status, z.powod) + '</td><td class="right">' + (z.akcja || "") + '</td></tr>';
+  }).join("") : '<tr><td colspan="4" class="small muted">Brak zgłoszeń wysłanych z panelu.</td></tr>';
 }
 
 function podepnijZgloszenia16() {
   var formularze = Auth.moze("formularze.zglaszanie"), zmiany = Auth.moze("zmiany.zglaszanie");
   el16("kartaZgloszen").hidden = !formularze && !zmiany;
   el16("btnZglosKlienta").hidden = !formularze;
-  el16("btnZmianaInstytucji").hidden = !zmiany || Auth.handlowiec() !== null;
+  el16("btnZmianaInstytucji").hidden = !mozeZmieniacInstytucje16();
   el16("btnZmianaKlienta").hidden = !zmiany;
   renderMojeZgloszenia16();
   window.addEventListener("db:changed", renderMojeZgloszenia16);
+  window.addEventListener("db:changed", renderKonta16);
+}
+
+/* Karta Konto instytucji: dane, zmiany czekajace na akceptacje i przycisk edycji (D-224, D-288) */
+function renderKonta16() {
+  el16("kontoInstytucji").innerHTML = kontoInstytucjiHtml(wierszeKontaInstytucji(STAN_16.inst));
+  el16("zmianyKonta16").innerHTML = zmianyKontaHtml(STAN_16.inst.id);
+  el16("btnEdytujKonto16").hidden = !mozeZmieniacInstytucje16();
 }

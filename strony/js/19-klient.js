@@ -19,7 +19,7 @@ function instytucjeKlienta(idKlienta) {
 }
 
 function wierszWniosku19(w) {
-  var brak = '<span class="muted">&mdash;</span>';
+  var brak = '<span class="muted">-</span>';
   return '<tr class="' + Statusy.klasaWiersza(w) + '" data-id="' + esc(w.id) + '">' +
     '<td class="strong mono nowrap">' + esc(w.id) + '</td>' +
     '<td class="nowrap">' + esc(w.rok || "bez roku") + '</td>' +
@@ -46,7 +46,7 @@ function renderMaile19() {
     return '<tr><td>' + (m.kier === "in" ? '<span class="tag info">&#8600;</span>' : '<span class="tag mute">&#8599;</span>') + '</td>' +
       '<td class="strong">' + esc(m.temat) + '</td><td class="small muted">' + esc(m.skrz) + '</td>' +
       '<td class="small nowrap">' + esc(DB.fmtDate(m.data)) + '</td>' +
-      '<td class="c">' + (m.zal ? '<span class="pill">' + esc(m.zal) + '</span>' : '<span class="muted">&mdash;</span>') + '</td></tr>';
+      '<td class="c">' + (m.zal ? '<span class="pill">' + esc(m.zal) + '</span>' : '<span class="muted">-</span>') + '</td></tr>';
   }).join("") : '<tr><td colspan="5" class="muted">Brak korespondencji tego klienta.</td></tr>';
 }
 

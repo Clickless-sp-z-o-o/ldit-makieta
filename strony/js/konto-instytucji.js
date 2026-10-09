@@ -26,3 +26,21 @@ function wierszeKontaInstytucji(i) {
 function kontoInstytucjiHtml(wiersze) {
   return wiersze.map(function (r) { return "<dt>" + r[0] + "</dt><dd>" + r[1] + "</dd>"; }).join("");
 }
+
+/* Zmiany danych instytucji zgloszone do akceptacji LDIT, jeszcze nierozpatrzone (D-224):
+   pole, wartosc obecna i nowa. Pusty tekst, gdy nic nie czeka. */
+function zmianyKontaHtml(instytucjaId) {
+  var czekajace = DB.PROPOZYCJE.filter(function (p) {
+    return p.tabela === "instytucje" && p.rekord === instytucjaId && p.status === "oczekuje";
+  });
+  if (!czekajace.length) return "";
+  var wiersze = [];
+  czekajace.forEach(function (p) {
+    Object.keys(p.zmiany).forEach(function (k) {
+      var z = p.zmiany[k];
+      wiersze.push("<li><b>" + esc(Akceptacje.POLA.instytucje[k] || k) + "</b>: zmiana czeka na akceptację, nowa wartość <b>" +
+        esc(z.po == null || z.po === "" ? "(puste)" : z.po) + '</b> <span class="small muted">(dziś: ' + esc(z.przed == null || z.przed === "" ? "puste" : z.przed) + ")</span></li>");
+    });
+  });
+  return '<div class="note warn mb0 zmiany-konta"><b>Zmiany czekające na akceptację LDIT</b><ul style="margin:6px 0 0;padding-left:18px">' + wiersze.join("") + "</ul></div>";
+}

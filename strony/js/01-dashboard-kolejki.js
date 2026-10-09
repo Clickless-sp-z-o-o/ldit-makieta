@@ -19,7 +19,7 @@ function pozycjeDoDzialania() {
   var zmiany = DB.PROPOZYCJE.filter(function (p) { return p.status === "oczekuje"; });
   var nabory = DB.NABORY.filter(function (n) { return n.status === "trwa" && n.do >= dzis && n.do <= koniecNaboru; });
   /* Powiadomienia systemu (D-297) widzi konto z modulem Zadania; filtr nizej ukrywa je pozostalym */
-  var powiadomienia = Store.query("SELECT id FROM powiadomienia WHERE rozwiazano IS NULL");
+  var powiadomienia = Store.query("SELECT id FROM powiadomienia WHERE instytucja_id IS NULL AND rozwiazano IS NULL");
   var terminy = DB.TERMINY.filter(function (t) { return t.status !== "Odbyty" && t.od >= dzis && t.od <= koniecSzkolen; });
   var faktury = DB.FAKTURY.filter(function (f) { return f.status === "Po terminie"; });
   var doRozliczenia = STAN_01.poz.filter(function (w) { return w.rozliczenie === "Oczekuje"; });

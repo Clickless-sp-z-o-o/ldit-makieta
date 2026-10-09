@@ -64,20 +64,22 @@ function ostrzezenieDuplikatu20(f, duplikat) {
 }
 
 function wartosc20(k, v) {
-  if (v == null || v === "") return '<span class="muted">puste</span>';
+  if (v == null || v === "" || (Array.isArray(v) && !v.length)) return '<span class="muted">puste</span>';
+  if (Array.isArray(v)) return esc(v.map(DB.fmtPLN).join(", "));
   return esc(k === "pup_id" ? nazwaUrzedu20(v) : v);
 }
 
 function panelZmiany20(p) {
   el20("tytulPanelu").textContent = p.is + ": " + opisRekordu20(p);
   el20("subPanelu").textContent = "zmiana " + p.id;
-  var pola = Akceptacje.POLA[p.tabela] || {};
+  var pola = p.tabela === "katalog_szkolen" ? AkceptacjeKatalog.POLA : Akceptacje.POLA[p.tabela] || {};
   var tabela = '<table class="tbl"><thead><tr><th>Pole</th><th>Teraz</th><th>Po zmianie</th></tr></thead><tbody>' +
     Object.keys(p.zmiany).map(function (k) {
       return "<tr><td class='strong'>" + esc(pola[k] || k) + "</td><td class='zmiana-przed'>" + wartosc20(k, p.zmiany[k].przed) +
         "</td><td><span class='zmiana-po'>" + wartosc20(k, p.zmiany[k].po) + "</span></td></tr>";
     }).join("") + "</tbody></table>";
-  var link = p.tabela === "klienci" ? '<a class="link-rekordu" href="' + esc(Nawigacja.adresKlienta(p.rekord)) + '">karta klienta</a>'
+  var link = p.tabela === "katalog_szkolen" ? '<a class="link-rekordu" href="06-instytucje.html' + esc(Nawigacja.zbudujZapytanie({ id: p.isId, zakladka: "p-katalog" })) + '">katalog instytucji</a>'
+    : p.tabela === "klienci" ? '<a class="link-rekordu" href="' + esc(Nawigacja.adresKlienta(p.rekord)) + '">karta klienta</a>'
     : '<a class="link-rekordu" href="06-instytucje.html' + esc(Nawigacja.zbudujZapytanie({ id: p.rekord })) + '">karta instytucji</a>';
   el20("panel").innerHTML = wiersze20([
     ["Instytucja", esc(p.is)], ["Dotyczy", esc(opisRekordu20(p)) + " · " + link],

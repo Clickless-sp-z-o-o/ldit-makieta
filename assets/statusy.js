@@ -85,7 +85,7 @@
     if (w.rozliczenie === "Rozliczone") return '<span class="tag st-set">Rozliczone</span>';
     if (w.rozliczenie === "Zafakturowany") return '<span class="tag info">Zafakturowany</span>';
     if (w.rozliczenie === "Oczekuje") return '<span class="tag mute">Oczekuje</span>';
-    return '<span class="muted small">&mdash;</span>';
+    return '<span class="muted small">-</span>';
   }
 
   function przedZlozeniem(w) { return PRZED_ZLOZENIEM.indexOf(wartosc(w)) >= 0; }
@@ -131,6 +131,8 @@
         komentarz: akcje()[akcja].etykieta, uzytkownik_id: kto.uzytkownik
       }, "PRZ-");
     }
+    /* Decyzja urzedu i rozliczenie trafiaja do instytucji klienta (D-317); powtorzenie tego samego statusu nie */
+    if (p.status_decyzji !== w.statusDec || p.status_finansowy !== w.rozliczenie) global.Powiadomienia.oStatusieWniosku(w, akcja);
     return p;
   }
 

@@ -29,12 +29,12 @@ function wierszWyslanego21(f) {
   return '<tr><td class="small nowrap mono">' + esc(DB.fmtDate(f.data)) + '</td>' +
     '<td class="strong">' + esc(f.firma) + '<div class="small muted mono">' + esc(f.nip) + '</div>' + uwagiWiersza21(f) + '</td>' +
     '<td class="small">' + esc(f.is) + '</td><td class="small">' + esc(ZRODLA_21[f.zrodlo] || f.zrodlo) + '</td>' +
-    '<td>' + tagStatusu21(f) + '</td></tr>';
+    '<td>' + tagStatusu21(f) + '</td><td class="right">' + przyciskEdycji21(f) + '</td></tr>';
 }
 
 function renderLista21() {
   var lista = wyslaneFormularze21();
   el21("wyslane").innerHTML = lista.length ? lista.map(wierszWyslanego21).join("") :
-    '<tr><td colspan="5"><div class="empty"><div class="et">Brak wysłanych formularzy</div>Formularz wysłany z tego ekranu pojawi się tutaj ze statusem.</div></td></tr>';
+    '<tr><td colspan="6"><div class="empty"><div class="et">Brak wysłanych formularzy</div>Formularz wysłany z tego ekranu pojawi się tutaj ze statusem.</div></td></tr>';
   el21("liczWyslane").textContent = lista.length;
 }

@@ -67,3 +67,35 @@ tr.row-set td .pod, tr.row-set td .mono { color: #2b4372; }
 
 /* Litera „i” podpowiedzi to ikona, nie tekst: mniejszy znak w wiekszym kolku */
 .tip-mark { width: 16px; height: 16px; font-size: 0.625rem; }
+
+/* Tekst tylko dla czytnika ekranu, np. naglowek kolumny z przyciskami */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+/* Ikony menu: jedno pudelko o stalym rozmiarze, znaki w wariancie tekstowym (bez kolorowych emoji),
+   w zwinietym menu wskaznik aktywnej pozycji jako cien zamiast ramki, zeby ikony staly na jednej osi */
+.nav-item .ico { display: inline-grid; place-items: center; width: 20px; height: 20px; flex: 0 0 20px; font-size: 0.9375rem; line-height: 1; }
+.app.menu-zwiniete .nav-item { border-left: 0; padding: 10px 0; }
+.app.menu-zwiniete .nav-item.active { box-shadow: inset 3px 0 0 var(--gold); }
+.app.menu-zwiniete .nav-item .ico { font-size: 1rem; }
+
+/* Atrybut hidden ukrywa element zawsze, takze przycisk (.btn ustawia display: inline-flex) */
+[hidden] { display: none !important; }
+
+/* Formularz na cala szerokosc strony, nad siatka ekranu (panel instytucji, Do akceptacji) */
+.form-pelny { padding: 16px 18px; scroll-margin-top: 12px; }
+.zmiany-konta { margin-top: 10px; }
+
+/* Menu eksportu (assets/eksport.js): przycisk Eksport rozwija liste pozycji z CSV i Excel */
+.eksport-menu { position: relative; display: inline-block; }
+.eksport-menu > summary { list-style: none; cursor: pointer; }
+.eksport-menu > summary::-webkit-details-marker { display: none; }
+.eksport-menu > summary::after { content: " \25BE"; }
+.eksport-lista { position: absolute; right: 0; top: calc(100% + 4px); z-index: 30; min-width: 280px; background: #fff;
+  border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-lg); padding: 6px; }
+.eksport-poz { display: flex; align-items: center; gap: 6px; padding: 4px 6px; }
+.eksport-poz > span { flex: 1; }
+@media (max-width: 700px) { .eksport-lista { right: auto; left: 0; min-width: 240px; } }
+
+/* Avatar w gornym pasku otwiera Moje konto (D-321) */
+button.avatar { border: 0; padding: 0; cursor: pointer; font-family: inherit; }
+button.avatar:hover { background: var(--brand-900); }

@@ -8,7 +8,7 @@ var ETYKIETY_POWIADOMIEN_18 = { nieznany_urzad: "Nieznany urząd w pliku naboró
 /* Powiadomienie o mailu widzi tylko konto, ktore ma w zakresie choc jednego pasujacego klienta:
    tresc wymienia klienta, a pracownik innej instytucji nie moze sie o nim dowiedziec (D-148) */
 function otwartePowiadomienia18() {
-  return Store.query("SELECT * FROM powiadomienia WHERE rozwiazano IS NULL ORDER BY utworzono DESC").filter(function (p) {
+  return Store.query("SELECT * FROM powiadomienia WHERE instytucja_id IS NULL AND rozwiazano IS NULL ORDER BY utworzono DESC").filter(function (p) {
     if (p.rodzaj !== "mail_niejednoznaczny") return true;
     var mail = Store.find("korespondencja", p.rekord_id);
     return !!mail && kandydaciMaila18(mail).length > 0;

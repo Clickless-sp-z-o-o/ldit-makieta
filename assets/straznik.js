@@ -185,6 +185,7 @@
 
   /* Propozycja zmiany dotyczy wlasnej instytucji albo klienta z zakresu konta */
   function propozycjaPozwala(dane) {
+    if (dane.tabela === "katalog_szkolen") { global.StraznikKatalog.propozycjaPozwala(dane, odmowa); return; }  /* D-320 */
     var Auth = global.Auth;
     if (dane.tabela === "instytucje" && dane.rekord_id !== dane.instytucja_id) {
       odmowa("poza_zakresem", "Instytucja zgłasza zmiany tylko własnych danych.");
@@ -245,9 +246,10 @@
 
   /* Decyzja o formularzu (status, rozpatrujacy, utworzony klient) nalezy do LDIT.
      Edycja panelu instytucji nie pozwala zaakceptowac ani zwrocic wlasnego formularza. */
-  function decyzjaFormularzaPozwala(operacja, tabela, dane) {
+  function decyzjaFormularzaPozwala(operacja, tabela, dane, id) {
     if (tabela !== "formularze_oczekujace" || operacja === "insert" || !dane) return;
     var decyzja = ["status"].concat(POLA_ROZPATRZONEGO).some(function (k) { return k in dane; });
+    if (operacja === "update" && decyzja && global.StraznikWlasnosc.ponowneWyslanie(dane, id, POLA_ROZPATRZONEGO)) return;
     if (operacja === "remove" || decyzja) {
       if (!global.Auth.moze("zmiany.zatwierdzanie")) odmowa("brak_uprawnien", "Formularz rozpatruje pracownik LDIT albo administrator.");
     }
@@ -265,6 +267,10 @@
       if (operacja !== "insert") odmowa("rejestr_tylko_dopisywanie", "Rejestru aktywności nie można zmieniać ani usuwać.");
       return;
     }
+    if (tabela === "zgloszenia_odczyty") { global.StraznikWlasnosc.odczytZgloszeniaPozwala(operacja, dane, id, odmowa); return; }
+    /* Powiadomienia (D-317): wiersz instytucji rozstrzyga StraznikWlasnosc, wiersz LDIT (pusta instytucja) tylko modul */
+    if (tabela === "powiadomienia") { if (!global.StraznikWlasnosc.powiadomieniePozwala(operacja, dane, id, odmowa)) modulPozwala(tabela, operacja, dane, id); danePoprawne(operacja, tabela, dane, id); return; }
+    if (global.StraznikWlasnosc.pracownicyInstytucji(operacja, tabela, dane, id, odmowa)) { danePoprawne(operacja, tabela, dane, id); return; }
     if (tabela === "lata_zestawien" && operacja === "insert") {
       if (!Auth.moze("zestawienia.dodawanie_lat")) odmowa("brak_uprawnien", "Twoja rola nie dodaje zakładek lat.");
       return;
@@ -274,12 +280,13 @@
     /* Plik zrodlowy formularza dopisuje ten, kto zglasza formularz (D-287) */
     var funkcja = tabela === "pliki" && dane && dane.formularz_id ? "formularze.zglaszanie" : FUNKCJA_DOPISANIA[tabela];
     var przezFunkcje = operacja === "insert" && funkcja && Auth.moze(funkcja) && !Auth.edytujeModul("akcept");
-    if (!przezFunkcje && !zatwierdzeniePozwala(operacja, tabela, dane, id)) modulPozwala(tabela, operacja, dane, id);
+    if (!przezFunkcje && !zatwierdzeniePozwala(operacja, tabela, dane, id) && !(global.StraznikKatalog && global.StraznikKatalog.zatwierdzeniePozwala(operacja, tabela, dane, id)) &&
+        !global.StraznikWlasnosc.terminUczestnika(operacja, tabela, dane, id, odmowa)) modulPozwala(tabela, operacja, dane, id);
     if (tabela === "propozycje_zmian" && operacja === "insert") propozycjaPozwala(dane);
     if (przezFunkcje && tabela === "pliki") global.StraznikWlasnosc.plikFormularzaPozwala(dane, odmowa);
     else if (przezFunkcje) zgloszeniePozwala(dane);
     if (tabela === "propozycje_zmian" && operacja === "update") rozpatrzeniePozwala(dane);
-    decyzjaFormularzaPozwala(operacja, tabela, dane || {});
+    decyzjaFormularzaPozwala(operacja, tabela, dane || {}, id);
     wierszPozwala(operacja, tabela, dane, id);
     handlowiecPozwala(operacja, tabela, dane, id);
     /* Wlasnosc wiersza: dane klienta i zadania (assets/straznik-wlasnosc.js) */

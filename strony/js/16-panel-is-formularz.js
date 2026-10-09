@@ -9,12 +9,12 @@ function wierszKolejki16(k) {
   return '<tr><td class="strong">' + esc(k.firma) + '<div class="small muted">' + esc(k.szkolenie) + '</div>' +
     (k.braki.length ? '<div class="small" style="color:var(--neg-ink)">Brakuje: ' + esc(k.braki.join(", ")) + '</div>' : "") + '</td>' +
     '<td class="num">' + esc(k.osob) + '</td>' +
-    '<td class="small nowrap">' + esc(DB.fmtDate(k.data)) + '</td></tr>';
+    '<td class="small nowrap">' + esc(DB.fmtDate(k.data)) + '</td><td class="right">' + przyciskEdycji16(k.id) + '</td></tr>';
 }
 
 function renderKolejka16() {
   var lista = oczekujace16();
   el16("kolejka").innerHTML = lista.length ? wiersze16(lista, wierszKolejki16) :
-    '<tr><td colspan="3"><div class="empty"><div class="ei">&#9993;</div>' +
+    '<tr><td colspan="4"><div class="empty"><div class="ei">&#9993;</div>' +
     '<div class="et">Brak zgłoszeń do akceptacji</div>Wysłane formularze pojawią się tutaj do czasu decyzji LDIT.</div></td></tr>';
 }

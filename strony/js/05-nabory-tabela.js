@@ -52,10 +52,10 @@ function tagDni(n) {
     return '<span class="tag ' + klasa + '">' + d + " dni</span>";
   }
   if (n.status === "zakończony") return '<span class="small muted">zakończony</span>';
-  return '<span class="muted">&mdash;</span>';
+  return '<span class="muted">-</span>';
 }
 
-function kreska05() { return '<span class="muted">&mdash;</span>'; }
+function kreska05() { return '<span class="muted">-</span>'; }
 
 /* Szczegoly naboru w podpowiedzi przy nazwie urzedu: deficyty, weryfikacja, podsumowanie */
 function szczegolyNaboru05(n) {

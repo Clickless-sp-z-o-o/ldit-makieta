@@ -90,6 +90,41 @@ function cofnijEkran(historia) {
   return historia[historia.length - 1];
 }
 
+/* Czerwona plakietka nieprzeczytanych zgloszen przy pozycji Zgloszenia (D-315). Menu bywa
+   budowane od nowa, wiec liczba jest pamietana i dokladana po kazdym renderze. */
+var NOWE_ZGLOSZENIA = null;
+function pokazNoweZgloszenia(liczba) {
+  if (liczba !== undefined) NOWE_ZGLOSZENIA = liczba;
+  var pozycja = document.querySelector('#nav .nav-item[data-id="zglo"]');
+  if (!pozycja) return;
+  var plakietka = pozycja.querySelector(".n-nowe");
+  if (!NOWE_ZGLOSZENIA) { if (plakietka) plakietka.remove(); return; }
+  if (!plakietka) { plakietka = document.createElement("span"); plakietka.className = "n-nowe"; pozycja.appendChild(plakietka); }
+  plakietka.textContent = NOWE_ZGLOSZENIA;
+  plakietka.setAttribute("aria-label", NOWE_ZGLOSZENIA + " nieprzeczytanych zgłoszeń");
+}
+
+/* Powiadomienia instytucji (D-317): dzwonek z czerwona plakietka w pasku gornym, tylko dla konta instytucji
+   (liczba null = konto LDIT). Przycisk powstaje przy pierwszym uzyciu obok licznika akceptacji. */
+function pokazPowiadomieniaIS(liczba) {
+  var przycisk = document.getElementById("powiadomieniaIS");
+  if (liczba === null || liczba === undefined) { if (przycisk) przycisk.hidden = true; return; }
+  if (!przycisk) {
+    przycisk = document.createElement("button");
+    przycisk.id = "powiadomieniaIS"; przycisk.type = "button"; przycisk.className = "akceptacje";
+    przycisk.innerHTML = "&#128276;&#xFE0E;<span class=\"n\"></span>";
+    przycisk.addEventListener("click", function () { document.getElementById("view").src = "strony/16-panel-is.html#powiadomienia"; });
+    var akceptacje = document.getElementById("akceptacje");
+    akceptacje.parentNode.insertBefore(przycisk, akceptacje);
+  }
+  przycisk.hidden = false;
+  przycisk.setAttribute("aria-label", liczba ? "Powiadomienia: " + liczba + " nieprzeczytanych" : "Powiadomienia");
+  przycisk.setAttribute("data-tip", "Powiadomienia Twojej instytucji: decyzje LDIT i urzędów.");
+  var n = przycisk.querySelector(".n");
+  n.textContent = liczba;
+  n.hidden = !liczba;
+}
+
 /* Licznik wnioskow do akceptacji (D-105, D-140), tylko dla rol z modulem Zadania */
 function pokazLicznik(liczba) {
   var przycisk = document.getElementById("akceptacje");

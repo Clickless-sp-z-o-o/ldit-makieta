@@ -55,7 +55,7 @@ function render() {
     "<b>" + lista.length + "</b> z " + STAN_02.W.length + " &middot; wartość " +
     DB.fmtPLN(lista.reduce(function (s, w) { return s + (w.kwotaWnioskowana || 0); }, 0));
 
-  document.getElementById("body").innerHTML = lista.map(function (w, i) { return wierszWniosku(w, i + 1); }).join("");
+  document.getElementById("body").innerHTML = lista.map(function (w) { return wierszWniosku(w); }).join("");
   odswiezPrzyciskCofania();
   odswiezUsuniete02();
   odswiezZakladki02(lista.length);

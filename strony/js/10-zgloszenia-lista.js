@@ -72,17 +72,23 @@ function przyciskPodmiotu(z) {
 }
 
 /* ---------- Lista ---------- */
-function renderLista() {
+/* Zgloszenia biezacego widoku (typ, waga, wyszukiwanie): wspolne dla listy i eksportu */
+function widoczneZgloszenia10() {
   var q = document.getElementById("szukaj").value.toLowerCase().trim();
   var waga = Wielowybor.wartosci(document.getElementById("fWaga"));
-
-  var lista = STAN_10.lokalne.filter(function (z) {
+  return STAN_10.lokalne.filter(function (z) {
     if (STAN_10.filtrTyp && z.typ !== STAN_10.filtrTyp) return false;
     if (!Wielowybor.pasuje(waga, z.waga)) return false;
     if (q && (z.podmiot + " " + z.powod + " " + z.opis + " " + z.autor).toLowerCase().indexOf(q) === -1) return false;
     return true;
   }).sort(function (a, b) { return a.data < b.data ? 1 : -1; });
+}
 
+function renderLista() {
+  var lista = widoczneZgloszenia10();
+
+  var nowe = noweZgloszenia10();
+  odswiezPrzyciskWszystkich10(nowe);
   document.getElementById("podsumFiltru").textContent =
     "widocznych " + lista.length + " z " + STAN_10.lokalne.length + " zgłoszeń";
 
@@ -95,7 +101,7 @@ function renderLista() {
   }
 
   document.getElementById("lista").innerHTML = lista.map(function (z) {
-    return '<div class="card">' +
+    return '<div class="card' + (nowe[z.id] ? ' zg-nowe' : "") + '">' +
       '<div class="card-head" style="align-items:flex-start">' +
         '<div class="zg-head" style="flex:1 1 auto">' +
           '<div class="zg-t">' +
@@ -103,7 +109,7 @@ function renderLista() {
             '<div class="small muted"><span class="mono">' + esc(z.id) + "</span> &middot; " +
               esc(DB.fmtDate(z.data)) + " &middot; zgłosił: " + esc(z.autor) + "</div>" +
           "</div>" +
-          '<div class="zg-meta">' + typTag(z.typ) + wagaTag(z.waga) + "</div>" +
+          '<div class="zg-meta">' + znacznikNowego10(nowe, z.id) + typTag(z.typ) + wagaTag(z.waga) + "</div>" +
         "</div>" +
       "</div>" +
       '<div class="card-body">' +
@@ -112,6 +118,7 @@ function renderLista() {
         '<p class="zg-opis">' + esc(z.opis) + "</p>" +
         '<div class="mt16">' + histHtml(z) + "</div>" +
         '<div class="btn-row mt16">' +
+          przyciskPrzeczytane10(nowe, z.id) +
           '<button class="btn sm">Dopisz do zgłoszenia</button>' +
           przyciskPodmiotu(z) +
           '<button class="btn sm danger atrapa" data-tip="W aplikacji docelowej">Oznacz do zakończenia współpracy</button>' +

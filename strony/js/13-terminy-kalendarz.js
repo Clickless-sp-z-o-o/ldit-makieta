@@ -7,19 +7,20 @@ function kpi(label, val, foot) {
 }
 function renderKPI() {
   var pierwszyDzien = iso(STAN_13.rok, STAN_13.mies, 1), ostatniDzien = iso(STAN_13.rok, STAN_13.mies, 31);
-  var wMiesiacu = STAN_13.T.filter(function (t) { return t.od <= ostatniDzien && t.do >= pierwszyDzien; });
-  var zapisaniRazem = STAN_13.T.reduce(function (s, t) { return s + zapisani(t); }, 0);
-  var limitRazem = STAN_13.T.reduce(function (s, t) { return s + (t.limit || 0); }, 0);
-  var wolne = STAN_13.T.filter(function (t) { return t.status === "Wolny" && obsada13(t).stan !== "przekroczony"; });
-  var przekroczone = STAN_13.T.filter(function (t) { return obsada13(t).stan === "przekroczony"; }).length;
+  var widoczne = terminyWidoczne13();
+  var wMiesiacu = widoczne.filter(function (t) { return t.od <= ostatniDzien && t.do >= pierwszyDzien; });
+  var zapisaniRazem = widoczne.reduce(function (s, t) { return s + zapisani(t); }, 0);
+  var limitRazem = widoczne.reduce(function (s, t) { return s + (t.limit || 0); }, 0);
+  var wolne = STAN_13.T.filter(wolnyTermin13);
+  var przekroczone = widoczne.filter(function (t) { return obsada13(t).stan === "przekroczony"; }).length;
   el("kpi").innerHTML =
     kpi("Terminy w miesiącu: " + MIES_NAZWY[STAN_13.mies] + " " + STAN_13.rok, wMiesiacu.length, "wraz z kursami wchodzącymi z poprzedniego miesiąca") +
-    kpi("Terminy wolne", wolne.length, przekroczone
+    kpi("Wolne terminy instytucji", wolne.length, przekroczone
       ? '<span class="przekroczenie">' + "przekroczony limit miejsc: " + przekroczone + " terminów</span>"
-      : "można dopisywać uczestników bez pytania instytucji") +
+      : pokazujeWolne13() ? "terminy bez wniosku, widoczne w kalendarzu" : "terminy bez wniosku, ukryte filtrem Pokaż") +
     kpi("Uczestnicy przypisani", zapisaniRazem, "na " + limitRazem + " miejsc, obłożenie " +
         (limitRazem ? Math.round(zapisaniRazem / limitRazem * 100) : 0) + "%") +
-    kpi("Terminy w bazie", STAN_13.T.length, "wystawiane przez instytucje, źródło prawdy o realizacji");
+    kpi("Terminy z wnioskiem", STAN_13.T.filter(maWniosek13).length, "z " + STAN_13.T.length + " terminów wystawionych przez instytucje");
 }
 
 /* ---------- Filtry instytucji ---------- */
@@ -38,7 +39,7 @@ function wypelnijFiltryIS() {
 /* ---------- Kalendarz ---------- */
 function terminyDnia13(data) {
   var fis = Wielowybor.wartosci(el("fIS"));
-  return STAN_13.T.filter(function (t) {
+  return terminyWidoczne13().filter(function (t) {
     return Wielowybor.pasuje(fis, t.is) && data >= t.od && data <= t.do;
   });
 }

@@ -6,6 +6,8 @@
 var KOLOR_DOMYSLNY_IS = "#64748b";
 var PRZEZROCZYSTOSC_TLA = 0.16;
 var WZOR_KOLORU = /^#[0-9A-Fa-f]{6}$/;
+/* Napis terminu bez wniosku: wolny termin instytucji (uwaga 08.10); uzywa go tez 13-terminy-filtr.js */
+var ETYKIETA_WOLNEGO_13 = "Wolny termin instytucji";
 
 function kolorIS13(isId) {
   var i = DB.INSTYTUCJE.filter(function (x) { return x.id === isId; })[0];
@@ -48,7 +50,7 @@ function opisKafelka13(t) {
 }
 
 function podpowiedzKafelka13(t, o) {
-  return (o.firmy.length ? o.firmy.join(", ") : "Wolny termin") + ". Wykonawca: " + o.wykonawcy.join(", ") +
+  return (o.firmy.length ? o.firmy.join(", ") : ETYKIETA_WOLNEGO_13) + ". Wykonawca: " + o.wykonawcy.join(", ") +
     ". Szkolenie: " + t.nazwa + ", " + nazwaIS(t.is) + ", " + t.miejsce + ", " + tekstObsady13(t) +
     ". " + (o.wnioski.length ? "Kliknij, aby otworzyć wniosek." : "Brak wniosku przypisanego do terminu.");
 }
@@ -56,9 +58,9 @@ function podpowiedzKafelka13(t, o) {
 function kafelek13(t, szeroki) {
   var o = opisKafelka13(t);
   var kolor = kolorIS13(t.is);
-  var firmy = o.firmy.length ? o.firmy.map(esc).join(", ") : "Wolny termin";
+  var firmy = o.firmy.length ? o.firmy.map(esc).join(", ") : ETYKIETA_WOLNEGO_13;
   var wiersz = "font-size:12px";
-  return '<div class="ev kolor ' + klasaTerminu13(t) + (szeroki ? " szeroki" : "") + '" data-termin="' + esc(t.id) + '"' +
+  return '<div class="ev kolor ' + klasaTerminu13(t) + (o.wnioski.length ? "" : " bez-wniosku") + (szeroki ? " szeroki" : "") + '" data-termin="' + esc(t.id) + '"' +
     ' style="background:' + tloZKoloru13(kolor, PRZEZROCZYSTOSC_TLA) + ';border-left-color:' + kolor + '"' +
     ' title="' + esc(podpowiedzKafelka13(t, o)) + '">' +
     '<div class="ev-firma" style="' + wiersz + '">' + firmy + '</div>' +
@@ -80,7 +82,7 @@ function kliknijTermin13(id) {
         return '<div style="padding:6px 0;border-bottom:1px solid var(--line)"><a href="' + esc(Nawigacja.adresKarty(w.id)) + '">' +
           esc(w.firma) + '</a> <span class="small muted">wykonawca: ' + esc(w.wykonawca) + '</span></div>';
       }).join("")
-    : '<div class="small muted">Do tego terminu nie przypisano jeszcze żadnego wniosku.</div>';
+    : '<div class="small muted">Wolny termin instytucji: nie ma jeszcze przypisanego wniosku. Przypiszesz go w karcie wniosku przy szkoleniu uczestnika.</div>';
   pokazOkno13(t.nazwa + ", " + DB.fmtDate(t.od), tresc);
 }
 

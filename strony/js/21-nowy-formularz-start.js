@@ -43,5 +43,6 @@ function inicjuj21() {
   if (mozeDodawac) { zfPokaz(opcjeFormularza21()); uzupelnijBlokSzablonu21(); }
   renderLista21();
   inicjujTryb21();
+  if (EDYCJA_21.edytuj) edytujFormularz21(EDYCJA_21.edytuj);
   window.addEventListener("db:changed", renderLista21);
 }
