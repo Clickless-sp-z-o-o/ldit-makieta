@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="../assets/style-sesja.css">
 <link rel="stylesheet" href="../assets/style-listy.css">
 <link rel="stylesheet" href="../assets/style-interfejs.css">
+<link rel="stylesheet" href="../assets/style-formularz-1410.css">
+<link rel="stylesheet" href="../assets/style-motyw.css">
 </head>
 <body>
 <div class="page" id="stronaKlienta">
@@ -16,6 +18,7 @@
     <div class="naglowek-karty">
       <button class="btn sm" id="btnWstecz" data-tip="Wraca do poprzedniego ekranu z tym samym filtrem.">&larr; Wstecz</button>
       <h1 class="page-title" id="tytul">Klient</h1>
+      <span class="kl-pelna-nazwa" id="tytulPelna"></span>
       <span class="tip-mark" data-tip="Karta klienta w sekcjach z pełnego formularza (D-256, D-257): firma, osoba do kontaktu, rachunek, zatrudnienie, podatki, reprezentacja, zobowiązania, konto na praca.gov.pl. Wszystkie wnioski ze wszystkich lat (D-128) i korespondencja (D-52). Dane firmy zmienia się tylko tutaj, we wniosku zostają dane wniosku (D-265). Klik w wniosek otwiera jego kartę.">i</span>
       <span class="tag warn" id="licznikBrakow" style="display:none"></span>
     </div>
@@ -120,6 +123,7 @@
 <script src="../assets/auth.js"></script>
 <script src="../assets/haslo-zmiana.js"></script>
 <script src="../assets/walidacja.js"></script>
+<script src="../assets/akceptacje-uprawnienia.js"></script>
 <script src="../assets/straznik-wlasnosc.js"></script>
 <script src="../assets/straznik-katalog.js"></script>
 <script src="../assets/straznik.js"></script>
@@ -132,13 +136,16 @@
 <script src="../assets/db.js"></script>
 <script src="../assets/lata.js"></script>
 <script src="../assets/nabory-import.js"></script>
+<script src="../assets/nabory-zrzuty.js"></script>
 <script src="../assets/html.js"></script>
 <script src="../assets/powiadomienia.js"></script>
 <script src="../assets/statusy.js"></script>
 <script src="../assets/akceptacje.js"></script>
+<script src="../assets/akceptacje-zmiany.js"></script>
 <script src="../assets/akceptacje-edycja.js"></script>
 <script src="../assets/akceptacje-katalog.js"></script>
 <script src="../assets/xlsx.js"></script>
+<script src="../assets/xlsx-zapis.js"></script>
 <script src="../assets/eksport.js"></script>
 <script src="../assets/wielowybor.js"></script>
 <script src="../assets/nawigacja.js"></script>
@@ -149,6 +156,7 @@
 <script src="js/19-klient-logika.js"></script>
 <script src="js/19-klient-osoba.js"></script>
 <script src="js/19-klient-eksport.js"></script>
+<script src="js/16-formularz-pola.js"></script>
 <script src="js/19-klient-pola.js"></script>
 <script src="js/19-klient-formularz.js"></script>
 <script src="js/19-klient-uczestnicy.js"></script>

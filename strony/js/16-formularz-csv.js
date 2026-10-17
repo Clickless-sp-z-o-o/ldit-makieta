@@ -4,12 +4,16 @@
    Format: pierwszy wiersz to naglowki, kazdy kolejny wiersz to jeden uczestnik.
    Dane firmy bierzemy z pierwszego wiersza, w ktorym sa wypelnione.
    Naglowki to polskie nazwy z formularza klienta albo nazwy kolumn bazy (np. telefon_biura).
-   Separator ; albo , rozpoznawany z naglowka. Excel zapisuje CSV ze srednikiem. */
+   Separator ; albo , rozpoznawany z naglowka. Excel zapisuje CSV ze srednikiem.
+   Drugi format (szablon Excel, D-327, spotkanie 14.10): uklad pionowy, wiersz "Pole | Wartosc", potem jedno
+   pole w wierszu, a pod nimi tabela uczestnikow (naglowek "Imie i nazwisko | Rodzaj zatrudnienia | ...")
+   na tym samym arkuszu; starszy plik ma uczestnikow w osobnym arkuszu. Zamieniany na uklad poziomy. */
 
 /* Naglowek znormalizowany -> kolumna formularza. Klucz "bank_i_konto" i "forma_i_stawka"
    to pola zlozone z listy klienta (jedna kolumna na dwie wartosci), rozbijane przy imporcie. */
 var KOLUMNY_FIRMY_CSV = {
   firma: "firma", nazwa: "firma", "nazwa firmy": "firma",
+  "nazwa skrocona": "nazwa_skrocona", nazwa_skrocona: "nazwa_skrocona",
   nip: "nip", "nip firmy": "nip",
   adres: "adres_siedziby", "adres siedziby": "adres_siedziby", miasto: "miasto",
   "numer telefonu do biura firmy": "telefon_biura", "telefon do biura": "telefon_biura", telefon_biura: "telefon_biura",
@@ -34,7 +38,7 @@ var KOLUMNY_FIRMY_CSV = {
   "imie i nazwisko drugiej osoby uprawnionej do reprezentacji i podpisania dokumentacji": "reprezentant_2", reprezentant_2: "reprezentant_2",
   "stanowisko drugiej osoby uprawnionej do reprezentacji": "reprezentant_2_stanowisko", reprezentant_2_stanowisko: "reprezentant_2_stanowisko",
   "czy firma posiada nieuregulowane zobowiazania": "zadluzenie", zadluzenie: "zadluzenie",
-  "rodzaj zobowiazan": "zadluzenie_rodzaj",
+  "rodzaj zobowiazan": "zadluzenie_rodzaj",   /* stary szablon: sam rodzaj (ZUS, US) oznacza odpowiedz TAK */
   "czy zostalo zawarte porozumienie badz ugoda": "zadluzenie_ugoda", "porozumienie lub ugoda": "zadluzenie_ugoda", ugoda: "zadluzenie_ugoda", zadluzenie_ugoda: "zadluzenie_ugoda",
   "czy posiada konto organizacji na praca.gov.pl": "konto_praca_gov", "konto na praca.gov.pl": "konto_praca_gov",
   konto_praca_gov: "konto_praca_gov",
@@ -51,7 +55,7 @@ var KODY_ZATRUDNIENIA_CSV = [
 
 /* Naglowki szablonu do pobrania: polskie nazwy z formularza klienta (kolejnosc jak u klienta), D-256, D-257 */
 var NAGLOWKI_SZABLONU_CSV = [
-  "Nazwa firmy", "Adres siedziby", "Miasto", "Numer telefonu do biura firmy", "Adres e-mail firmy", "NIP firmy",
+  "Nazwa firmy", "Nazwa skrócona (na listach)", "Adres siedziby", "Miasto", "Numer telefonu do biura firmy", "Adres e-mail firmy", "NIP firmy",
   "Imię i nazwisko osoby do kontaktu", "Stanowisko osoby do kontaktu", "Numer telefonu osoby do kontaktu", "Adres e-mail osoby do kontaktu",
   "Nazwa banku i numer firmowego rachunku bankowego",
   "Liczba zatrudnionych pracowników w ramach umowy o pracę",
@@ -60,8 +64,8 @@ var NAGLOWKI_SZABLONU_CSV = [
   "Forma opodatkowania prowadzonej działalności (wpisać właściwą oraz podać odpowiedni % podatku)",
   "Imię i nazwisko osoby uprawnionej do reprezentacji i podpisania dokumentacji", "Stanowisko osoby uprawnionej do reprezentacji",
   "Imię i nazwisko drugiej osoby uprawnionej do reprezentacji", "Stanowisko drugiej osoby uprawnionej do reprezentacji",
-  "Czy firma posiada nieuregulowane zobowiązania? (TAK/NIE)", "Rodzaj zobowiązań (ZUS / US / ZUS i US / inne)",
-  "Czy zostało zawarte porozumienie bądź ugoda? (TAK/NIE)",
+  "Czy firma posiada nieuregulowane zobowiązania? (TAK/NIE)",
+  "Czy zostało zawarte porozumienie bądź ugoda? (TAK/NIE, tylko przy TAK powyżej)",
   "Czy posiada konto organizacji na praca.gov.pl? (TAK/NIE, konto musi być zweryfikowane)",
   "Wielkość", "Urząd pracy", "Szkolenie", "Uwagi",
   "Imię i nazwisko", "Rodzaj zatrudnienia", "Wykształcenie", "Zawód", "PESEL"
@@ -74,9 +78,9 @@ function normalizujCsv(tekst) {
     .replace(/\s+/g, " ").trim();
 }
 
-/* Naglowek bez uwag w nawiasach i pytajnika: "Czy firma ma dlugi? (TAK/NIE)" -> "czy firma ma dlugi" */
+/* Naglowek bez uwag w nawiasach, pytajnika i gwiazdki pola wymaganego: "Czy firma ma dlugi? (TAK/NIE)" -> "czy firma ma dlugi" */
 function bezUwagCsv(tekst) {
-  return normalizujCsv(String(tekst || "").replace(/\([^)]*\)/g, " ").replace(/[?:]/g, " "));
+  return normalizujCsv(String(tekst || "").replace(/\([^)]*\)/g, " ").replace(/[?:*]/g, " "));
 }
 
 /* Rozbija tekst na wiersze i komorki z obsluga cudzyslowow ("" to cudzyslow w tekscie) */
@@ -126,12 +130,13 @@ function liczbaCsv(tekst) {
   return parseFloat(czysty);
 }
 
-/* Rodzaj nieuregulowanych zobowiazan: ZUS, US, oba albo inne */
-function rodzajZadluzeniaCsv(tekst) {
+/* Nieuregulowane zobowiazania (spotkanie 14.10.2026): tylko TAK ("tak") albo NIE ("brak"), rodzaj LDIT nie interesuje.
+   Stare opisy z rodzajem ("TAK: ZUS", "ZUS i US", "inne (np. wynagrodzenia)") to TAK. Inna wartosc to null. */
+function zadluzenieCsv(tekst) {
   var n = normalizujCsv(tekst);
-  var maZus = /zus/.test(n);
-  var maUs = /(^|[^a-z])us($|[^a-z])|urzad skarbowy/.test(n.replace(/zus/g, " "));
-  return maZus && maUs ? "zus_us" : maZus ? "zus" : maUs ? "us" : "inne";
+  if (takNieCsv(n) === 0 || /^(nie|brak)($|[^a-z])/.test(n)) return "brak";
+  if (takNieCsv(n) === 1 || /^tak($|[^a-z])/.test(n) || /zus|(^|[^a-z])us($|[^a-z])|urzad|skarb|inne|wynagrodz|podat/.test(n)) return "tak";
+  return null;
 }
 
 /* "mBank PL10 1020 3000 0000 0000 0000 0000": numer rachunku to najdluzszy ciag cyfr, reszta to nazwa banku */
@@ -167,9 +172,7 @@ function wartoscFirmyCsv(kolumna, tekst) {
   if (KOLUMNY_TAK_NIE_CSV.indexOf(kolumna) >= 0) pola[kolumna] = takNieCsv(tekst);
   else if (KOLUMNY_DZIESIETNE_CSV.indexOf(kolumna) >= 0) pola[kolumna] = liczbaCsv(tekst);
   else if (KOLUMNY_CALKOWITE_CSV.indexOf(kolumna) >= 0) pola[kolumna] = /^\d+$/.test(tekst.trim()) ? parseInt(tekst, 10) : null;
-  else if (kolumna === "zadluzenie") pola.zadluzenie = takNieCsv(tekst) === 0 || normalizujCsv(tekst) === "brak" ? "brak" :
-    takNieCsv(tekst) === 1 ? "tak" : rodzajZadluzeniaCsv(tekst);
-  else if (kolumna === "zadluzenie_rodzaj") pola.zadluzenie_rodzaj = rodzajZadluzeniaCsv(tekst);
+  else if (kolumna === "zadluzenie" || kolumna === "zadluzenie_rodzaj") pola[kolumna] = zadluzenieCsv(tekst);
   else pola[kolumna] = tekst.trim();
   var kluczowa = Object.keys(pola)[0];
   if (pola[kluczowa] === null || (kluczowa === "stawka_podatku" && pola[kluczowa] > GORNA_STAWKA_PODATKU_CSV)) {
@@ -178,10 +181,9 @@ function wartoscFirmyCsv(kolumna, tekst) {
   return { pola: pola };
 }
 
-/* TAK bez rodzaju to "inne"; przy NIE pytanie o ugode nie ma sensu (D-256) */
+/* Sam rodzaj ze starego szablonu (bez odpowiedzi TAK/NIE) to TAK; przy NIE pytanie o ugode nie ma sensu (D-256) */
 function domknijZadluzenieCsv(firma) {
-  if (firma.zadluzenie === "tak") firma.zadluzenie = firma.zadluzenie_rodzaj || "inne";
-  else if (!firma.zadluzenie && firma.zadluzenie_rodzaj) firma.zadluzenie = firma.zadluzenie_rodzaj;
+  if (!firma.zadluzenie && firma.zadluzenie_rodzaj) firma.zadluzenie = firma.zadluzenie_rodzaj;
   delete firma.zadluzenie_rodzaj;
   if (firma.zadluzenie === "brak") delete firma.zadluzenie_ugoda;
 }
@@ -200,13 +202,73 @@ function dodajKomorkeFirmyCsv(wynik, kolumna, tekst) {
   Object.keys(odczyt.pola).forEach(function (k) { if (wynik.firma[k] == null) wynik.firma[k] = odczyt.pola[k]; });
 }
 
+/* ------------------------------ uklad pionowy Pole | Wartosc (szablon Excel, D-327) ------------------------------ */
+var WIERSZE_DO_NAGLOWKA_PIONOWEGO = 6;
+
+/* Indeks wiersza "Pole | Wartosc" wsrod pierwszych wierszy arkusza albo -1 (uklad poziomy) */
+function naglowekPionowyCsv(wiersze) {
+  for (var i = 0; i < Math.min(wiersze.length, WIERSZE_DO_NAGLOWKA_PIONOWEGO); i++) {
+    if (normalizujCsv(wiersze[i][0]) === "pole" && normalizujCsv(wiersze[i][1]).indexOf("wartosc") === 0) return i;
+  }
+  return -1;
+}
+
+/* Indeks naglowka tabeli uczestnikow pod polami firmy (pierwsza komorka "Imie i nazwisko") albo -1 */
+function tabelaUczestnikowCsv(wiersze) {
+  for (var i = naglowekPionowyCsv(wiersze) + 1; i < wiersze.length; i++) {
+    if (bezUwagCsv(wiersze[i][0]) === "imie i nazwisko") return i;
+  }
+  return -1;
+}
+
+/* Uklad pionowy na poziomy, ktory czyta parser: naglowki z nazw pol i z tabeli uczestnikow (ten sam
+   arkusz albo osobny arkusz Uczestnicy), pierwszy wiersz danych to dane firmy z pierwszym uczestnikiem.
+   Wiersze sekcji i uwag (bez wartosci albo z nazwa, ktorej nie znamy) sa pomijane. */
+function poziomyZPionowegoCsv(wiersze, wierszeUczestnikow) {
+  var podzial = tabelaUczestnikowCsv(wiersze);
+  var pola = wiersze.slice(naglowekPionowyCsv(wiersze) + 1, podzial >= 0 ? podzial : wiersze.length).filter(function (w) {
+    return String(w[1] || "").trim() !== "" && kolumnaNaglowkaCsv(w[0]);
+  });
+  var uczestnicy = podzial >= 0 ? wiersze.slice(podzial) : wierszeUczestnikow || [];
+  var iNagl = uczestnicy.map(function (w) { return w.map(normalizujCsv).indexOf("imie i nazwisko") >= 0; }).indexOf(true);
+  var naglUcz = iNagl >= 0 ? uczestnicy[iNagl] : [];
+  var osoby = iNagl >= 0 ? uczestnicy.slice(iNagl + 1).filter(function (w) { return w.some(function (c) { return String(c || "").trim() !== ""; }); }) : [];
+  var naglowek = pola.map(function (p) { return p[0]; }).concat(naglUcz);
+  var pusteFirmy = pola.map(function () { return ""; });
+  var dane = osoby.length ? osoby.map(function (o, i) { return (i ? pusteFirmy : pola.map(function (p) { return p[1]; })).concat(o); })
+    : [pola.map(function (p) { return p[1]; })];
+  return [naglowek].concat(dane);
+}
+
 /* Zwraca { firma: {...}, uczestnicy: [...], ostrzezenia: [...] } albo { blad: "komunikat" } */
 function parsujFormularzCsv(tekst) {
   var czysty = String(tekst || "").replace(/^﻿/, "");
   var pierwsza = czysty.split(/\r\n|\n|\r/)[0] || "";
   var separator = pierwsza.split(";").length >= pierwsza.split(",").length ? ";" : ",";
   var wiersze = rozbijCsv(czysty, separator);
-  if (wiersze.length < 2) return { blad: "Plik CSV jest pusty albo ma tylko nagłówek." };
+  if (naglowekPionowyCsv(wiersze) >= 0) return parsujPionowy(poziomyZPionowegoCsv(wiersze, []), "CSV");
+  return parsujWierszeFormularza(wiersze, "CSV");
+}
+
+/* Uklad pionowy bez zadnej wpisanej wartosci (pusty szablon) to blad, a nie pusty formularz */
+function parsujPionowy(poziome, format) {
+  var puste = poziome.slice(1).every(function (w) { return w.every(function (c) { return String(c || "").trim() === ""; }); });
+  if (puste) return { blad: "W pliku " + format + " nie ma danych. Wpisz je w kolumnie Wartość i w tabeli uczestników." };
+  return parsujWierszeFormularza(poziome, format);
+}
+
+/* Arkusze z pliku Excel (XlsxPlik.arkusze): pierwszy z danymi firmy w ukladzie pionowym albo poziomym,
+   uczestnicy z tabeli pod polami albo (starszy plik) z arkusza "Uczestnicy" lub drugiego */
+function parsujFormularzArkuszy(arkusze) {
+  var pierwszy = arkusze[0].wiersze;
+  if (naglowekPionowyCsv(pierwszy) < 0) return parsujWierszeFormularza(pierwszy, "Excel");
+  var arkUcz = arkusze.filter(function (a) { return normalizujCsv(a.nazwa) === "uczestnicy"; })[0] || arkusze[1];
+  return parsujPionowy(poziomyZPionowegoCsv(pierwszy, arkUcz ? arkUcz.wiersze : []), "Excel");
+}
+
+/* Wiersze w ukladzie poziomym: pierwszy to naglowki, kolejne to uczestnicy z danymi firmy; format: CSV albo Excel */
+function parsujWierszeFormularza(wiersze, format) {
+  if (wiersze.length < 2) return { blad: "Plik " + format + " jest pusty albo ma tylko nagłówek." };
   var kolumny = wiersze[0].map(kolumnaNaglowkaCsv);
   if (!kolumny.some(Boolean)) return { blad: "Nie rozpoznano żadnej kolumny. Pobierz szablon CSV i wpisz dane pod jego nagłówkami." };
   var wynik = { firma: {}, uczestnicy: [], ostrzezenia: [] };

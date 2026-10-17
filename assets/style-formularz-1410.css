@@ -1,0 +1,42 @@
+/* Formularz zgloszeniowy klienta jak formularz LDIT w Excelu (spotkanie 14.10.2026): sekcje na granatowym
+   pasku, dane firmy w wierszach (etykieta po lewej, wartosc po prawej), uczestnicy w tabeli, osoba w wierszu.
+   Wspolny dla panelu instytucji (16), Do akceptacji (20) i Nowego formularza (21); strony 16 i 20 dostaja
+   ten arkusz z 16-formularz-zgloszenia.js (zfWczytajStyl). */
+
+.zf-formularz { max-width: 1180px; }
+.zf-arkusz { border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden; background: var(--surface); margin-bottom: 12px; }
+.zf-sekcja { background: var(--accent); color: #fff; font-weight: 600; font-size: 0.8125rem; padding: 6px 10px; letter-spacing: .01em; }
+.zf-sekcja-opis { font-weight: 400; opacity: .8; margin-left: 6px; }
+
+.zf-wiersz { display: grid; grid-template-columns: minmax(200px, 38%) minmax(0, 1fr); border-top: 1px solid var(--line); }
+.zf-wiersz[hidden] { display: none; }
+.zf-sekcja + .zf-wiersz { border-top: 0; }
+.zf-etyk { display: flex; align-items: center; padding: 6px 10px; background: var(--surface-2); border-right: 1px solid var(--line);
+  font-size: 0.8125rem; color: var(--ink-2); line-height: 1.35; }
+.zf-wym { color: var(--neg-ink); font-weight: 700; margin-left: 2px; }
+.zf-wart { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 4px 8px; font-size: 0.8125rem; min-width: 0; overflow-wrap: anywhere; }
+.zf-wart > .inp { flex: 1 1 240px; min-width: 0; }
+.zf-wart > textarea.inp { flex-basis: 100%; }
+.zf-info { flex-basis: 100%; font-size: 0.75rem; }
+.zf-info:empty { display: none; }
+.zf-plik { flex-basis: 100%; }
+
+.zf-tab-ramka { overflow-x: auto; position: relative; }
+.zf-tab { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+.zf-tab th { background: var(--surface-3); color: var(--ink-2); font-weight: 600; text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line-strong);
+  border-right: 1px solid var(--line); white-space: nowrap; }
+.zf-tab td { padding: 3px 4px; border-top: 1px solid var(--line); border-right: 1px solid var(--line); vertical-align: middle; }
+.zf-tab th:last-child, .zf-tab td:last-child { border-right: 0; }
+.zf-tab td.num, .zf-tab th.num { text-align: right; width: 40px; padding-right: 8px; }
+.zf-tab .inp { width: 100%; min-width: 120px; }
+.zf-tab tbody tr:nth-child(even) td { background: var(--surface-2); }
+
+/* Karta klienta: pelna nazwa obok skroconej w naglowku i przycisk GUS w edycji */
+.kl-pelna-nazwa { font-size: 0.875rem; color: var(--ink-3); font-weight: 400; }
+.kl-gus { display: flex; flex-direction: column; gap: 4px; justify-content: flex-end; }
+.kl-gus .btn { align-self: flex-start; }
+
+@media (max-width: 700px) {
+  .zf-wiersz { grid-template-columns: minmax(0, 1fr); }
+  .zf-etyk { border-right: 0; padding-bottom: 2px; }
+}

@@ -51,5 +51,18 @@ function edytujFormularz21(id) {
 function przyciskEdycji21(f) {
   var wiersz = Store.find("formularze_oczekujace", f.id);
   if (!Akceptacje.edycjaFormularza(wiersz).mozna) return "";
-  return '<button class="btn xs" onclick="edytujFormularz21(\'' + escJs(f.id) + '\')" aria-label="Edytuj formularz ' + esc(f.firma) + '">Edytuj</button>';
+  return '<button class="btn xs" onclick="edytujFormularz21(\'' + escJs(f.id) + '\')" aria-label="Edytuj formularz ' + esc(f.firma) + '">Edytuj</button>' +
+    przyciskWycofania21(wiersz);
+}
+
+/* Instytucja sama wycofuje czekajacy formularz do uzupelnienia (D-331): LDIT go nie rozpatruje do ponownego wyslania */
+function przyciskWycofania21(f) {
+  if (!Akceptacje.mozeWycofac(f)) return "";
+  return ' <button class="btn xs" onclick="wycofajFormularz21(\'' + escJs(f.id) + '\')" data-tip="LDIT nie rozpatruje formularza, dopóki go nie uzupełnisz. Zapis po poprawkach wyśle go ponownie do akceptacji.">Wycofaj do uzupełnienia</button>';
+}
+
+function wycofajFormularz21(id) {
+  Akceptacje.wycofajFormularz(id, Akceptacje.ktoTeraz());
+  komunikatEdycji21("<b>Formularz " + esc(id) + " wycofany do uzupełnienia.</b> Popraw go przyciskiem Edytuj, zapis wyśle go ponownie do akceptacji LDIT.", false);
+  renderLista21();
 }

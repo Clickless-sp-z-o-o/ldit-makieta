@@ -79,7 +79,8 @@
 
       return {
         id: w.id, nr: w.numer, rok: w.rok, etap: w.etap,
-        klient: w.klient_id, klNazwa: kl.nazwa, nip: kl.nip,
+        /* Listy pokazuja nazwe skrocona klienta, pelna nazwa zostaje w dymku i na karcie (spotkanie 14.10.2026) */
+        klient: w.klient_id, klNazwa: kl.nazwa_skrocona || kl.nazwa, klNazwaPelna: kl.nazwa, nip: kl.nip,
         wielkosc: f.wielkosc || kl.wielkosc_przedsiebiorstwa,
         is: w.instytucja_id, isNazwa: inst.nazwa || "-",
         pup: w.pup_id, pupNazwa: (pupById[w.pup_id] || {}).nazwa,
@@ -137,11 +138,33 @@
         opiekunowie: (opiekunowie[w.id] || []).map(function (o) { return o.uzytkownik_id; }),
         pozycja: w.pozycja == null ? w.numer : w.pozycja,
         usuniety: w.usuniety === 1, usunieto: w.usunieto,
+        /* Prosba pracownika o usuniecie, czeka na administratora (spotkanie 14.10.2026) */
+        usuniecieProsba: w.usuniecie_prosba_id ? { od: w.usuniecie_prosba_id, czas: w.usuniecie_prosba_czas, powod: w.usuniecie_prosba_powod || "" } : null,
         szkoleniaWniosku: (szkoleniaWniosku[w.id] || []).map(function (r) {
-          return { id: r.id, szkolenie: r.szkolenie_id, nazwa: (szkById[r.szkolenie_id] || {}).nazwa || "-", cena: r.cena };
-        })
+          return { id: r.id, szkolenie: r.szkolenie_id, nazwa: (szkById[r.szkolenie_id] || {}).nazwa || "-", cena: r.cena,
+                   od: r.data_od || null, do: r.data_do || r.data_od || null, termin: r.termin_id || null };
+        }),
+        /* Daty calego wniosku: pierwszy dzien pierwszego szkolenia i ostatni dzien ostatniego (spotkanie 14.10.2026) */
+        szkolenieOd: zakresDat(szkoleniaWniosku[w.id], "data_od"), szkolenieDo: zakresDat(szkoleniaWniosku[w.id], "data_do")
       };
     });
+  }
+
+  /* Najwczesniejsza data_od albo najpozniejsza data_do pozycji szkolen wniosku; null, gdy brak dat */
+  function zakresDat(pozycje, pole) {
+    var daty = (pozycje || []).map(function (r) { return r[pole] || (pole === "data_do" ? r.data_od : null); }).filter(Boolean).sort();
+    if (!daty.length) return null;
+    return pole === "data_od" ? daty[0] : daty[daty.length - 1];
+  }
+
+  /* Imiona kont zespolu LDIT do kolumn Przygotowal i Opiekunowie. Lista kont (UZYTKOWNICY) jest dla
+     administratora, wiec pracownik LDIT widzial tam loginy zamiast imion (spotkanie 14.10.2026).
+     Zakres zostawia ja tylko kontom LDIT (zakres.js). */
+  function zespolLditView() {
+    var mapa = {};
+    S.query("SELECT u.login, u.imie_nazwisko FROM uzytkownicy u JOIN role r ON r.id = u.rola_id WHERE r.typ = 'pracownik'")
+      .forEach(function (u) { mapa[u.login] = u.imie_nazwisko; });
+    return mapa;
   }
 
   function uzytkownicyView() {
@@ -253,6 +276,7 @@
     });
 
     DB.UZYTKOWNICY = uzytkownicyView();
+    DB.ZESPOL_LDIT = zespolLditView();
     DB.MODULY = S.query("SELECT nazwa FROM moduly ORDER BY kolejnosc").map(function (m) { return m.nazwa; });
     DB.MODULY_ROWS = S.query("SELECT * FROM moduly ORDER BY kolejnosc");
     DB.ROLE = S.get("role");

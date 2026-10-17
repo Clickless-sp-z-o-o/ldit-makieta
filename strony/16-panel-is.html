@@ -8,6 +8,9 @@
 <link rel="stylesheet" href="../assets/style-sesja.css">
 <link rel="stylesheet" href="../assets/style-interfejs.css">
 <link rel="stylesheet" href="../assets/style-ekrany-0810.css">
+<link rel="stylesheet" href="../assets/style-panel-is-1410.css">
+<link rel="stylesheet" href="../assets/style-formularz-1410.css">
+<link rel="stylesheet" href="../assets/style-motyw.css">
 </head>
 <body>
 <div class="page">
@@ -15,11 +18,8 @@
   <div class="page-head">
     <div class="ph-text">
       <div class="small muted" style="margin-bottom:4px" id="zalogowano"></div>
-      <h1 class="page-title" id="tytul" data-tip="Panel instytucji szkoleniowej: własni klienci, wnioski, terminy i katalog szkoleń. Administrator instytucji zarządza tu swoimi pracownikami: rola i przypisani klienci; konta zakłada administrator LDIT (D-126, D-318).">Panel instytucji</h1>
-      <p class="page-desc">Twoi klienci, projekty i formularze.</p>
-    </div>
-    <div class="ph-actions">
-      <a class="btn primary" href="13-terminy.html">Terminy szkoleń</a>
+      <h1 class="page-title" id="tytul" data-tip="Panel instytucji szkoleniowej w zakładkach, jak panel LDIT: klienci i projekty, złożone wnioski, uczestnicy, terminy, konto instytucji, katalog szkoleń i zgłoszenia. Administrator instytucji zarządza tu swoimi pracownikami: rola i przypisani klienci; konta zakłada administrator LDIT (D-126, D-318).">Panel instytucji</h1>
+      <p class="page-desc">Twoi klienci, wnioski, terminy, katalog i zgłoszenia.</p>
     </div>
   </div>
 
@@ -40,146 +40,165 @@
     Widzisz klientów przypisanych do Ciebie.
   </div>
 
-  <div class="card" id="powiadomienia" style="margin-bottom:18px">
-    <div class="card-head"><h3>Powiadomienia</h3><span class="sub" id="powiadomieniaInfo16"></span>
-      <div class="ch-actions"><button class="btn sm" id="btnPrzeczytane16" onclick="oznaczWszystkie16()" hidden>Oznacz wszystkie jako przeczytane</button></div></div>
-    <div class="card-body tight"><table class="tbl"><thead><tr><th>Kiedy</th><th>Co się stało</th><th><span class="sr-only">Akcje</span></th></tr></thead>
-      <tbody id="listaPowiadomien16"></tbody></table></div>
-  </div>
-
   <div class="grid g4" style="margin-bottom:18px" id="kpi"></div>
 
-  <div class="card">
-    <div class="card-head">
-      <h3>Moi klienci i ich projekty</h3>
-      <span class="sub" id="subTab"></span>
-      <div class="ch-actions"><span class="tag mute dot" id="tagInst"></span></div>
-    </div>
-    <nav class="mod-tabs" id="zakladki16">
-      <a href="#" class="on" data-widok="klienci" onclick="przelaczWidok16('klienci');return false">Klienci i projekty</a>
-      <a href="#" data-widok="zlozone" onclick="przelaczWidok16('zlozone');return false">Złożone wnioski <span class="n" id="nZlozone"></span></a>
-      <a href="#" data-widok="uczestnicy" onclick="przelaczWidok16('uczestnicy');return false">Uczestnicy</a>
-    </nav>
-    <div class="toolbar">
-      <input class="inp search" id="szukaj" placeholder="Szukaj wśród własnych klientów...">
-      <span id="chipy16"><span class="chip on" data-f="all">Wszystkie</span>
-      <span class="chip" data-f="poz">Decyzja pozytywna</span>
-      <span class="chip" data-f="neg">Decyzja negatywna</span>
-      <span class="chip" data-f="ocz">Oczekuje na decyzję</span>
-      <span class="chip" data-f="rozl">Rozliczone</span></span>
-      <span id="btnEksportKlientow" hidden data-tip="Dane instytucji w CSV albo Excelu, do importu we własnym systemie."></span>
-    </div>
-    <div class="card-body tight">
-      <div class="tbl-wrap">
-        <table class="tbl">
-          <thead id="glowa16"></thead>
-          <tbody id="wiersze"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+  <!-- Zakladki panelu jak w panelu LDIT (spotkanie 14.10.2026), js/16-panel-is-zakladki.js -->
+  <nav class="mod-tabs zakladki-panelu" id="zakladki16" aria-label="Sekcje panelu instytucji">
+    <a href="#klienci" class="on" data-widok="klienci">Klienci i projekty</a>
+    <a href="#zlozone" data-widok="zlozone">Złożone wnioski <span class="n" id="nZlozone"></span></a>
+    <a href="#uczestnicy" data-widok="uczestnicy">Uczestnicy</a>
+    <a href="#terminy" data-widok="terminy">Terminy szkoleń <span class="n" id="nTerminy16"></span></a>
+    <a href="#konto" data-widok="konto">Konto instytucji</a>
+    <a href="#katalog" data-widok="katalog">Katalog szkoleń</a>
+    <a href="#zgloszenia" data-widok="zgloszenia">Zgłoszenia <span class="n-nowe" id="nZgloszen16" hidden></span></a>
+  </nav>
 
-  <!-- Formularze panelu (zgloszenie klienta, edycja formularza, zmiana danych) na cala szerokosc strony -->
+  <!-- Formularze panelu (zgloszenie klienta, edycja formularza, zmiana danych, katalog) na cala szerokosc strony -->
   <div class="card form-pelny" id="zgloszenieForm" style="display:none"></div>
 
-  <div class="grid g-2-1">
-    <div>
-
-      <div class="card">
-        <div class="card-head">
-          <h3>Moje terminy</h3>
-          <div class="ch-actions"><a class="btn sm primary" href="13-terminy.html">Otwórz terminy szkoleń</a></div>
-        </div>
-        <div class="card-body">
-          <div class="small" id="podsTerminy"></div>
-          <div class="small muted" style="margin-top:6px">Kalendarz, lista terminów i dodawanie nowych są w module Terminy szkoleń.</div>
+  <!-- KLIENCI I PROJEKTY, ZLOZONE WNIOSKI, UCZESTNICY: jedna tabela, widok z zakladki -->
+  <section class="panel16" data-panel="lista">
+    <div class="card">
+      <div class="card-head">
+        <h3 id="tytulListy16">Moi klienci i ich projekty</h3>
+        <span class="sub" id="subTab"></span>
+        <div class="ch-actions"><span class="tag mute dot" id="tagInst"></span></div>
+      </div>
+      <div class="toolbar">
+        <input class="inp search" id="szukaj" placeholder="Szukaj wśród własnych klientów..." aria-label="Szukaj wśród własnych klientów">
+        <span id="chipy16"><span class="chip on" data-f="all">Wszystkie</span>
+        <span class="chip" data-f="poz">Decyzja pozytywna</span>
+        <span class="chip" data-f="neg">Decyzja negatywna</span>
+        <span class="chip" data-f="ocz">Oczekuje na decyzję</span>
+        <span class="chip" data-f="rozl">Rozliczone</span></span>
+        <span id="btnEksportKlientow" hidden data-tip="Dane instytucji w CSV albo Excelu, do importu we własnym systemie."></span>
+      </div>
+      <div class="card-body tight">
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead id="glowa16"></thead>
+            <tbody id="wiersze"></tbody>
+          </table>
         </div>
       </div>
+    </div>
+  </section>
 
-      <div class="card">
-        <div class="card-head">
-          <h3>Katalog moich szkoleń</h3>
-          <span class="sub">zmiany przechodzą przez akceptację LDIT <span class="ref">D-320</span></span>
-          <div class="ch-actions"><button class="btn sm" id="btnDodajSzkolenie16" onclick="dodajSzkolenie16()" hidden>+ Dodaj szkolenie</button></div>
+  <!-- TERMINY SZKOLEN -->
+  <section class="panel16" data-panel="terminy" hidden>
+    <div class="card">
+      <div class="card-head">
+        <h3>Terminy szkoleń</h3>
+        <span class="sub" id="podsTerminy"></span>
+        <div class="ch-actions"><a class="btn sm primary" id="linkTerminy16" href="13-terminy.html">Kalendarz terminów</a></div>
+      </div>
+      <div class="card-body tight">
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th>Szkolenie</th><th>Od</th><th>Do</th><th>Miejsce</th><th>Status</th><th class="num">Zapisani</th></tr></thead>
+            <tbody id="terminy16"></tbody>
+          </table>
         </div>
-        <div class="card-body tight">
-          <div class="tbl-wrap">
-            <table class="tbl">
-              <thead>
-                <tr><th>Nazwa</th><th class="num">Godzin</th><th class="num">Dni</th><th>Tryb</th>
-                    <th class="num">Cena za osobę</th><th class="num">Projekty</th><th><span class="sr-only">Akcje</span></th></tr>
-              </thead>
-              <tbody id="szkolenia"></tbody>
+      </div>
+    </div>
+  </section>
+
+  <!-- KONTO INSTYTUCJI: dane do edycji przez akceptacje LDIT i pracownicy instytucji -->
+  <section class="panel16" data-panel="konto" hidden>
+    <div class="card">
+      <div class="card-head">
+        <h3>Konto instytucji</h3>
+        <span class="tip-mark" data-tip="Dane Twojej instytucji, te same, które widzi pracownik LDIT. Zmianę wysyłasz do akceptacji LDIT przyciskiem Edytuj dane instytucji. D-288, D-224.">i</span>
+        <div class="ch-actions"><button class="btn sm" id="btnEdytujKonto16" hidden onclick="pokazZmiane16('instytucje')">Edytuj dane instytucji</button></div>
+      </div>
+      <div class="card-body"><dl class="dl" id="kontoInstytucji"></dl><div id="zmianyKonta16"></div></div>
+    </div>
+
+    <!-- Pracownicy instytucji: tylko Administrator IS (D-126, D-318), js/16-panel-is-pracownicy.js -->
+    <div class="card" id="kartaPracownikow16" hidden>
+      <div class="card-head"><h3>Pracownicy instytucji</h3>
+        <span class="sub">rola i przypisani klienci; nowe konta zakłada administrator LDIT</span></div>
+      <div class="card-body tight">
+        <table class="tbl">
+          <thead><tr><th>Pracownik</th><th>Rola</th><th class="num">Klientów</th><th>Ostatnie logowanie</th><th>Konto</th><th><span class="sr-only">Akcje</span></th></tr></thead>
+          <tbody id="listaPracownikow16"></tbody>
+        </table>
+        <div id="edycjaPracownika16" style="padding:0 12px 12px"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KATALOG SZKOLEN -->
+  <section class="panel16" data-panel="katalog" hidden>
+    <div class="card">
+      <div class="card-head">
+        <h3>Katalog moich szkoleń</h3>
+        <span class="sub">zmiany przechodzą przez akceptację LDIT <span class="ref">D-320</span></span>
+        <div class="ch-actions"><button class="btn sm" id="btnDodajSzkolenie16" onclick="dodajSzkolenie16()" hidden>+ Dodaj szkolenie</button></div>
+      </div>
+      <div class="card-body tight">
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead>
+              <tr><th>Nazwa</th><th class="num">Godzin</th><th class="num">Dni</th><th>Tryb</th>
+                  <th class="num">Cena za osobę</th><th class="num">Projekty</th><th><span class="sr-only">Akcje</span></th></tr>
+            </thead>
+            <tbody id="szkolenia"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card-body" style="border-top:1px solid var(--line)">
+        <div class="small muted">Nowe szkolenie, zmiana szkolenia, cennika i usunięcie trafiają do akceptacji LDIT; katalog zmienia się po zatwierdzeniu.
+          Standard godzinowy szkoleń instytucji: <b id="standard"></b>.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ZGLOSZENIA: od LDIT (nieprzeczytane na czerwono) i wyslane do LDIT -->
+  <section class="panel16" data-panel="zgloszenia" hidden>
+    <div class="grid g2">
+      <div>
+        <div class="card" id="powiadomienia">
+          <div class="card-head"><h3>Od LDIT</h3><span class="n-nowe" id="nZgloszenKarta16" hidden></span><span class="sub" id="powiadomieniaInfo16"></span>
+            <div class="ch-actions"><button class="btn sm" id="btnPrzeczytane16" onclick="oznaczWszystkie16()" hidden>Oznacz wszystkie jako przeczytane</button></div></div>
+          <div class="card-body tight"><table class="tbl"><thead><tr><th>Kiedy</th><th>Co się stało</th><th><span class="sr-only">Akcje</span></th></tr></thead>
+            <tbody id="listaPowiadomien16"></tbody></table></div>
+        </div>
+      </div>
+      <div>
+        <div class="card" id="kartaZgloszen">
+          <div class="card-head">
+            <h3>Wysłane do LDIT</h3>
+            <span class="tip-mark" data-tip="Nowego klienta (ręcznie, z pliku CSV z pobranego szablonu albo z załączonym PDF, z pełnym zestawem pól klienta, D-256, D-257), zmianę danych instytucji i zmianę danych klienta wysyłasz do akceptacji. Klient końcowy nie wypełnia formularzy (D-244). Nic nie zmienia się od razu: decyzję podejmuje pracownik LDIT albo administrator, a przy odrzuceniu zobaczysz powód. D-223, D-224, D-244.">i</span>
+          </div>
+          <div class="card-body">
+            <div class="btn-row" style="flex-wrap:wrap">
+              <button class="btn primary sm" id="btnZglosKlienta" onclick="pokazFormularzKlienta16()">+ Zgłoś klienta</button>
+              <button class="btn sm" id="btnZmianaInstytucji" onclick="pokazZmiane16('instytucje')">Zmień dane instytucji</button>
+              <button class="btn sm" id="btnZmianaKlienta" onclick="pokazZmiane16('klienci')">Zmień dane klienta</button>
+            </div>
+            <div class="small" id="komunikatZgloszen" role="status" style="margin-top:8px;color:var(--pos-ink)"></div>
+            <table class="tbl" style="margin-top:12px">
+              <thead><tr><th>Wysłano</th><th>Zgłoszenie</th><th>Status</th><th><span class="sr-only">Akcje</span></th></tr></thead>
+              <tbody id="mojeZgloszenia"></tbody>
             </table>
           </div>
         </div>
-        <div class="card-body" style="border-top:1px solid var(--line)">
-          <div class="note warn mb0">
-            <b>Nowe szkolenie, zmiana szkolenia, cennika i usunięcie trafiają do akceptacji LDIT</b> <span class="ref">D-204</span> <span class="ref">D-320</span>.
-            Katalog zmienia się po zatwierdzeniu.
-            Standard godzinowy instytucji: <b id="standard"></b>.
+
+        <div class="card">
+          <div class="card-head"><h3>Formularze czekające na akceptację LDIT</h3></div>
+          <div class="card-body tight">
+            <table class="tbl">
+              <thead><tr><th>Firma</th><th class="num">Osób</th><th>Wpłynęło</th><th><span class="sr-only">Akcje</span></th></tr></thead>
+              <tbody id="kolejka"></tbody>
+            </table>
           </div>
         </div>
       </div>
-
     </div>
-
-    <div>
-
-      <div class="card">
-        <div class="card-head">
-          <h3>Konto instytucji</h3>
-          <span class="tip-mark" data-tip="Dane Twojej instytucji, te same, które widzi pracownik LDIT. Zmianę wysyłasz do akceptacji LDIT przyciskiem Edytuj dane instytucji. D-288, D-224.">i</span>
-          <div class="ch-actions"><button class="btn sm" id="btnEdytujKonto16" hidden onclick="pokazZmiane16('instytucje')">Edytuj dane instytucji</button></div>
-        </div>
-        <div class="card-body"><dl class="dl" id="kontoInstytucji"></dl><div id="zmianyKonta16"></div></div>
-      </div>
-
-      <div class="card" id="kartaZgloszen">
-        <div class="card-head">
-          <h3>Zgłoszenia do LDIT</h3>
-          <span class="tip-mark" data-tip="Nowego klienta (ręcznie, z pliku CSV z pobranego szablonu albo z załączonym PDF, z pełnym zestawem pól klienta, D-256, D-257), zmianę danych instytucji i zmianę danych klienta wysyłasz do akceptacji. Klient końcowy nie wypełnia formularzy (D-244). Nic nie zmienia się od razu: decyzję podejmuje pracownik LDIT albo administrator, a przy odrzuceniu zobaczysz powód. D-223, D-224, D-244.">i</span>
-        </div>
-        <div class="card-body">
-          <div class="btn-row" style="flex-wrap:wrap">
-            <button class="btn primary sm" id="btnZglosKlienta" onclick="pokazFormularzKlienta16()">+ Zgłoś klienta</button>
-            <button class="btn sm" id="btnZmianaInstytucji" onclick="pokazZmiane16('instytucje')">Zmień dane instytucji</button>
-            <button class="btn sm" id="btnZmianaKlienta" onclick="pokazZmiane16('klienci')">Zmień dane klienta</button>
-          </div>
-          <div class="small" id="komunikatZgloszen" role="status" style="margin-top:8px;color:var(--pos-ink)"></div>
-          <table class="tbl" style="margin-top:12px">
-            <thead><tr><th>Wysłano</th><th>Zgłoszenie</th><th>Status</th><th><span class="sr-only">Akcje</span></th></tr></thead>
-            <tbody id="mojeZgloszenia"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-head"><h3>Formularze czekające na akceptację LDIT</h3></div>
-        <div class="card-body tight">
-          <table class="tbl">
-            <thead><tr><th>Firma</th><th class="num">Osób</th><th>Wpłynęło</th><th><span class="sr-only">Akcje</span></th></tr></thead>
-            <tbody id="kolejka"></tbody>
-          </table>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- Pracownicy instytucji: tylko Administrator IS (D-126, D-318), js/16-panel-is-pracownicy.js -->
-  <div class="card" id="kartaPracownikow16" hidden style="margin-top:18px">
-    <div class="card-head"><h3>Pracownicy instytucji</h3>
-      <span class="sub">rola i przypisani klienci; nowe konta zakłada administrator LDIT</span></div>
-    <div class="card-body tight">
-      <table class="tbl">
-        <thead><tr><th>Pracownik</th><th>Rola</th><th class="num">Klientów</th><th>Ostatnie logowanie</th><th>Konto</th><th><span class="sr-only">Akcje</span></th></tr></thead>
-        <tbody id="listaPracownikow16"></tbody>
-      </table>
-      <div id="edycjaPracownika16" style="padding:0 12px 12px"></div>
-    </div>
-  </div>
+  </section>
 </div>
+
 
 <!-- kfs:skrypty -->
 <script src="../db/sql-wasm.js"></script>
@@ -192,6 +211,7 @@
 <script src="../assets/auth.js"></script>
 <script src="../assets/haslo-zmiana.js"></script>
 <script src="../assets/walidacja.js"></script>
+<script src="../assets/akceptacje-uprawnienia.js"></script>
 <script src="../assets/straznik-wlasnosc.js"></script>
 <script src="../assets/straznik-katalog.js"></script>
 <script src="../assets/straznik.js"></script>
@@ -204,13 +224,16 @@
 <script src="../assets/db.js"></script>
 <script src="../assets/lata.js"></script>
 <script src="../assets/nabory-import.js"></script>
+<script src="../assets/nabory-zrzuty.js"></script>
 <script src="../assets/html.js"></script>
 <script src="../assets/powiadomienia.js"></script>
 <script src="../assets/statusy.js"></script>
 <script src="../assets/akceptacje.js"></script>
+<script src="../assets/akceptacje-zmiany.js"></script>
 <script src="../assets/akceptacje-edycja.js"></script>
 <script src="../assets/akceptacje-katalog.js"></script>
 <script src="../assets/xlsx.js"></script>
+<script src="../assets/xlsx-zapis.js"></script>
 <script src="../assets/eksport.js"></script>
 <script src="../assets/wielowybor.js"></script>
 <script src="../assets/nawigacja.js"></script>
@@ -234,6 +257,7 @@
 <script src="js/16-panel-is-zgloszenia.js"></script>
 <script src="js/16-panel-is-powiadomienia.js"></script>
 <script src="js/16-panel-is-pracownicy.js"></script>
+<script src="js/16-panel-is-zakladki.js"></script>
 <script type="text/kfs-strona">
 if (wczytajDane16()) {
   naglowek16();
@@ -250,6 +274,7 @@ if (wczytajDane16()) {
   podepnijZgloszenia16();
   renderPowiadomienia16();
   renderPracownicy16();
+  podepnijZakladki16();
 }
 </script>
 </body>

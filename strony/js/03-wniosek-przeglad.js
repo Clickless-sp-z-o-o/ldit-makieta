@@ -13,11 +13,20 @@ function renderDane() {
       : esc(STAN_03.w.isNazwa)],
     ["Data formularza", esc(DB.fmtDate(STAN_03.w.dataFormularza)) + ' <span class="tag mute">auto</span>'],
     ["Data wniosku", esc(DB.fmtDate(STAN_03.w.dataWniosku)) || "brak"],
-    ["Data faktury", (esc(DB.fmtDate(STAN_03.w.dataFaktury)) || "brak") + ' <span class="small muted">wyznacza okres prowizji</span>']
+    ["Data faktury", (esc(DB.fmtDate(STAN_03.w.dataFaktury)) || "brak") + ' <span class="small muted">wyznacza okres prowizji</span>'],
+    ["Szkolenie od", dataSzkolenia03(STAN_03.w.szkolenieOd, "pierwszy dzień pierwszego szkolenia")],
+    ["Szkolenie do", dataSzkolenia03(STAN_03.w.szkolenieDo, "ostatni dzień ostatniego szkolenia")]
   ];
   el("dane").innerHTML = wiersze.map(function (r) { return "<dt>" + r[0] + "</dt><dd>" + r[1] + "</dd>"; }).join("");
   document.getElementById("tytul").textContent = STAN_03.w.id + " · " + STAN_03.w.klNazwa;
   KOLUMNY_KONTAKTU.forEach(function (k) { el(k[1]).value = STAN_03.raw[k[0]] || ""; });
+}
+
+/* Daty calego projektu tylko do odczytu: wynikaja z terminow pozycji szkolen (spotkanie 14.10.2026) */
+function dataSzkolenia03(data, opis) {
+  return (data ? '<b>' + esc(DB.fmtDate(data)) + '</b>' : '<span class="muted">brak terminów</span>') +
+    ' <span class="tag mute">auto</span><span class="tip-mark" data-tip="Liczone z terminów szkoleń projektu: ' + esc(opis) +
+    '. Nie wpisuje się ich ręcznie, zmieniasz je terminami w sekcji Szkolenia projektu. Od tych dat będą liczone zadania automatyczne, np. 8 dni przed startem szkolenia.">i</span>';
 }
 
 /* ---------- Korespondencja klienta ---------- */

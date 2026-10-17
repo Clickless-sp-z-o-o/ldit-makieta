@@ -113,6 +113,8 @@
         standard: i.standard_godzinowy,
         opiekun: o.nazwy || "-", opiekunowie: o.lista, opiekunowieIds: o.ids,
         modelTerminow: i.model_terminow, mailProsbaOTermin: i.mail_prosba_o_termin !== 0, prowizja: prowizja,
+        /* Automatyczne powiadomienia mailowe do instytucji wlaczone (spotkanie 14.10.2026) */
+        powiadomieniaAuto: i.powiadomienia_auto !== 0,
         kolor: kolory[i.id],                    /* kalendarz terminow i kafelek instytucji (D-267) */
         kolorZapisany: i.kolor_kalendarza || null
       };

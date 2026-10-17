@@ -1,0 +1,62 @@
+/* ============================================================================
+   Wysylka maili po spotkaniu 14.10.2026: edytor szablonu z lista zmiennych
+   ("Wstaw zmienna") i wysylka seryjna z podgladem kazdego maila.
+   ============================================================================ */
+
+.fld09 { display: flex; flex-direction: column; gap: 3px; }
+.fld09 textarea { width: 100%; box-sizing: border-box; font-family: inherit; line-height: 1.55; }
+
+/* Pasek nad trescia szablonu z przyciskiem Wstaw zmienna */
+.zm-pasek { display: flex; align-items: center; gap: 8px; margin: 12px 0 4px; }
+.zm-pasek .sp { flex: 1 1 auto; }
+
+/* Lista zmiennych: grupy danych klienta, wniosku, kwot, instytucji i LDIT */
+.zm-okno { border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--surface); padding: 8px; margin-bottom: 8px; box-shadow: var(--shadow-sm, 0 2px 8px rgba(15, 23, 42, .08)); }
+.zm-okno .inp { width: 100%; box-sizing: border-box; margin-bottom: 6px; }
+.zm-lista { max-height: 260px; overflow-y: auto; }
+.zm-grupa { font-size: 0.7188rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); padding: 8px 6px 4px; }
+.zm-poz { display: flex; width: 100%; justify-content: space-between; gap: 10px; align-items: center; text-align: left;
+  border: 0; background: transparent; padding: 5px 6px; border-radius: 4px; cursor: pointer; font: inherit; font-size: 0.7813rem; color: var(--ink); }
+.zm-poz:hover, .zm-poz:focus-visible { background: var(--accent-soft); }
+.zm-poz code { font-size: 0.6875rem; color: var(--accent-dark); white-space: nowrap; }
+
+/* Wysylka seryjna: jeden rozwijany mail na adresata */
+.seria-pasek { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+.seria-pasek .sp { flex: 1 1 auto; }
+.seria-mail { border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 8px; background: var(--surface); }
+.seria-mail > summary { display: flex; align-items: center; gap: 10px; padding: 8px 12px; cursor: pointer; list-style: none; flex-wrap: wrap; }
+.seria-mail > summary::-webkit-details-marker { display: none; }
+.seria-mail > summary::before { content: "\25B8"; color: var(--ink-3); font-size: 0.75rem; }
+.seria-mail[open] > summary::before { content: "\25BE"; }
+.seria-mail[open] > summary { border-bottom: 1px solid var(--line); background: var(--surface-2); }
+.seria-mail .sm-kto { flex: 0 1 auto; min-width: 180px; }
+.seria-mail .sm-temat { flex: 1 1 240px; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.seria-mail .sm-tagi { flex: 0 0 auto; }
+.seria-mail .sm-body { padding: 10px 12px 12px; }
+.seria-mail .sm-body textarea { width: 100%; box-sizing: border-box; font-family: inherit; line-height: 1.55; }
+.seria-mail.wylaczony { opacity: .6; }
+.seria-mail.wylaczony .sm-kto b { text-decoration: line-through; }
+
+@media (max-width: 700px) {
+  .seria-mail .sm-kto { min-width: 0; flex-basis: 100%; }
+  .seria-mail .sm-temat { white-space: normal; }
+}
+
+/* Lista adresatow, pasek krokow i przelaczniki (dawniej styl w naglowku ekranu 09) */
+.odb-list { max-height: 300px; overflow-y: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+.odb-row { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-bottom: 1px solid var(--line); font-size: 0.7813rem; }
+.odb-row:last-child { border-bottom: 0; }
+.odb-row .on { flex: 1 1 auto; min-width: 0; }
+.odb-row .om { color: var(--ink-3); font-size: 0.75rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.step-bar { display: flex; gap: 0; margin-bottom: 16px; }
+.step { display: flex; align-items: center; gap: 8px; padding: 9px 16px; font-size: 0.7813rem; font-weight: 650;
+        color: var(--ink-3); background: var(--surface-2); border: 1px solid var(--line); }
+.step:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+.step:last-child { border-radius: 0 var(--radius) var(--radius) 0; }
+.step + .step { border-left: 0; }
+.step.on { background: var(--accent-soft); border-color: var(--accent-border); color: var(--accent-dark); }
+.step .n { width: 20px; height: 20px; border-radius: 50%; background: var(--line-strong); color: #fff;
+           display: grid; place-items: center; font-size: 0.75rem; }
+.step.on .n { background: var(--accent); }
+.switch { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; font-size: 0.75rem; }
+.switch input { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }

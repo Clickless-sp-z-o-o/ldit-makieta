@@ -136,6 +136,9 @@ CREATE TABLE instytucje (
                        CHECK (model_terminow IN ('kalendarz','z_gory')),  -- D-142
   -- Czy po decyzji pozytywnej wychodzi automatyczna prosba o ustalenie terminu (D-247)
   mail_prosba_o_termin INTEGER NOT NULL DEFAULT 1,
+  -- Czy instytucja dostaje automatyczne powiadomienia mailowe w ogole (spotkanie 14.10.2026):
+  -- przy 0 automatyzacje nie wysylaja nic do instytucji, np. instytucja z kalendarzem na caly rok
+  powiadomienia_auto   INTEGER NOT NULL DEFAULT 1 CHECK (powiadomienia_auto IN (0,1)),
   -- Kolor instytucji uzywany wylacznie w kalendarzu terminow (D-267)
   kolor_kalendarza     TEXT CHECK (kolor_kalendarza IS NULL OR kolor_kalendarza GLOB '#[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]'),
   aktywna              INTEGER NOT NULL DEFAULT 1
@@ -254,7 +257,10 @@ CREATE INDEX idx_terminy_inst ON terminy (instytucja_id, data_od);
 CREATE TABLE klienci (
   id                        TEXT PRIMARY KEY,
   numer_klienta             INTEGER NOT NULL,   -- sekwencyjny w roku, trafia na fakture (D-112)
-  nazwa                     TEXT NOT NULL,
+  nazwa                     TEXT NOT NULL,      -- pelna nazwa firmy (z formularza albo z GUS)
+  -- Nazwa skrocona na listach (spotkanie 14.10.2026): przy zalozeniu klienta kopia pelnej nazwy,
+  -- LDIT skraca ja recznie. Listy pokazuja zawsze nazwe skrocona.
+  nazwa_skrocona            TEXT,
   nip                       TEXT,
   wielkosc_przedsiebiorstwa TEXT CHECK (wielkosc_przedsiebiorstwa IN ('mikro','mały','średni','duży','inny')),
   -- Do trzech osob kontaktowych klienta (D-169). Pierwsza jest glowna.
@@ -279,7 +285,7 @@ CREATE TABLE klienci (
   -- kopiuje liczbe zatrudnionych na dzien wniosku (D-169).
   liczba_zatrudnionych      INTEGER CHECK (liczba_zatrudnionych IS NULL OR liczba_zatrudnionych >= 0),
   numer_konta               TEXT,
-  zadluzenie                TEXT CHECK (zadluzenie IN ('brak','zus','us','zus_us','inne')),
+  zadluzenie                TEXT CHECK (zadluzenie IN ('brak','tak','zus','us','zus_us','inne')),
   -- Pelny formularz klienta (lista pol z 06.10.2026, D-256). Zadluzenie 'brak'
   -- to odpowiedz NIE na pytanie o nieuregulowane zobowiazania.
   telefon_biura             TEXT,
@@ -427,6 +433,12 @@ CREATE TABLE wnioski (
   pozycja                   INTEGER,
   usuniety                  INTEGER NOT NULL DEFAULT 0 CHECK (usuniety IN (0,1)),
   usunieto                  TIMESTAMPTZ,
+  -- Prosba o usuniecie wniosku czekajaca na akceptacje administratora (spotkanie 14.10.2026).
+  -- Pracownik LDIT nie usuwa wniosku sam: zglasza prosbe z karty wniosku, administrator ja
+  -- zatwierdza (wtedy usuniety = 1) albo odrzuca (pola prosby wracaja do NULL).
+  usuniecie_prosba_id       TEXT REFERENCES uzytkownicy (id) ON DELETE SET NULL,
+  usuniecie_prosba_czas     TIMESTAMPTZ,
+  usuniecie_prosba_powod    TEXT,
   etap                      INTEGER NOT NULL DEFAULT 3 CHECK (etap BETWEEN 1 AND 10),  -- D-146
 
   -- Dane zmienne klienta na poziomie wniosku (D-132, D-133, D-169). NULL = bierz z klienta.
@@ -474,6 +486,7 @@ CREATE TABLE wnioski (
   data_aktualizacji          DATE,
   UNIQUE (id, instytucja_id)       -- cel zlozonych kluczy obcych tabel podrzednych (D-295)
 );
+CREATE INDEX idx_wnioski_usuniecie_prosba ON wnioski (usuniecie_prosba_id);
 CREATE INDEX idx_wnioski_klient ON wnioski (klient_id);
 CREATE INDEX idx_wnioski_inst_rok ON wnioski (instytucja_id, rok);
 CREATE INDEX idx_wnioski_faktura ON wnioski (data_wystawienia_faktury);
@@ -498,7 +511,13 @@ CREATE TABLE wniosek_szkolenia (
   instytucja_id TEXT NOT NULL,
   szkolenie_id  TEXT NOT NULL,
   cena          NUMERIC(12,2) NOT NULL DEFAULT 0 CHECK (cena >= 0),
-  UNIQUE (wniosek_id, szkolenie_id),
+  -- Termin szkolenia we wniosku (spotkanie 14.10.2026): pozycja = szkolenie + termin, wiec to samo
+  -- szkolenie moze byc we wniosku kilka razy (grupy, ograniczenie sali). Uczestnikow przypisuje sie
+  -- do pozycji, a termin trafia do kalendarza (terminy) i do uczestnik_szkolenia.termin_id.
+  data_od       DATE,
+  data_do       DATE,
+  termin_id     TEXT REFERENCES terminy (id) ON DELETE SET NULL,
+  CHECK (data_od IS NULL OR data_do IS NULL OR data_do >= data_od),
   UNIQUE (id, wniosek_id, instytucja_id),
   FOREIGN KEY (wniosek_id, instytucja_id) REFERENCES wnioski (id, instytucja_id) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (szkolenie_id, instytucja_id) REFERENCES katalog_szkolen (id, instytucja_id) ON UPDATE CASCADE
@@ -517,6 +536,8 @@ CREATE TABLE uczestnicy (
   UNIQUE (id, wniosek_id, instytucja_id),
   FOREIGN KEY (wniosek_id, instytucja_id) REFERENCES wnioski (id, instytucja_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
+CREATE INDEX idx_wniosek_szkolenia_wniosek ON wniosek_szkolenia (wniosek_id);
+CREATE INDEX idx_wniosek_szkolenia_termin ON wniosek_szkolenia (termin_id);
 CREATE INDEX idx_uczestnicy_wniosek ON uczestnicy (wniosek_id);
 CREATE INDEX idx_uczestnicy_osoba ON uczestnicy (uczestnik_klienta_id);
 
@@ -730,6 +751,7 @@ CREATE TABLE formularze_oczekujace (
   id            TEXT PRIMARY KEY,
   data          TIMESTAMPTZ NOT NULL,
   firma         TEXT NOT NULL,
+  nazwa_skrocona TEXT,              -- nazwa na listach, domyslnie kopia nazwy firmy (spotkanie 14.10.2026)
   nip           TEXT,
   instytucja_id TEXT REFERENCES instytucje (id) ON DELETE CASCADE,
   osob          INTEGER NOT NULL DEFAULT 0,
@@ -766,7 +788,7 @@ CREATE TABLE formularze_oczekujace (
   reprezentant_1_stanowisko TEXT,
   reprezentant_2            TEXT,
   reprezentant_2_stanowisko TEXT,
-  zadluzenie                TEXT CHECK (zadluzenie IN ('brak','zus','us','zus_us','inne')),
+  zadluzenie                TEXT CHECK (zadluzenie IN ('brak','tak','zus','us','zus_us','inne')),
   zadluzenie_ugoda          INTEGER CHECK (zadluzenie_ugoda IN (0,1)),
   konto_praca_gov           INTEGER CHECK (konto_praca_gov IN (0,1)),
   uczestnicy_json      TEXT NOT NULL DEFAULT '[]' CHECK (json_valid(uczestnicy_json) AND json_type(uczestnicy_json) = 'array'),

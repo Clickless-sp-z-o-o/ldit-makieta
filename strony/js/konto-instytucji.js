@@ -18,7 +18,7 @@ function wierszeKontaInstytucji(i) {
     ["Strona www", i.www ? esc(i.www) : '<span class="muted">-</span>'],
     ["Siedziba (miejscowość)", "<b>" + esc(i.miasto) + '</b> <span class="tag info dot">źródło miejscowości na certyfikacie</span> <span class="ref">D-99</span>'],
     ["Opis działalności", esc(i.opis)],
-    ["Standard godzinowy", '<span class="pill w">' + esc(i.standard) + "</span>"],
+    ["Standard godzinowy szkoleń", '<span class="pill w">' + esc(i.standard) + "</span>"],
     ["Osoby kontaktowe", kontaktyHtml(i)],
     ["Opiekunowie instytucji", i.opiekun ? esc(i.opiekun) : '<span class="muted">Nie przypisano</span>']];
 }

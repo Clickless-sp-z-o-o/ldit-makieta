@@ -1,0 +1,142 @@
+/* ============================================================================
+   Motyw wizualny, czesc druga: dane. Wskazniki, tabele, zakladki, kalendarz,
+   wykresy i formularz w ukladzie Excela. Importowany przez style-motyw.css.
+   Kolory statusow wiersza zostaja dokladnie te z Excela klienta [D-01, D-158].
+   ============================================================================ */
+
+/* ------------------------------ wskazniki (KPI) ------------------------------ */
+.kpi {
+  position: relative; padding: 16px 18px 15px; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+}
+.kpi .k-label { font-size: 0.75rem; font-weight: 600; letter-spacing: .05em; color: var(--ink-3); margin-bottom: 8px; }
+.kpi .k-value { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.025em; line-height: 1.1; color: var(--ink); }
+.kpi .k-value small { font-size: 0.875rem; font-weight: 600; color: var(--ink-3); }
+.kpi .k-foot { margin-top: 8px; font-size: 0.8125rem; color: var(--ink-3); }
+/* Dane finansowe tylko dla administratora: zloty pasek marki u gory zamiast zoltego tla */
+.kpi.admin { border-color: var(--line); background: linear-gradient(180deg, #fdfbf6 0%, #fff 60%); }
+.kpi.admin::before {
+  content: ""; position: absolute; left: 14px; right: 14px; top: -1px; height: 3px;
+  border-radius: 0 0 3px 3px; background: var(--gold);
+}
+.delta { font-size: 0.8125rem; }
+
+/* ------------------------------ tabele ------------------------------ */
+table.tbl { font-size: 0.8125rem; font-variant-numeric: tabular-nums; }
+table.tbl th {
+  font-size: 0.75rem; font-weight: 600; letter-spacing: .04em; color: var(--ink-3);
+  background: var(--surface-2); border-bottom: 1px solid var(--line); padding: 10px 12px;
+  box-shadow: inset 0 -1px 0 var(--line);   /* linia zostaje pod przyklejonym naglowkiem */
+}
+table.tbl td { padding: 10px 12px; border-bottom: 1px solid #eceef4; }
+table.tbl tbody tr:last-child td { border-bottom: 0; }
+table.tbl tbody tr { transition: background-color var(--szybko) ease; }
+@media (hover: hover) { table.tbl tbody tr:hover td { background: #faf7f1; } }
+table.tbl .strong { font-weight: 600; }
+.lista-tabela table.tbl { font-size: 0.8125rem; }
+.lista-tabela table.tbl th { padding: 9px 10px; }
+.lista-tabela table.tbl td { padding: 5px 10px; line-height: 1.35; }
+.lista-tabela table.tbl td .btn { height: 26px; }
+.lista-tabela { scrollbar-width: thin; scrollbar-color: #c4c9d6 transparent; }
+
+/* Znacznik po lewej (czekamy, trwajacy nabor) tylko na pierwszej komorce. W style.css cien byl na kazdej
+   komorce i rysowal pionowe kreski miedzy kolumnami */
+tr.row-czekamy td, tr.row-nabor td { box-shadow: none; }
+tr.row-czekamy td:first-child { box-shadow: inset 3px 0 0 var(--st-czekamy-mark); }
+tr.row-nabor td:first-child { box-shadow: inset 3px 0 0 var(--pos-ink); }
+
+/* Wiersze w kolorze statusu: te same kody HEX co w Excelu, biala linia oddziela sasiednie wiersze */
+tr.row-pos td, tr.row-neg td, tr.row-rez td, tr.row-set td { border-bottom-color: rgba(255, 255, 255, .7); }
+@media (hover: hover) {
+  tr.row-pos:hover td { background: var(--st-poz-bg-hover); }
+  tr.row-neg:hover td { background: var(--st-neg-bg-hover); }
+  tr.row-rez:hover td { background: var(--st-rez-bg-hover); }
+  tr.row-set:hover td { background: var(--st-set-bg-hover); }
+  .lista-tabela tr[data-id]:hover td { filter: none; }
+}
+/* Przyciski w wierszu: lekkie, polprzezroczyste, zeby nie przykrywaly koloru statusu */
+table.tbl td .btn { height: 28px; padding: 0 9px; font-size: 0.75rem; border-radius: 7px; box-shadow: none; }
+tr.row-pos td .btn:not(.primary), tr.row-neg td .btn:not(.primary),
+tr.row-rez td .btn:not(.primary), tr.row-set td .btn:not(.primary) {
+  background: rgba(255, 255, 255, .72); border-color: rgba(21, 22, 43, .14); color: var(--ink);
+}
+
+/* ------------------------------ zakladki ------------------------------ */
+.mod-tabs { gap: 4px; border-bottom: 1px solid var(--line); margin: -4px 0 20px; }
+.mod-tabs a {
+  padding: 10px 12px; font-size: 0.875rem; font-weight: 550; color: var(--ink-3); border-radius: 6px 6px 0 0;
+  border-bottom: 2px solid transparent; transition: color var(--szybko) ease, background-color var(--szybko) ease;
+}
+@media (hover: hover) { .mod-tabs a:hover { color: var(--ink); background: rgba(34, 35, 68, .04); } }
+.mod-tabs a.on { color: var(--ink); font-weight: 650; border-bottom-color: var(--gold); }
+.mod-tabs a .n { background: var(--surface-3); color: var(--ink-2); border-radius: 999px; padding: 1px 7px; font-variant-numeric: tabular-nums; }
+.mod-tabs a.on .n { background: var(--brand-900); color: #fff; }
+
+/* Zakladki wewnatrz karty: przycisk bez szarego tla przegladarki */
+.tabs { gap: 4px; padding: 0 14px; border-bottom: 1px solid var(--line); background: transparent; }
+.tab, button.tab {
+  appearance: none; background: transparent; border: 0; border-bottom: 2px solid transparent; border-radius: 0;
+  margin-bottom: -1px; padding: 11px 12px; font: inherit; font-size: 0.8125rem; font-weight: 550; color: var(--ink-3);
+  cursor: pointer; transition: color var(--szybko) ease;
+}
+@media (hover: hover) { .tab:hover { color: var(--ink); } }
+.tab.on { color: var(--ink); font-weight: 650; border-bottom-color: var(--gold); }
+
+/* Zakladki lat jak arkusze Excela (D-159): zostaja kartami, w nowych kolorach */
+.lata-tabs { background: var(--surface-2); border-bottom: 1px solid var(--line); padding: 8px 12px 0; gap: 4px; }
+.lata-tab { border-color: var(--line); background: var(--surface-3); border-radius: 8px 8px 0 0; font-size: 0.8125rem; padding: 6px 14px; }
+.lata-tab.on { background: #fff; color: var(--ink); font-weight: 650; box-shadow: inset 0 2px 0 var(--gold); }
+
+/* ------------------------------ lista definicyjna, os czasu ------------------------------ */
+.dl { font-size: 0.8125rem; }
+.dl dt { color: var(--ink-3); font-weight: 500; padding: 9px 0; border-bottom-color: #eceef4; }
+.dl dd { padding: 9px 0; border-bottom-color: #eceef4; font-weight: 500; }
+.timeline::before { background: var(--line); }
+.tl-item .t { font-weight: 600; }
+
+/* ------------------------------ kalendarz ------------------------------ */
+.cal { border-color: var(--line); background: var(--line); border-radius: var(--radius-lg); }
+.cal .dow { background: var(--surface-2); color: var(--ink-3); font-weight: 600; letter-spacing: .04em; padding: 9px 4px; }
+.cal .day { padding: 6px 7px; }
+.cal .day.out { background: #f7f8fb; }
+.cal .day.out .dn { color: #80869c; }
+.cal .day .dn { font-weight: 600; font-variant-numeric: tabular-nums; }
+.cal .day.today .dn { background: var(--brand-900); width: 22px; height: 22px; }
+.cal .ev { border-radius: 6px; padding: 3px 6px; }
+
+/* ------------------------------ wykresy ------------------------------ */
+.bars .b .fill { border-radius: 5px 5px 2px 2px; }
+.fn-row .ft { height: 24px; border-radius: 6px; background: var(--surface-3); }
+.fn-row .ft i { border-radius: 6px; background: linear-gradient(90deg, var(--brand-900) 0%, #6a5f6e 55%, var(--gold) 100%); }
+.progress { height: 8px; border-radius: 999px; background: var(--surface-3); }
+.progress i { border-radius: 999px; background: var(--brand-900); }
+
+/* ------------------------------ formularz jak w Excelu (14.10.2026) ------------------------------ */
+/* Granatowy pasek sekcji zostaje (uklad formularza LDIT), w zaokraglonej karcie. Selektory z .zf-arkusz,
+   bo style-formularz-1410.css bywa dociagany skryptem juz po motywie (zfWczytajStyl) */
+div.zf-arkusz { border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); margin-bottom: 16px; }
+.zf-arkusz .zf-sekcja {
+  background: linear-gradient(180deg, #2a2b52 0%, var(--brand-900) 100%); padding: 9px 14px;
+  font-size: 0.8125rem; font-weight: 650; letter-spacing: .01em; box-shadow: inset 0 -2px 0 var(--gold);
+}
+.zf-arkusz .zf-sekcja-opis { opacity: .85; }
+.zf-arkusz .zf-wiersz { border-top-color: #eceef4; }
+.zf-arkusz .zf-etyk { padding: 8px 14px; background: var(--surface-2); border-right-color: #eceef4; color: var(--ink-2); }
+.zf-arkusz .zf-wart { padding: 6px 10px; }
+table.zf-tab th { background: var(--surface-2); border-bottom-color: var(--line); font-weight: 600; padding: 8px 10px; }
+
+/* ------------------------------ pusty stan ------------------------------ */
+.empty { padding: 48px 20px; }
+.empty .et { font-size: 0.9375rem; font-weight: 650; color: var(--ink); }
+
+/* ------------------------------ Na teraz i kolejki ------------------------------ */
+.kolejka { padding: 12px 18px; border-bottom-color: #eceef4; transition: background-color var(--szybko) ease; }
+.kolejka-co { font-weight: 600; }
+.kolejka-strzalka { color: var(--ink-4); transition: transform var(--szybko) ease, color var(--szybko) ease; }
+@media (hover: hover) {
+  .kolejka:hover { background: #faf7f1; }
+  .kolejka:hover .kolejka-strzalka { color: var(--brand-900); transform: translateX(2px); }
+}
+.nabory-dnia summary { padding: 11px 18px; }
+
+/* Zestawienia w ukladzie Excela (14.10.2026): linie miedzy kolumnami zostaja, ale delikatniejsze */
+table.tabela-dofin td { border-right-color: rgba(21, 22, 43, .08); }

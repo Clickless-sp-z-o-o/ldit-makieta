@@ -101,17 +101,25 @@ function wyslij16(akcja) {
 }
 function zamknijZgloszenie16() { el16("zgloszenieForm").style.display = "none"; el16("zgloszenieForm").innerHTML = ""; }
 
-/* Zwrot do uzupelnienia to odrzucenie z powodem zaczynajacym sie od Akceptacje.PREFIKS_ZWROTU (D-269) */
+/* Zwrot i wycofanie do uzupelnienia (D-269, D-331): napis z Akceptacje.etykietaStatusu */
 function tagStatusu16(status, powod) {
   var klasa = status === "oczekuje" ? "warn" : status === "zaakceptowany" || status === "zatwierdzona" ? "pos" : "neg";
-  var zwrot = status === "odrzucony" && powod && powod.indexOf(Akceptacje.PREFIKS_ZWROTU) === 0;
-  return '<span class="tag ' + klasa + ' dot">' + esc(zwrot ? "zwrócony do uzupełnienia" : status) + '</span>';
+  return '<span class="tag ' + klasa + ' dot">' + esc(Akceptacje.etykietaStatusu(status, powod)) + '</span>';
 }
 
 /* Edycja wyslanego formularza w panelu (D-314): autor poprawia czekajacy albo zwrocony formularz */
 function przyciskEdycji16(id) {
-  if (!Akceptacje.edycjaFormularza(Store.find("formularze_oczekujace", id)).mozna) return "";
-  return '<button class="btn xs" onclick="edytujFormularz16(\'' + escJs(id) + '\')">Edytuj</button>';
+  var f = Store.find("formularze_oczekujace", id);
+  if (!Akceptacje.edycjaFormularza(f).mozna) return "";
+  return '<button class="btn xs" onclick="edytujFormularz16(\'' + escJs(id) + '\')">Edytuj</button>' + (Akceptacje.mozeWycofac(f)
+    ? ' <button class="btn xs" onclick="wycofajFormularz16(\'' + escJs(id) + '\')" data-tip="LDIT nie rozpatruje formularza, dopóki go nie uzupełnisz (D-331).">Wycofaj do uzupełnienia</button>' : "");
+}
+
+/* Instytucja sama wycofuje czekajacy formularz do uzupelnienia (D-331) */
+function wycofajFormularz16(id) {
+  Akceptacje.wycofajFormularz(id, Akceptacje.ktoTeraz());
+  el16("komunikatZgloszen").textContent = "Formularz wycofany do uzupełnienia. Popraw go przyciskiem Edytuj, zapis wyśle go ponownie do akceptacji LDIT.";
+  renderMojeZgloszenia16();
 }
 
 function edytujFormularz16(id) {

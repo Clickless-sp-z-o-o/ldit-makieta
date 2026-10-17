@@ -40,10 +40,10 @@ function urzadPasuje04(wybrane, kl) {
   return Wielowybor.pasuje(wybrane, kl.pup) || kl.urzedy.some(function (u) { return Wielowybor.pasuje(wybrane, u.pup); });
 }
 
-/* Wyszukiwarka po polach klienta: nazwa, NIP, osoby kontaktowe, telefony i e-maile, urzad, instytucja (D-256) */
+/* Wyszukiwarka po polach klienta: nazwa skrocona i pelna, NIP, osoby kontaktowe, telefony i e-maile, urzad, instytucja (D-256) */
 function tekstWyszukiwania04(r) {
   var kontakty = r.kl.kontakty.map(function (k) { return [k.osoba, k.tel, k.mail].join(" "); });
-  return [r.kl.nazwa, r.kl.nip, r.kl.miasto, r.kl.telBiura, r.kl.mailFirmy, r.pupNazwa, r.isNazwa]
+  return [r.kl.nazwa, r.kl.nazwaSkrocona, r.kl.nip, r.kl.miasto, r.kl.telBiura, r.kl.mailFirmy, r.pupNazwa, r.isNazwa]
     .concat(kontakty).join(" ").toLowerCase();
 }
 

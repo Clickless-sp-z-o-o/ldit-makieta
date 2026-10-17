@@ -1,18 +1,20 @@
 /* Ekran Instytucje: formularz karty instytucji (edycja i dodawanie).
    Tylko deklaracje, bez kodu wykonywanego od razu. */
 /* ---- Karta instytucji ---- */
+/* Standard godzinowy dotyczy godzin szkolen, nie godzin pracy biura (D-335, odpowiedz klienta 09.10) */
+var PODPOWIEDZ_STANDARDU_IS = "Dni i godziny, w których instytucja zwykle prowadzi szkolenia, np. pn-pt 8:00-16:00. To nie są godziny pracy biura instytucji.";
 var POLA_IS = [
   ["nazwa", "Nazwa"], ["skrot", "Skrót"], ["siedziba_miejscowosc", "Siedziba (miejscowość)"], ["nip", "NIP"],
   ["strona_www", "Strona www"], ["opis_dzialalnosci", "Opis działalności"],
   ["osoba_kontaktowa", "Kontakt główny (osoba)"], ["email", "Kontakt główny (e-mail)"], ["telefon", "Kontakt główny (telefon)"],
   ["osoba_kontaktowa_2", "Kontakt 2 (osoba)"], ["email_2", "Kontakt 2 (e-mail)"], ["telefon_2", "Kontakt 2 (telefon)"],
   ["osoba_kontaktowa_3", "Kontakt 3 (osoba)"], ["email_3", "Kontakt 3 (e-mail)"], ["telefon_3", "Kontakt 3 (telefon)"],
-  ["standard_godzinowy", "Standard godzinowy"]
+  ["standard_godzinowy", "Standard godzinowy szkoleń", PODPOWIEDZ_STANDARDU_IS]
 ];
 function polaFormularzaIS(wiersz) {
   var pola = POLA_IS.map(function (p) {
     return '<label class="small" style="display:flex;flex-direction:column;gap:3px">' +
-      '<span class="muted">' + p[1] + '</span>' +
+      '<span class="muted">' + p[1] + (p[2] ? ' <span class="tip-mark" data-tip="' + esc(p[2]) + '">i</span>' : "") + '</span>' +
       '<input class="inp" id="if_' + p[0] + '" value="' + esc(wiersz ? wiersz[p[0]] : "") + '"></label>';
   }).join("");
   var model = wiersz ? wiersz.model_terminow : "kalendarz";

@@ -9,6 +9,8 @@
 <link rel="stylesheet" href="../assets/style-listy.css">
 <link rel="stylesheet" href="../assets/style-interfejs.css">
 <link rel="stylesheet" href="../assets/style-ekrany-0810.css">
+<link rel="stylesheet" href="../assets/style-formularz-1410.css">
+<link rel="stylesheet" href="../assets/style-motyw.css">
 <style>
   .akc-uklad { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(360px, 1fr); gap: 14px; flex: 1 1 auto; min-height: 0; }
   .akc-uklad > .card { display: flex; flex-direction: column; min-height: 0; margin-bottom: 0; }
@@ -25,7 +27,7 @@
     <div class="naglowek-karty">
       <button class="btn sm" onclick="Nawigacja.wstecz('01-dashboard.html')" data-tip="Poprzedni ekran.">&larr; Wstecz</button>
       <h1 class="page-title">Do akceptacji</h1>
-      <span class="tip-mark" data-tip="Bramka anty-spam (D-105): formularz zgłoszeniowy wprowadza LDIT albo instytucja (jej handlowiec też): ręcznie, z pliku CSV albo z załączonym PDF. Klient końcowy nie wypełnia formularzy (D-223, D-244). Formularz z brakami jest przyjmowany, a wprowadzający widzi komunikat o brakach (D-245). Instytucja zgłasza też zmiany swoich danych i danych swoich klientów (D-224). Nic nie wchodzi do bazy bez decyzji pracownika LDIT albo administratora. Odrzucenie wymaga powodu, który zobaczy instytucja. Niekompletny formularz można zwrócić instytucji do uzupełnienia (D-269). Formularz ma pełny zestaw pól klienta (D-256, D-257). Każda decyzja trafia do rejestru aktywności.">i</span>
+      <span class="tip-mark" data-tip="Bramka anty-spam (D-105): formularz zgłoszeniowy wprowadza LDIT albo instytucja (jej handlowiec też): ręcznie, z pliku CSV albo z załączonym PDF. Klient końcowy nie wypełnia formularzy (D-223, D-244). Do zapisania formularza wystarczą nazwa firmy i NIP, a wprowadzający widzi komunikat o brakach (D-245), ale zaakceptować można tylko kompletny formularz (D-331). Akceptacja od razu zakłada projekt (D-328). Instytucja zgłasza też zmiany swoich danych i danych swoich klientów (D-224). Nic nie wchodzi do bazy bez decyzji opiekuna instytucji albo administratora; zmiany danych instytucji i katalogu zatwierdza tylko administrator (D-330). Zgłoszenie czekające dłużej niż dzień jest oznaczone i przypominane (D-332). Odrzucenie wymaga powodu, który zobaczy instytucja. Niekompletny formularz można zwrócić instytucji do uzupełnienia (D-269). Formularz ma pełny zestaw pól klienta (D-256, D-257). Każda decyzja trafia do rejestru aktywności.">i</span>
     </div>
   </div>
 
@@ -33,6 +35,11 @@
     <a href="#" class="on" data-widok="formularze" onclick="przelaczWidok20('formularze');return false">Formularze zgłoszeniowe <span class="n" id="nForm"></span></a>
     <a href="#" data-widok="zmiany" onclick="przelaczWidok20('zmiany');return false">Zmiany danych od instytucji <span class="n" id="nZmiany"></span></a>
   </nav>
+
+  <!-- Przypomnienie o zgloszeniach czekajacych dluzej niz dzien (D-332) -->
+  <div class="note warn" id="przypomnienie20" role="status" hidden></div>
+  <!-- Prosby pracownikow o usuniecie wniosku, decyzja administratora (spotkanie 14.10.2026) -->
+  <div class="card" id="prosbyUsuniecia20" style="flex:0 0 auto;margin-bottom:14px" hidden></div>
 
   <!-- Wprowadzanie i edycja formularza na cala szerokosc strony; lista i panel chowaja sie na ten czas -->
   <div class="card form-pelny" id="zfKontener20" style="display:none"></div>
@@ -81,6 +88,7 @@
 <script src="../assets/auth.js"></script>
 <script src="../assets/haslo-zmiana.js"></script>
 <script src="../assets/walidacja.js"></script>
+<script src="../assets/akceptacje-uprawnienia.js"></script>
 <script src="../assets/straznik-wlasnosc.js"></script>
 <script src="../assets/straznik-katalog.js"></script>
 <script src="../assets/straznik.js"></script>
@@ -93,13 +101,16 @@
 <script src="../assets/db.js"></script>
 <script src="../assets/lata.js"></script>
 <script src="../assets/nabory-import.js"></script>
+<script src="../assets/nabory-zrzuty.js"></script>
 <script src="../assets/html.js"></script>
 <script src="../assets/powiadomienia.js"></script>
 <script src="../assets/statusy.js"></script>
 <script src="../assets/akceptacje.js"></script>
+<script src="../assets/akceptacje-zmiany.js"></script>
 <script src="../assets/akceptacje-edycja.js"></script>
 <script src="../assets/akceptacje-katalog.js"></script>
 <script src="../assets/xlsx.js"></script>
+<script src="../assets/xlsx-zapis.js"></script>
 <script src="../assets/eksport.js"></script>
 <script src="../assets/wielowybor.js"></script>
 <script src="../assets/nawigacja.js"></script>
@@ -111,12 +122,21 @@
 <script src="js/16-formularz-pola.js"></script>
 <script src="js/16-formularz-zgloszenia.js"></script>
 <script src="js/16-formularz-edycja.js"></script>
+<script src="js/03-wniosek-szkolenia-logika.js"></script>
+<script src="js/02-zestawienia-projekt-logika.js"></script>
+<script src="js/02-zestawienia-projekt-z-formularza.js"></script>
 <script src="js/20-akceptacje-lista.js"></script>
 <script src="js/20-akceptacje-sekcje.js"></script>
 <script src="js/20-akceptacje-szczegoly.js"></script>
 <script src="js/20-akceptacje-panel.js"></script>
+<script src="js/02-zestawienia-usuwanie.js"></script>
+<script src="js/03-wniosek-usuwanie-logika.js"></script>
+<script src="js/20-akceptacje-usuniecia.js"></script>
 <script type="text/kfs-strona">
 inicjuj20();
+</script>
+<script type="text/kfs-strona">
+inicjujProsby20();
 </script>
 </body>
 </html>

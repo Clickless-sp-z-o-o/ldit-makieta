@@ -1,5 +1,8 @@
 /* Zadania: logika bez DOM (D-239, D-246). Przypisywanie, edycja, usuwanie, historia,
    przypomnienia (przypomnij_dni) i siatka mini kalendarza z numerami tygodni ISO.
+   Spotkanie 14.10.2026: zadanie moze nie miec wniosku (ogolne), kazdy pracownik LDIT dodaje
+   zadania sobie i innym, administrator przepisuje istniejace zadania na inne osoby, a kazde
+   zadanie ma konkretny dzien wykonania (przypomnienie = zadanie na konkretny dzien).
    Zapisy przechodza przez Store, wiec straznik i walidacja dzialaja jak wszedzie. */
 (function (global) {
   var MS_NA_DOBE = 86400000;
@@ -43,24 +46,31 @@
     return widziWszystkie || z.przypisane_do === uzytkownikId;
   }
 
-  /* Osoby, ktorym administrator moze przypisac zadanie: aktywne konta LDIT */
+  /* Osoby, ktorym mozna przypisac zadanie: aktywne konta LDIT. Pracownik bez listy kont (admin.konta)
+     dostaje zespol LDIT z DB.ZESPOL_LDIT (login -> imie i nazwisko), bez danych kont. */
   function kontaLdit() {
     var ldit = {};
     global.DB.ROLE.forEach(function (r) { if (r.typ === "pracownik") ldit[r.id] = true; });
-    return global.DB.UZYTKOWNICY.filter(function (u) { return ldit[u.rolaId] && !u.zablokowane; });
+    var konta = global.DB.UZYTKOWNICY.filter(function (u) { return ldit[u.rolaId] && !u.zablokowane; });
+    if (konta.length) return konta;
+    var zespol = global.DB.ZESPOL_LDIT || {};
+    return Object.keys(zespol).map(function (login) { return { login: login, imie: zespol[login] }; })
+      .sort(function (a, b) { return String(a.imie).localeCompare(String(b.imie), "pl"); });
   }
 
-  /* kontekst: { uzytkownikId, widziWszystkie, dzis } */
+  /* Nowe zadanie: dowolna osoba z LDIT (kazdy pracownik dodaje zadania sobie i innym, spotkanie 14.10.2026),
+     bez wniosku albo z wnioskiem, zawsze z dniem wykonania (domyslnie dzis).
+     kontekst: { uzytkownikId, widziWszystkie, dzis } */
   function dodaj(dane, kontekst) {
     var tytul = String(dane.tytul || "").trim();
     if (!tytul) throw blad("walidacja", "Zadanie wymaga tytułu");
     var kto = dane.przypisane_do || kontekst.uzytkownikId;
-    if (kto !== kontekst.uzytkownikId && !kontekst.widziWszystkie) {
-      throw blad("brak_uprawnien", "Tylko administrator przypisuje zadania innym osobom");
+    if (kto !== kontekst.uzytkownikId && !kontaLdit().some(function (u) { return u.login === kto; })) {
+      throw blad("walidacja", "Zadanie można przypisać tylko osobie z LDIT");
     }
     return global.Store.insert("zadania", {
       tytul: tytul, opis: dane.opis || null, typ: "reczne", wniosek_id: dane.wniosek_id || null,
-      termin: dane.termin || null, przypomnij_dni: dane.przypomnij_dni == null ? null : dane.przypomnij_dni,
+      termin: dane.termin || kontekst.dzis || null, przypomnij_dni: dane.przypomnij_dni == null ? null : dane.przypomnij_dni,
       przypisane_do: kto, status: STATUS_OTWARTE, utworzono: kontekst.dzis, utworzyl_id: kontekst.uzytkownikId
     }, "ZAD-");
   }
@@ -71,11 +81,12 @@
     return z;
   }
 
+  /* Zmiana zadania. Przepisanie na inna osobe tylko administrator (zespol.zadania). */
   function zmien(id, patch, kontekst) {
     var z = znajdz(id);
     if (!mozeZmieniac(z, kontekst.uzytkownikId, kontekst.widziWszystkie)) throw blad("brak_uprawnien", "To nie jest Twoje zadanie");
-    if (patch.przypisane_do && patch.przypisane_do !== kontekst.uzytkownikId && !kontekst.widziWszystkie) {
-      throw blad("brak_uprawnien", "Tylko administrator przypisuje zadania innym osobom");
+    if (patch.przypisane_do && patch.przypisane_do !== z.przypisane_do && !kontekst.widziWszystkie) {
+      throw blad("brak_uprawnien", "Zadanie na inną osobę przepisuje administrator");
     }
     if (patch.tytul != null && !String(patch.tytul).trim()) throw blad("walidacja", "Zadanie wymaga tytułu");
     return global.Store.update("zadania", id, patch);
@@ -137,6 +148,19 @@
     return zUtc(Date.UTC(rok, mies, 1));
   }
 
+  /* Lista "Na dzis": otwarte zadania z dniem wykonania dzis albo wczesniej (zalegle), najstarsze pierwsze */
+  function naDzis(zadania, dzis) {
+    return zadania.filter(function (z) { return z.status === STATUS_OTWARTE && z.termin && z.termin <= dzis; })
+      .sort(function (a, b) { return a.termin === b.termin ? String(a.tytul).localeCompare(String(b.tytul), "pl") : (a.termin < b.termin ? -1 : 1); });
+  }
+
+  /* Przepisanie zadania na inna osobe z LDIT (administrator) */
+  function przepisz(id, naKogo, kontekst) {
+    if (!kontekst.widziWszystkie) throw blad("brak_uprawnien", "Zadanie na inną osobę przepisuje administrator");
+    if (!kontaLdit().some(function (u) { return u.login === naKogo; })) throw blad("walidacja", "Wybierz osobę z LDIT");
+    return zmien(id, { przypisane_do: naKogo }, kontekst);
+  }
+
   /* Dokad prowadzi zadanie: karta wniosku, a bez wniosku edycja zadania na tym ekranie */
   function szczegolyZadania(z) {
     return z.wniosek_id ? { rodzaj: "wniosek", adres: "03-wniosek.html?id=" + encodeURIComponent(z.wniosek_id) } : { rodzaj: "edycja", id: z.id };
@@ -146,6 +170,7 @@
     numerTygodniaIso: numerTygodniaIso, sekcja: sekcja, dodajDni: dodajDni, widoczne: widoczne,
     mozeZmieniac: mozeZmieniac, kontaLdit: kontaLdit, dodaj: dodaj, zmien: zmien, usun: usun,
     siatkaMiesiaca: siatkaMiesiaca, zadaniaDnia: zadaniaDnia, poczatekTygodnia: poczatekTygodnia,
-    siatkaTygodnia: siatkaTygodnia, przesunOkres: przesunOkres, szczegolyZadania: szczegolyZadania
+    siatkaTygodnia: siatkaTygodnia, przesunOkres: przesunOkres, szczegolyZadania: szczegolyZadania,
+    naDzis: naDzis, przepisz: przepisz
   };
 })(typeof window !== "undefined" ? window : this);

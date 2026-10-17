@@ -10,7 +10,9 @@
    kto = { czas: "RRRR-MM-DD GG:MM", uzytkownik: id konta, imie: nazwa do rejestru }
 
    Formularz: recznie, z CSV albo z zalaczonym PDF (D-244); wprowadza LDIT albo instytucja.
-   Z brakami jest przyjmowany (D-245), braki widac w DB.KOLEJKA[i].braki.
+   Do zapisu wystarcza nazwa firmy i NIP (D-331). Z brakami jest przyjmowany (D-245), braki widac
+   w DB.KOLEJKA[i].braki, ale zaakceptowac mozna tylko kompletny formularz (D-331). Rozpatruje
+   opiekun instytucji albo administrator (assets/akceptacje-uprawnienia.js, D-330).
 
    API:  Akceptacje.zglosFormularz(dane, kto)            nowy formularz, zwraca wiersz;
                                                 dane.uczestnicy to tablica obiektow uczestnika
@@ -18,7 +20,7 @@
                                                 w tej samej instytucji jest uzupelniany, w innej powstaje osobny (D-282)
          Akceptacje.odrzucFormularz(id, powod, kto), zwrocFormularz(id, kto) (D-269, powod zaczyna sie od PREFIKS_ZWROTU)
          Akceptacje.klientWZakresieZNip(nip, instytucjaId)  id klienta o tym NIP w tej instytucji, w zakresie konta, albo null
-         Akceptacje.zglosZmiane(tabela, id, instytucja, nowe, uzasadnienie, kto), zatwierdzZmiane, odrzucZmiane
+         Akceptacje.zglosZmiane, zatwierdzZmiane, odrzucZmiane   zmiany danych od instytucji (assets/akceptacje-zmiany.js)
          Akceptacje.POLA                                 pola zglaszane, z etykietami
    ============================================================================ */
 
@@ -30,8 +32,8 @@
   var POLA = {
     instytucje: { nazwa: "Nazwa", skrot: "Skrót", siedziba_miejscowosc: "Miejscowość siedziby", nip: "NIP",
                   strona_www: "Strona www", osoba_kontaktowa: "Osoba kontaktowa", email: "E-mail", telefon: "Telefon",
-                  opis_dzialalnosci: "Opis działalności", standard_godzinowy: "Standard godzinowy" },
-    klienci: { nazwa: "Nazwa", nip: "NIP", wielkosc_przedsiebiorstwa: "Wielkość", osoba_kontaktowa: "Osoba kontaktowa",
+                  opis_dzialalnosci: "Opis działalności", standard_godzinowy: "Standard godzinowy szkoleń" },
+    klienci: { nazwa: "Nazwa", nazwa_skrocona: "Nazwa skrócona", nip: "NIP", wielkosc_przedsiebiorstwa: "Wielkość", osoba_kontaktowa: "Osoba kontaktowa",
                telefon: "Telefon", email: "E-mail", miasto: "Miasto", adres_siedziby: "Adres siedziby", pup_id: "Urząd pracy",
                telefon_biura: "Telefon do biura", email_firmy: "E-mail firmy", nazwa_banku: "Nazwa banku",
                numer_konta: "Numer rachunku", liczba_zatrudnionych: "Zatrudnieni na umowę o pracę",
@@ -89,12 +91,15 @@
     /* Dopisanie wymaga funkcji nadawanej w roli (D-269), takze dla kont LDIT */
     if (!global.Auth.moze("formularze.zglaszanie")) blad("brak_uprawnien", "Twoja rola nie ma funkcji dodawania formularzy.");
     if (!dane.firma || !String(dane.firma).trim()) blad("brak_firmy", "Podaj nazwę firmy.");
+    if (!dane.nip || !String(dane.nip).trim()) blad("brak_nip", "Podaj NIP firmy. Do zapisania formularza wystarczą nazwa firmy i NIP.");
     if (!dane.instytucja_id) blad("brak_instytucji", "Formularz musi wskazywać instytucję.");
     if (dane.zrodlo === "pdf" && !dane.plik) blad("brak_pliku", "Załącz plik PDF z formularzem.");
     var wiersz = {};
     Object.keys(dane).forEach(function (k) { wiersz[k] = dane[k] === "" ? null : dane[k]; });
     /* Ugoda dotyczy tylko firm z zobowiazaniami (D-256) */
     if (!wiersz.zadluzenie || wiersz.zadluzenie === "brak") wiersz.zadluzenie_ugoda = null;
+    /* Nazwa na listach: domyslnie pelna nazwa firmy (spotkanie 14.10.2026) */
+    wiersz.nazwa_skrocona = wiersz.nazwa_skrocona ? String(wiersz.nazwa_skrocona).trim() : String(dane.firma).trim();
     var uczestnicy = czystyUczestnicy(dane.uczestnicy);
     delete wiersz.uczestnicy;
     delete wiersz.plik;
@@ -141,7 +146,7 @@
   function nowyKlient(f, kto) {
     var maxNr = S.one("SELECT COALESCE(MAX(numer_klienta), 0) AS n FROM klienci").n;
     var wiersz = {
-      numer_klienta: maxNr + 1, nazwa: f.firma, nip: f.nip, wielkosc_przedsiebiorstwa: f.wielkosc,
+      numer_klienta: maxNr + 1, nazwa: f.firma, nazwa_skrocona: f.nazwa_skrocona || f.firma, nip: f.nip, wielkosc_przedsiebiorstwa: f.wielkosc,
       osoba_kontaktowa: f.kontakt, telefon: f.telefon, email: f.email, miasto: f.miasto,
       instytucja_id: f.instytucja_id, handlowiec_id: f.handlowiec_id || null, pup_id: f.pup_id, zainteresowany_naborem: 1,
       utworzono: kto.czas.slice(0, 10)
@@ -154,6 +159,7 @@
   function uzupelnijKlienta(klientId, f) {
     var k = S.find("klienci", klientId);
     var patch = {};
+    if (!k.nazwa_skrocona) patch.nazwa_skrocona = f.nazwa_skrocona || k.nazwa;
     POLA_FORMULARZA_KLIENTA.forEach(function (p) {
       if ((k[p] == null || k[p] === "") && f[p] != null && f[p] !== "") patch[p] = f[p];
     });
@@ -176,6 +182,10 @@
      z bledna cyfra kontrolna). Zapisuja sie w formularzu, zeby bylo widac, co zmieniono. */
   function zaakceptujFormularz(id, kto, poprawki) {
     var f = oczekujacy("formularze_oczekujace", id);
+    wymagajZatwierdzania(f);
+    /* Akceptacja tylko kompletnego formularza (D-331), z uwzglednieniem poprawek zatwierdzajacego */
+    var braki = global.DBKlienci.brakiFormularza(Object.assign({}, f, poprawki || {}));
+    if (braki.length) blad("niekompletny", "Formularz jest niekompletny, brakuje: " + braki.join(", ") + ". Odeślij go do uzupełnienia.");
     var zmienione = Object.keys(poprawki || {}).filter(function (k) { return String(poprawki[k]) !== String(f[k] == null ? "" : f[k]); });
     if (zmienione.length) {
       var patch = {};
@@ -195,15 +205,16 @@
     return klientId;
   }
 
-  /* Straznik dopuszcza zmiane formularza przez modul panelu instytucji, wiec decyzje sprawdzamy tez tu */
-  function wymagajZatwierdzania() {
-    if (!global.Auth.moze("zmiany.zatwierdzanie")) blad("brak_uprawnien", "Decyzję o formularzu podejmuje pracownik LDIT albo administrator.");
+  /* Straznik dopuszcza zmiane formularza przez modul panelu instytucji, wiec decyzje sprawdzamy tez tu,
+     przed pierwszym zapisem: opiekun instytucji formularza albo administrator (D-330) */
+  function wymagajZatwierdzania(f) {
+    var U = global.AkceptacjeUprawnienia;
+    if (!U.mozeRozpatrzyc("formularz", f.instytucja_id)) blad("brak_uprawnien", U.powodOdmowy("formularz"));
   }
 
   function odrzucFormularz(id, powod, kto) {
-    wymagajZatwierdzania();
     if (!powod || !String(powod).trim()) blad("brak_powodu", "Podaj powód odrzucenia, trafi do instytucji.");
-    oczekujacy("formularze_oczekujace", id);
+    wymagajZatwierdzania(oczekujacy("formularze_oczekujace", id));
     S.update("formularze_oczekujace", id, { status: "odrzucony", rozpatrzyl_id: kto.uzytkownik,
                                             rozpatrzono: kto.czas, powod_odrzucenia: String(powod).trim() });
     doRejestru(kto, "Odrzucenie formularza", id, "Status", "oczekuje", "odrzucony: " + powod);
@@ -214,8 +225,7 @@
 
   /* Brak osobnego statusu w schemacie: zwrot to odrzucenie z powodem zaczynajacym sie od PREFIKS_ZWROTU */
   function zwrocFormularz(id, kto) {
-    wymagajZatwierdzania();
-    oczekujacy("formularze_oczekujace", id);
+    wymagajZatwierdzania(oczekujacy("formularze_oczekujace", id));
     var wiersz = (global.DB.KOLEJKA || []).filter(function (k) { return k.id === id; })[0];
     var braki = wiersz ? wiersz.braki : [];
     if (!braki.length) blad("kompletny", "Formularz jest kompletny, nie ma czego uzupełniać. Zaakceptuj go albo odrzuć z powodem.");
@@ -224,56 +234,6 @@
                                             rozpatrzono: kto.czas, powod_odrzucenia: powod });
     doRejestru(kto, "Zwrot formularza do uzupełnienia", id, "Status", "oczekuje", "odrzucony: " + powod);
     global.Powiadomienia.oFormularzu(S.find("formularze_oczekujace", id), "formularz_zwrocony", "Brakuje: " + braki.join(", ") + ".");
-  }
-
-  /* ------------------------------ zmiany danych ------------------------------ */
-
-  /* nowe: {kolumna: wartosc}. Do propozycji trafiaja tylko pola, ktore naprawde sie zmieniaja. */
-  function zglosZmiane(tabela, rekordId, instytucjaId, nowe, uzasadnienie, kto) {
-    if (!POLA[tabela]) blad("zla_tabela", "Zmiany można zgłaszać dla instytucji i klientów.");
-    var obecny = S.find(tabela, rekordId);
-    if (!obecny) blad("nie_ma", "Nie znaleziono rekordu " + rekordId + ".");
-    var zmiany = {};
-    Object.keys(nowe).forEach(function (k) {
-      var po = nowe[k] === "" ? null : nowe[k];
-      if (String(obecny[k] == null ? "" : obecny[k]) !== String(po == null ? "" : po)) zmiany[k] = { przed: obecny[k], po: po };
-    });
-    if (!Object.keys(zmiany).length) blad("brak_zmian", "Nic się nie zmieniło, nie ma czego zgłaszać.");
-    /* Nowe wartosci sprawdzamy od razu, a nie dopiero przy zatwierdzeniu (fail fast) */
-    var patch = {};
-    Object.keys(zmiany).forEach(function (k) { patch[k] = zmiany[k].po; });
-    var bledy = global.Walidacja.bledy(tabela, patch);
-    if (bledy.length) blad("walidacja", bledy.map(function (b) { return b.pole + ": " + b.komunikat; }).join("; "));
-    var nowy = S.insert("propozycje_zmian", {
-      instytucja_id: instytucjaId, tabela: tabela, rekord_id: rekordId, zmiany: JSON.stringify(zmiany),
-      uzasadnienie: uzasadnienie || null, zglosil_id: kto.uzytkownik, zgloszono: kto.czas, status: "oczekuje"
-    }, "PZ-");
-    doRejestru(kto, "Zgłoszenie zmiany danych", rekordId, Object.keys(zmiany).join(", "), null, "do akceptacji " + nowy.id);
-    return nowy;
-  }
-
-  function zatwierdzZmiane(id, kto) {
-    var p = oczekujacy("propozycje_zmian", id);
-    var zmiany = JSON.parse(p.zmiany);
-    var patch = {};
-    Object.keys(zmiany).forEach(function (k) { patch[k] = zmiany[k].po; });
-    /* Katalog szkolen ma dodanie, usuniecie i cennik (assets/akceptacje-katalog.js, D-320) */
-    if (p.tabela === "katalog_szkolen") global.AkceptacjeKatalog.zatwierdz(p, kto);
-    else S.update(p.tabela, p.rekord_id, patch);
-    S.update("propozycje_zmian", id, { status: "zatwierdzona", rozpatrzyl_id: kto.uzytkownik, rozpatrzono: kto.czas });
-    if (p.tabela !== "katalog_szkolen") Object.keys(zmiany).forEach(function (k) {
-      doRejestru(kto, "Zatwierdzenie zmiany danych", p.rekord_id, (POLA[p.tabela][k] || k), zmiany[k].przed, zmiany[k].po);
-    });
-    global.Powiadomienia.oZmianie(p, true);
-  }
-
-  function odrzucZmiane(id, powod, kto) {
-    if (!powod || !String(powod).trim()) blad("brak_powodu", "Podaj powód odrzucenia, trafi do instytucji.");
-    oczekujacy("propozycje_zmian", id);
-    S.update("propozycje_zmian", id, { status: "odrzucona", rozpatrzyl_id: kto.uzytkownik, rozpatrzono: kto.czas,
-                                       powod_odrzucenia: String(powod).trim() });
-    doRejestru(kto, "Odrzucenie zmiany danych", id, "Status", "oczekuje", "odrzucona: " + powod);
-    global.Powiadomienia.oZmianie(S.find("propozycje_zmian", id), false, String(powod).trim());
   }
 
   /* Kto wykonuje operacje, z zalogowanej sesji */
@@ -290,8 +250,7 @@
     klientWZakresieZNip: function (nip, instytucjaId) { return klientDoPowiazania({ nip: nip, instytucja_id: instytucjaId }); },
     zglosFormularz: zglosFormularz, zaakceptujFormularz: zaakceptujFormularz, odrzucFormularz: odrzucFormularz,
     zwrocFormularz: zwrocFormularz, PREFIKS_ZWROTU: PREFIKS_ZWROTU,
-    zglosZmiane: zglosZmiane, zatwierdzZmiane: zatwierdzZmiane, odrzucZmiane: odrzucZmiane,
-    /* Dla assets/akceptacje-edycja.js (edycja wyslanego formularza), nie do uzycia na ekranach */
-    wspolne: { blad: blad, doRejestru: doRejestru, czystyUczestnicy: czystyUczestnicy }
+    /* Dla assets/akceptacje-edycja.js i akceptacje-zmiany.js, nie do uzycia na ekranach */
+    wspolne: { blad: blad, doRejestru: doRejestru, czystyUczestnicy: czystyUczestnicy, oczekujacy: oczekujacy }
   };
 })(window);

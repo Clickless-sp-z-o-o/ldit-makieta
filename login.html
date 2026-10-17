@@ -7,6 +7,8 @@
 <link rel="stylesheet" href="assets/style.css">
 <link rel="stylesheet" href="assets/style-sesja.css">
 <link rel="stylesheet" href="assets/style-interfejs.css">
+<link rel="stylesheet" href="assets/style-motyw.css">
+<link rel="stylesheet" href="assets/style-motyw-powloka.css">
 </head>
 <body class="ekran-logowania">
 
@@ -23,8 +25,7 @@
 
     <h1>Zaloguj się</h1>
     <p class="muted small">
-      Rola i zakres widocznych danych wynikają z konta, nie z ustawienia w interfejsie.
-      <span class="ref">D-125</span>
+      Rola i zakres widocznych danych wynikają z konta, nie z ustawienia w interfejsie.<span class="ref ref-odstep">D-125</span>
     </p>
 
     <label class="pole">
@@ -42,8 +43,7 @@
     <button type="submit" class="btn primary" id="przycisk">Zaloguj się</button>
 
     <div class="logowanie-stopka">
-      Uwierzytelnianie dwuskładnikowe jest wymagane dla kont LDIT
-      <span class="ref">D-31</span>. W makiecie drugi składnik jest pominięty.
+      Uwierzytelnianie dwuskładnikowe jest wymagane dla kont LDIT<span class="ref ref-odstep">D-31</span>. W makiecie drugi składnik jest pominięty.
     </div>
   </form>
 
@@ -51,13 +51,11 @@
     <h2>Konta demonstracyjne</h2>
     <p class="muted small">
       Kliknij konto, żeby wypełnić formularz. Hasło do wszystkich kont: <b id="hasloDemo">demo</b>.
-      Każde konto pokazuje inny zakres systemu, bo uprawnienia są nadawane per rola
-      <span class="ref">D-35</span>, a widoczność danych wynika z przypisania do instytucji
-      <span class="ref">D-113</span>.
+      Każde konto pokazuje inny zakres systemu, bo uprawnienia są nadawane per rola<span class="ref ref-odstep">D-35</span>, a widoczność danych wynika z przypisania do instytucji<span class="ref ref-odstep">D-113</span>.
     </p>
     <p class="muted small">
-      Konta dla klientów końcowych nie istnieją: klient nie loguje się do systemu <span class="ref">D-252</span>.
-      Sesja wygasa po bezczynności: konta LDIT po 2 godzinach, konta instytucji po 30 minutach <span class="ref">D-250</span>.
+      Konta dla klientów końcowych nie istnieją: klient nie loguje się do systemu<span class="ref ref-odstep">D-252</span>.
+      Sesja wygasa po bezczynności: konta LDIT po 2 godzinach, konta instytucji po 30 minutach<span class="ref ref-odstep">D-250</span>.
     </p>
     <div id="listaKont" class="konta-lista"></div>
   </aside>
@@ -74,6 +72,7 @@
 <script src="assets/funkcje.js"></script>
 <script src="assets/auth.js"></script>
 <script src="assets/walidacja.js"></script>
+<script src="assets/akceptacje-uprawnienia.js"></script>
 <script src="assets/straznik-wlasnosc.js"></script>
 <script src="assets/straznik.js"></script>
 <script src="assets/html.js"></script>

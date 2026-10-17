@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="../assets/style-listy.css">
 <link rel="stylesheet" href="../assets/style-interfejs.css">
 <link rel="stylesheet" href="../assets/style-wniosek-0810.css">
+<link rel="stylesheet" href="../assets/style-motyw.css">
 </head>
 <body>
 <div class="page" id="stronaWniosku">
@@ -28,9 +29,12 @@
     <div class="ph-actions">
       <span class="small muted" id="stanZapisu" role="status"></span>
       <button class="btn atrapa" data-tip="W aplikacji docelowej: mail do instytucji z danymi klienta do faktury, wysyłany po zatwierdzeniu.">Dane do faktury</button>
+      <span id="akcjeUsuniecia"></span>
       <button class="btn primary" id="btnZapisz">Zapisz</button>
     </div>
   </div>
+  <!-- Prosba o usuniecie wniosku czekajaca na administratora (spotkanie 14.10.2026) -->
+  <div id="banerUsuniecia"></div>
 
   <div class="grid g-2-1">
     <div>
@@ -90,8 +94,8 @@
       <div class="card">
         <div class="card-head">
           <h3>Szkolenia projektu</h3>
-          <span class="sub">cena ustalana w tym projekcie</span>
-          <span class="tip-mark" data-tip="Szkolenia wybierasz z katalogu instytucji, a cenę ustalasz dla tego projektu; cena katalogowa jest tylko domyślna (D-264).">i</span>
+          <span class="sub">szkolenie, termin, cena i uczestnicy</span>
+          <span class="tip-mark" data-tip="Szkolenia wybierasz z katalogu instytucji, a cenę ustalasz dla tego projektu; cena katalogowa jest tylko domyślna (D-264). Każdy wiersz to szkolenie z terminem: to samo szkolenie dodasz kilka razy, gdy uczestnicy są w grupach. Termin zapisuje się w kalendarzu szkoleń, a uczestników wybierasz z listy klienta przyciskiem w kolumnie Uczestnicy.">i</span>
         </div>
         <div class="card-body tight" id="szkoleniaWniosku"></div>
       </div>
@@ -100,7 +104,7 @@
         <div class="card-head">
           <h3>Uczestnicy</h3>
           <span class="sub" id="subUcz"></span>
-          <span class="tip-mark" data-tip="Uczestników wybierasz z listy klienta, a dodajesz i edytujesz w karcie klienta (D-236). Kwota jest ustalana per uczestnik w tym projekcie (D-237).">i</span>
+          <span class="tip-mark" data-tip="Uczestników wybierasz przy szkoleniu albo z listy klienta, a dodajesz i edytujesz w karcie klienta (D-236). Osoba jest tu raz, z listą swoich szkoleń i terminów. Kwota jest ustalana per szkolenie uczestnika w tym projekcie (D-237), suma to kwota osoby.">i</span>
           <div class="ch-actions" id="narzedziaKwoty" style="align-items:center">
             <input class="inp num" id="kwotaDlaWszystkich" style="height:28px;width:100px" placeholder="kwota" aria-label="Kwota dla wszystkich">
             <select class="inp" id="zakresKwoty" style="height:28px;width:auto" aria-label="Komu ustawić kwotę"></select>
@@ -116,8 +120,8 @@
         <div class="card-body tight">
           <table class="tbl">
             <thead>
-              <tr><th>Uczestnik</th><th>Dane z karty klienta</th><th>Szkolenie</th>
-                  <th class="num">Kwota (ręczna)</th><th>Kwalifikacja</th><th></th></tr>
+              <tr><th>Uczestnik</th><th>Dane z karty klienta</th><th>Szkolenia, terminy, kwoty (ręczne) i kwalifikacja</th>
+                  <th class="num">Suma osoby</th></tr>
             </thead>
             <tbody id="uczestnicy"></tbody>
           </table>
@@ -251,6 +255,7 @@
 <script src="../assets/auth.js"></script>
 <script src="../assets/haslo-zmiana.js"></script>
 <script src="../assets/walidacja.js"></script>
+<script src="../assets/akceptacje-uprawnienia.js"></script>
 <script src="../assets/straznik-wlasnosc.js"></script>
 <script src="../assets/straznik-katalog.js"></script>
 <script src="../assets/straznik.js"></script>
@@ -263,13 +268,16 @@
 <script src="../assets/db.js"></script>
 <script src="../assets/lata.js"></script>
 <script src="../assets/nabory-import.js"></script>
+<script src="../assets/nabory-zrzuty.js"></script>
 <script src="../assets/html.js"></script>
 <script src="../assets/powiadomienia.js"></script>
 <script src="../assets/statusy.js"></script>
 <script src="../assets/akceptacje.js"></script>
+<script src="../assets/akceptacje-zmiany.js"></script>
 <script src="../assets/akceptacje-edycja.js"></script>
 <script src="../assets/akceptacje-katalog.js"></script>
 <script src="../assets/xlsx.js"></script>
+<script src="../assets/xlsx-zapis.js"></script>
 <script src="../assets/eksport.js"></script>
 <script src="../assets/wielowybor.js"></script>
 <script src="../assets/nawigacja.js"></script>
@@ -280,6 +288,9 @@
 <script src="js/19-klient-logika.js"></script>
 <script src="js/03-wniosek-szkolenia-logika.js"></script>
 <script src="js/03-wniosek-logika.js"></script>
+<script src="js/03-wniosek-pozycje-logika.js"></script>
+<script src="js/02-zestawienia-usuwanie.js"></script>
+<script src="js/03-wniosek-usuwanie-logika.js"></script>
 <script src="js/03-wniosek-os-logika.js"></script>
 <script src="js/03-wniosek-stan.js"></script>
 <script src="js/03-wniosek-finanse.js"></script>
@@ -287,6 +298,8 @@
 <script src="js/03-wniosek-uczestnicy-wybor.js"></script>
 <script src="js/03-wniosek-dodatkowe.js"></script>
 <script src="js/03-wniosek-szkolenia.js"></script>
+<script src="js/03-wniosek-pozycje-wybor.js"></script>
+<script src="js/03-wniosek-usuwanie.js"></script>
 <script src="js/03-wniosek-os-wpis.js"></script>
 <script src="js/03-wniosek-os-czasu.js"></script>
 <script src="js/03-wniosek-kontakty.js"></script>

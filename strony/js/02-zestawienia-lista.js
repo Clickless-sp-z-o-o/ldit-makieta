@@ -55,7 +55,8 @@ function render() {
     "<b>" + lista.length + "</b> z " + STAN_02.W.length + " &middot; wartość " +
     DB.fmtPLN(lista.reduce(function (s, w) { return s + (w.kwotaWnioskowana || 0); }, 0));
 
-  document.getElementById("body").innerHTML = lista.map(function (w) { return wierszWniosku(w); }).join("");
+  document.getElementById("body").innerHTML = lista.length
+    ? lista.map(function (w) { return wierszWniosku(w); }).join("") : wierszPustejListy02();
   odswiezPrzyciskCofania();
   odswiezUsuniete02();
   odswiezZakladki02(lista.length);
@@ -139,10 +140,7 @@ function inicjuj02() {
   document.getElementById("btnWyczysc").addEventListener("click", wyczyscFiltry02);
   podlaczKolejnosc02();
   podlaczUsuwanie02();
-  document.getElementById("body").addEventListener("click", function (e) {
-    var btn = e.target.closest("[data-historia]");
-    if (btn) pokazHistorie(btn.dataset.historia);
-  });
+  podlaczHistorie02();
   /* Odswiezanie po zmianie danych (poza operacjami masowymi) */
   window.addEventListener("db:changed", function () {
     if (STAN_02.batch) return;

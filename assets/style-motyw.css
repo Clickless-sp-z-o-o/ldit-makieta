@@ -1,0 +1,194 @@
+/* ============================================================================
+   Motyw wizualny makiety (15.10.2026): nowoczesny wyglad na tych samych
+   ekranach i klasach. Ladowany jako ostatni arkusz na kazdej stronie, w powloce
+   i na ekranie logowania, wiec nadpisuje style.css bez zmiany struktury HTML.
+
+   Granice z dokumentacji, ktorych motyw nie rusza:
+   - kolory statusow wiersza z Excela klienta, caly wiersz w kolorze [D-01, D-158],
+   - kolory marki LDIT: granat #222344 i zloto #cdad7d, logo w menu [D-229],
+   - czytelnosc: kontrast tekstu co najmniej 4,5:1, pismo w rem, nic ponizej 12 px,
+     kolor zawsze z tekstem [D-311],
+   - nazwy z Excela klienta i uklad ekranow [docs/16, docs/23].
+
+   Zrodla zasad: skille jakubkrehel/skills (better-interface, uzyte w docs/23),
+   Vercel Web Interface Guidelines, Anthropic frontend-design, ux-ui-guidelines.
+   Opis zmian: docs/26-motyw-wizualny.md.
+   ============================================================================ */
+
+@import url("czcionka-inter.css");
+@import url("style-motyw-dane.css");
+
+:root {
+  /* Neutralne odcienie lekko w strone granatu marki, zamiast szarosci slate */
+  --bg: #f3f4f8;
+  --surface: #ffffff;
+  --surface-2: #f8f9fc;
+  --surface-3: #eef0f5;
+  --ink: #15162b;
+  --ink-2: #383d56;
+  --ink-3: #5a6078;        /* 5,65:1 na tle strony, 5,9:1 na pasku narzedzi */
+  --ink-4: #9298b0;        /* tylko linie i ikony, nie tekst */
+  --line: #e4e7ef;
+  --line-strong: #d0d5e1;
+
+  --accent-soft: #f5f0e7;
+  --accent-border: #e3d1b3;
+  --ring: 0 0 0 3px rgba(34, 35, 68, .16);
+
+  /* Jeden sposob budowania glebi: cienka linia i bardzo lekki cien */
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --shadow-sm: 0 1px 2px rgba(21, 22, 43, .05);
+  --shadow: 0 1px 2px rgba(21, 22, 43, .05), 0 4px 14px rgba(21, 22, 43, .05);
+  --shadow-lg: 0 16px 40px rgba(21, 22, 43, .16), 0 2px 8px rgba(21, 22, 43, .06);
+
+  --font: "Inter Variable", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  --szybko: 140ms;
+}
+
+/* ------------------------------ typografia ------------------------------ */
+html, body { font-family: var(--font); }
+body {
+  font-size: 0.875rem; line-height: 1.45; background: var(--bg); color: var(--ink);
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility;
+  font-feature-settings: "cv05", "cv08";   /* Inter: czytelniejsze l oraz 1 obok I */
+}
+button, input, select, textarea { font-family: inherit; }
+h1, h2, h3, .page-title, .card-head h3 { text-wrap: balance; }
+p, .page-desc, .hint { text-wrap: pretty; }
+.mono { font-family: var(--font); font-variant-numeric: tabular-nums; letter-spacing: 0; font-size: inherit; }
+::selection { background: rgba(205, 173, 125, .35); }
+
+/* ------------------------------ naglowek strony ------------------------------ */
+.page { padding: 26px 32px 64px; }
+.page-head { margin-bottom: 22px; gap: 16px; }
+.page-title { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; margin: 0 0 6px; color: var(--ink); }
+.page-desc { font-size: 0.875rem; color: var(--ink-3); line-height: 1.5; }
+.page-head .ph-actions { gap: 8px; align-items: center; }
+.page.lista { padding: 18px 24px 14px; }
+.page.lista .page-title { font-size: 1.25rem; }
+
+/* ------------------------------ przyciski ------------------------------ */
+.btn {
+  height: 36px; padding: 0 14px; gap: 7px; border-radius: var(--radius);
+  border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink-2);
+  font-size: 0.8125rem; font-weight: 600; letter-spacing: -0.005em;
+  box-shadow: 0 1px 1px rgba(21, 22, 43, .04);
+  transition: background-color var(--szybko) ease, border-color var(--szybko) ease, color var(--szybko) ease,
+    box-shadow var(--szybko) ease, transform 90ms ease;
+}
+.btn:active:not(:disabled) { transform: scale(.97); }
+.btn.primary {
+  background: linear-gradient(180deg, #2d2e58 0%, var(--brand-900) 100%); border-color: var(--brand-900); color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .10), 0 1px 2px rgba(21, 22, 43, .25);
+}
+.btn.ghost { box-shadow: none; }
+.btn.danger { border-color: #f1b4b4; color: var(--neg-ink); }
+.btn.sm { height: 30px; padding: 0 11px; font-size: 0.75rem; border-radius: 7px; }
+.btn.xs { height: 26px; padding: 0 9px; font-size: 0.75rem; border-radius: 6px; }
+.btn:disabled { opacity: .45; box-shadow: none; }
+.btn .ikona { width: 16px; height: 16px; flex: 0 0 16px; }
+@media (hover: hover) {
+  .btn:hover:not(:disabled) { background: var(--surface-2); border-color: #b8bed0; color: var(--ink); }
+  .btn.primary:hover:not(:disabled) { background: linear-gradient(180deg, #34366a 0%, #26274c 100%); border-color: #15162e; color: #fff; }
+  .btn.ghost:hover:not(:disabled) { background: var(--accent-soft); border-color: transparent; }
+  .btn.danger:hover:not(:disabled) { background: var(--neg-bg); border-color: #ec9a9a; color: var(--neg-ink); }
+}
+
+/* ------------------------------ pola formularzy ------------------------------ */
+.inp, select.inp, textarea.inp {
+  height: 36px; padding: 0 11px; border: 1px solid var(--line-strong); border-radius: var(--radius);
+  background-color: #fff; color: var(--ink); font-size: 0.8125rem;
+  box-shadow: 0 1px 1px rgba(21, 22, 43, .03);
+  transition: border-color var(--szybko) ease, box-shadow var(--szybko) ease, background-color var(--szybko) ease;
+}
+textarea.inp { height: auto; padding: 9px 11px; line-height: 1.55; }
+.inp::placeholder { color: #80869c; }
+@media (hover: hover) { .inp:hover:not(:disabled):not([readonly]):not(:focus) { border-color: #b8bed0; } }
+.inp:focus, .inp:focus-visible { outline: none; border-color: var(--brand-900); box-shadow: var(--ring); }
+.inp:disabled, .inp[readonly] { background-color: var(--surface-3); color: var(--ink-3); box-shadow: none; }
+/* Lista rozwijana z wlasna strzalka, ta sama na Windows i w Chrome */
+select.inp:not([multiple]):not([size]) {
+  -webkit-appearance: none; appearance: none; padding-right: 32px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235a6078' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center; background-size: 16px;
+}
+.field { margin-bottom: 16px; }
+.field > label { font-size: 0.8125rem; font-weight: 600; color: var(--ink-2); margin-bottom: 6px; }
+.field .hint { color: var(--ink-3); margin-top: 5px; }
+.chk input, input[type="checkbox"], input[type="radio"] { accent-color: var(--brand-900); }
+.calc-field .inp { background-color: var(--surface-2); border-style: dashed; }
+.calc-field.overridden .inp { background-color: #fffaeb; border-color: #e7b94b; }
+
+/* ------------------------------ paski narzedzi, chipy ------------------------------ */
+.toolbar { padding: 12px 16px; gap: 8px; background: var(--surface); border-bottom: 1px solid var(--line); }
+.toolbar .inp, .toolbar select.inp { height: 34px; font-size: 0.8125rem; }
+.page.lista .toolbar { padding: 10px 14px; }
+.page.lista .toolbar .inp { height: 34px; padding-top: 0; padding-bottom: 0; font-size: 0.8125rem; }
+.toolbar select.inp:not([multiple]):not([size]) { padding-right: 30px; background-position: right 9px center; }
+.chip {
+  height: 30px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line-strong); background: #fff;
+  font-size: 0.8125rem; font-weight: 550; color: var(--ink-2);
+  transition: background-color var(--szybko) ease, border-color var(--szybko) ease, color var(--szybko) ease;
+}
+@media (hover: hover) { .chip:hover { border-color: var(--brand-900); color: var(--brand-900); } }
+.chip.on { background: var(--brand-900); border-color: var(--brand-900); color: #fff; }
+
+/* ------------------------------ karty ------------------------------ */
+/* Tlo i ramka karty zostaja z style.css: kafelki instytucji maja tlo i pasek w kolorze instytucji (D-308) */
+.card { border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); margin-bottom: 20px; }
+.card-head { padding: 14px 18px; gap: 12px; border-bottom: 1px solid var(--line); }
+.card-head h3 { font-size: 0.9375rem; font-weight: 650; letter-spacing: -0.01em; color: var(--ink); }
+.card-head .sub { font-size: 0.8125rem; color: var(--ink-3); }
+.card-body { padding: 18px; }
+.grid { gap: 18px; }
+
+/* ------------------------------ znaczniki ------------------------------ */
+.tag { padding: 2px 9px; border-radius: 999px; font-weight: 600; line-height: 1.5; }
+.tag.dot::before { width: 6px; height: 6px; }
+.pill { border-radius: 6px; padding: 1px 7px; }
+
+/* ------------------------------ ramki uwag ------------------------------ */
+.note { border-left-width: 3px; border-radius: 0 var(--radius) var(--radius) 0; font-size: 0.8125rem; padding: 12px 16px; }
+.note.warn { background: #fffaeb; }
+
+/* ------------------------------ okna ------------------------------ */
+.okno-tlo { background: rgba(21, 22, 43, .5); backdrop-filter: blur(2px); }
+.okno { border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); border: 1px solid var(--line); }
+.okno-head { padding: 16px 20px; font-weight: 650; }
+.okno-body { padding: 16px 20px; }
+.okno-foot { padding: 14px 20px; background: var(--surface-2); border-radius: 0 0 var(--radius-xl) var(--radius-xl); }
+dialog { border: 1px solid var(--line); border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); }
+dialog::backdrop { background: rgba(21, 22, 43, .5); }
+.eksport-lista { border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); padding: 6px; }
+
+/* Dymek podpowiedzi */
+.tip-bubble { border-radius: var(--radius); padding: 9px 12px; background: #1b1c38; box-shadow: var(--shadow-lg); }
+.tip-mark { background: #a3a8bd; }
+@media (hover: hover) { .tip-mark:hover { background: var(--brand-900); } }
+
+/* Elementy prowadzace do listy rekordow: zamiast obrysu delikatne podniesienie */
+[data-href]:hover { outline: none; }
+.kpi[data-href], .card[data-href] { transition: box-shadow var(--szybko) ease, border-color var(--szybko) ease, transform var(--szybko) ease; }
+@media (hover: hover) {
+  .kpi[data-href]:hover, .card[data-href]:hover { border-color: var(--line-strong); box-shadow: var(--shadow); transform: translateY(-1px); }
+}
+
+/* Ikony SVG (assets/ikony.js) */
+.ikona { width: 18px; height: 18px; display: block; flex: 0 0 auto; }
+
+/* Ruch tylko dla osob, ktore go nie wylaczyly */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; }
+  .btn:active:not(:disabled) { transform: none; }
+}
+
+/* Telefon: pola 16 px, zeby iPhone nie powiekszal strony przy wpisywaniu */
+@media (max-width: 700px) {
+  .page { padding: 18px 14px 48px; }
+  .page-title { font-size: 1.3125rem; }
+  .inp, select.inp, textarea.inp { font-size: 1rem; height: 40px; }
+  .btn { height: 40px; }
+  .btn.sm { height: 34px; }
+}

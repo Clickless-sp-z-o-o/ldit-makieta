@@ -1,7 +1,7 @@
 /* Ekran 20, czesc 1: dwie listy do akceptacji (formularze zgloszeniowe, zmiany danych),
    filtry w adresie i wybor wiersza. Same deklaracje. */
 
-var STAN_20 = { widok: "formularze", wybrany: null };
+var STAN_20 = { widok: "formularze", wybrany: null, komunikat: "" };
 var FILTRY_20 = { q: "q", inst: "fIS", status: "fStatus" };
 var WYPELNIL_20 = { pracownik: "pracownik", handlowiec: "handlowiec instytucji", instytucja: "instytucja" };
 var ZRODLO_20 = { reczny: "ręcznie", csv: "plik CSV", xlsx: "plik Excel", pdf: "plik PDF" };
@@ -13,14 +13,33 @@ function imieKonta(id) {
   return u ? u.imie : (id || "-");
 }
 
-/* Zwrot do uzupelnienia to odrzucenie z powodem zaczynajacym sie od Akceptacje.PREFIKS_ZWROTU (D-269) */
+/* Zwrot i wycofanie do uzupelnienia (D-269, D-331): napis z Akceptacje.etykietaStatusu */
 function etykietaStatusu20(r) {
-  return r.status === "odrzucony" && r.powod && r.powod.indexOf(Akceptacje.PREFIKS_ZWROTU) === 0 ? "zwrócony do uzupełnienia" : r.status;
+  return Akceptacje.etykietaStatusu(r.status, r.powod);
 }
 
 function tagStatusu20(r) {
   var klasa = r.status === "oczekuje" ? "warn" : r.status === "zaakceptowany" || r.status === "zatwierdzona" ? "pos" : "neg";
-  return '<span class="tag ' + klasa + ' dot">' + esc(etykietaStatusu20(r)) + '</span>';
+  return '<span class="tag ' + klasa + ' dot">' + esc(etykietaStatusu20(r)) + '</span>' + tagCzekania20(r);
+}
+
+/* Zgloszenie czekajace dluzej niz prog (D-332): napis z liczba dni, nie sam kolor */
+function tagCzekania20(r) {
+  if (!AkceptacjeUprawnienia.zalegle([r]).length) return "";
+  return ' <span class="tag neg">czeka ' + AkceptacjeUprawnienia.dniOczekiwania(r.data || r.zgloszono) + ' dni</span>';
+}
+
+/* Zgloszenia, ktore to konto rozpatruje: opiekun instytucji albo administrator (D-330) */
+function zrodlo20(widok) {
+  return AkceptacjeUprawnienia.doRozpatrzenia(widok === "formularze" ? DB.KOLEJKA : DB.PROPOZYCJE);
+}
+
+function renderPrzypomnienia20() {
+  var zalegle = AkceptacjeUprawnienia.zalegle(zrodlo20("formularze").concat(zrodlo20("zmiany")));
+  var pole = el20("przypomnienie20");
+  pole.hidden = !zalegle.length;
+  pole.innerHTML = zalegle.length ? "<b>Przypomnienie:</b> zgłoszenia czekające na decyzję dłużej niż dzień: <b>" + zalegle.length + "</b>. " +
+    "Na liście mają napis „czeka” z liczbą dni." : "";
 }
 
 function pasujeStatus20(status) {
@@ -31,8 +50,7 @@ function pasujeStatus20(status) {
 function lista20() {
   var q = el20("q").value.toLowerCase().trim();
   var fis = Wielowybor.wartosci(el20("fIS"));
-  var zrodlo = STAN_20.widok === "formularze" ? DB.KOLEJKA : DB.PROPOZYCJE;
-  return zrodlo.filter(function (r) {
+  return zrodlo20(STAN_20.widok).filter(function (r) {
     if (!Wielowybor.pasuje(fis, r.isId) || !pasujeStatus20(r.status)) return false;
     var h = STAN_20.widok === "formularze" ? [r.firma, r.nip, r.is, r.szkolenie, r.kontakt, r.email, r.telefon].join(" ") : [r.is, r.tabela, r.rekord].join(" ");
     return !q || h.toLowerCase().indexOf(q) >= 0;
@@ -82,8 +100,9 @@ function render20() {
   el20("body").innerHTML = lista.length ? lista.map(formularze ? wierszFormularza20 : wierszZmiany20).join("")
     : '<tr><td colspan="6"><div class="empty"><div class="et">Nic do akceptacji</div>Zmień filtr statusu, żeby zobaczyć rozpatrzone.</div></td></tr>';
   el20("licz").innerHTML = "<b>" + lista.length + "</b>";
-  el20("nForm").textContent = Nawigacja.liczbaDoAkceptacji(DB.KOLEJKA);
-  el20("nZmiany").textContent = Nawigacja.liczbaDoAkceptacji(DB.PROPOZYCJE);
+  el20("nForm").textContent = Nawigacja.liczbaDoAkceptacji(zrodlo20("formularze"));
+  el20("nZmiany").textContent = Nawigacja.liczbaDoAkceptacji(zrodlo20("zmiany"));
+  renderPrzypomnienia20();
   document.querySelectorAll("#zakladki a").forEach(function (a) { a.classList.toggle("on", a.dataset.widok === STAN_20.widok); });
   Nawigacja.zapiszWAdresie(Object.assign(wartosciFiltrow20(), { widok: STAN_20.widok, id: STAN_20.wybrany || "" }));
   renderPanel20();

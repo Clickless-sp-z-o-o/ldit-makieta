@@ -1,5 +1,6 @@
 /* Ekran Wniosek: wybor uczestnikow z listy klienta i edycja kwoty per szkolenie uczestnika (D-236, D-237, D-279).
-   Osoba juz w projekcie moze dostac kolejne szkolenie.
+   Osoba juz w projekcie moze dostac kolejne szkolenie. Od 14.10.2026 wybiera sie pozycje (szkolenie + termin),
+   a glowna droga jest wybor przy szkoleniu (03-wniosek-pozycje-wybor.js).
    Kolejny wniosek nie wymaga przepisywania ludzi, bo dane leza przy kliencie.
    Tylko deklaracje, bez kodu wykonywanego od razu. */
 
@@ -17,15 +18,17 @@ function wierszWyboru(uk, juzWProjekcie) {
     (ostrz ? '<span style="color:var(--neg,#b91c1c)"> &#9888; ' + esc(ostrz) + '</span>' : "") + '</span></label>';
 }
 
-/* Dodawani uczestnicy dostaja jedno ze szkolen projektu, a kwote z jego ceny w projekcie (D-264) */
+/* Dodawani uczestnicy dostaja jedna z pozycji projektu (szkolenie + termin), a kwote z jej ceny (D-264) */
 function opcjeSzkolenWyboru() {
   var lista = SzkoleniaWniosku.szkoleniaWniosku(STAN_03.w.id);
-  var domyslne = lista.some(function (ws) { return ws.szkolenie_id === STAN_03.raw.szkolenie_glowne_id; })
-    ? STAN_03.raw.szkolenie_glowne_id : (lista[0] ? lista[0].szkolenie_id : "");
+  var glowna = lista.filter(function (ws) { return ws.szkolenie_id === STAN_03.raw.szkolenie_glowne_id; })[0] || lista[0];
   return lista.map(function (ws) {
-    var kat = SzkoleniaWniosku.szkolenieKatalogu(ws.szkolenie_id);
-    return '<option value="' + esc(ws.szkolenie_id) + '"' + (ws.szkolenie_id === domyslne ? " selected" : "") + '>' + esc(kat ? kat.nazwa : ws.szkolenie_id) + '</option>';
+    return '<option value="' + esc(ws.id) + '"' + (glowna && ws.id === glowna.id ? " selected" : "") + '>' + esc(SzkoleniaWniosku.nazwaPozycji(ws)) + '</option>';
   }).join("");
+}
+
+function zaznaczWszystkichKlienta03(zaznacz) {
+  document.querySelectorAll('input[name="wybUcz"]').forEach(function (c) { c.checked = zaznacz; });
 }
 
 function renderWyborUcz() {
@@ -35,8 +38,10 @@ function renderWyborUcz() {
     ? lista.map(function (uk) { return wierszWyboru(uk, wProjekcie.indexOf(uk.id) >= 0); }).join("")
     : '<div class="small muted">Klient nie ma jeszcze uczestników. Dodaj ich w karcie klienta.</div>';
   el("wyborUcz").innerHTML =
-    '<div class="small strong" style="margin-bottom:6px">Uczestnicy klienta ' + esc(STAN_03.w.klNazwa) + '</div>' + wiersze +
-    '<div class="field" style="margin:10px 0 6px"><label>Szkolenie dla dodawanych<span class="tip-mark" data-tip="Wybierasz spośród szkoleń projektu. Kwota uczestnika to cena tego szkolenia w projekcie, potem możesz ją zmienić ręcznie (D-237, D-264).">i</span></label>' +
+    '<div class="small strong" style="margin-bottom:6px">Uczestnicy klienta ' + esc(STAN_03.w.klNazwa) +
+    (lista.length ? ' <button type="button" class="btn xs" onclick="zaznaczWszystkichKlienta03(true)">Zaznacz wszystkich</button> ' +
+      '<button type="button" class="btn xs" onclick="zaznaczWszystkichKlienta03(false)">Wyczyść</button>' : "") + '</div>' + wiersze +
+    '<div class="field" style="margin:10px 0 6px"><label for="wybSzkolenie">Szkolenie i termin dla dodawanych<span class="tip-mark" data-tip="Wybierasz spośród szkoleń projektu z terminem. Kwota uczestnika to cena tego szkolenia w projekcie, potem możesz ją zmienić ręcznie (D-237, D-264). Szybciej: przycisk w kolumnie Uczestnicy przy szkoleniu.">i</span></label>' +
     '<select class="inp" id="wybSzkolenie">' + opcjeSzkolenWyboru() + '</select></div>' +
     '<div class="btn-row"><button class="btn primary sm" onclick="dodajWybranych()">Dodaj zaznaczonych do projektu</button>' +
     '<button class="btn sm" onclick="przelaczWyborUcz()">Zamknij</button></div>';
@@ -66,14 +71,16 @@ function zapiszKwoteUcz(i) {
   renderWszystko();
 }
 
-/* Zmiana szkolenia uczestnika ustawia jego kwote na cene tego szkolenia w projekcie, dalej edytowalna */
+/* Zmiana pozycji (szkolenie + termin) uczestnika ustawia jego kwote na cene tej pozycji, dalej edytowalna;
+   uczestnik dostaje termin nowej pozycji */
 function zmienSzkolenieUcz(i) {
   var u = STAN_03.w.uczestnicy[i];
-  var szkolenieId = el("uSzk" + i).value;
-  var cena = szkolenieId ? SzkoleniaWniosku.cenaWniosku(STAN_03.w.id, szkolenieId) : u.kwota;
-  var wynik = WniosekLogika.zapiszKwoteUczestnika(u.id, szkolenieId, String(cena));
+  var pozycjaId = el("uSzk" + i).value;
+  var cena = pozycjaId ? SzkoleniaWniosku.cenaWniosku(STAN_03.w.id, pozycjaId) : u.kwota;
+  var wynik = WniosekLogika.zapiszKwoteUczestnika(u.id, pozycjaId, String(cena));
   if (!wynik.ok) { pokazBledy03(wynik); renderUcz(); return; }
-  wpiszDoRejestru("Zmiana pola", "Szkolenie uczestnika: " + u.imie, u.szkNazwa, szkolenieId ? szkolenieId : "brak");
+  var ws = Store.find("wniosek_szkolenia", pozycjaId);
+  wpiszDoRejestru("Zmiana pola", "Szkolenie uczestnika: " + u.imie, u.szkNazwa, ws ? SzkoleniaWniosku.nazwaPozycji(ws) : "brak");
   wczytaj();
   renderWszystko();
 }

@@ -78,13 +78,14 @@ function przyciskiAkcji04(kl) {
     '<a class="btn xs" aria-label="Szczegóły klienta ' + nazwa + '" title="Karta klienta" href="' + esc(Nawigacja.adresKlienta(kl.id)) + '">&#9998; Szczegóły</a></td>';
 }
 
+/* Kolumna Klient: nazwa skrocona (nazwaLista), pelna nazwa w dymku (spotkanie 14.10.2026) */
 function wierszKlienta(r) {
   var cls = r.status === "trwa" ? "row-pos row-nabor"
           : (r.status === "zakończony" || r.status === "Bez informacji") ? "dim" : "";
   var row = '<tr class="' + cls + '" data-kl="' + esc(r.kl.id) + '">' +
     '<td class="exp-cell">' + przyciskRozwijania(r) + '</td>' +
     '<td class="strong">' + esc(r.kl.nr) + '</td>' +
-    '<td class="strong"><div class="tnij" title="' + esc(r.kl.nazwa) + '">' + esc(r.kl.nazwa) + '</div>' +
+    '<td class="strong"><div class="tnij" title="' + esc(r.kl.nazwa) + '">' + esc(r.kl.nazwaLista || r.kl.nazwa) + '</div>' +
       '<span class="pod">' + znacznikCzarnejListy(r.kl) + '<span class="mono">' + esc(r.kl.nip) + '</span> &middot; ' + esc(r.kl.miasto) + '</span></td>' +
     '<td class="nowrap">' + tagWielkosc(r.kl.wielkosc) + '</td>' +
     '<td><div class="tnij" title="' + esc(r.isNazwa) + '">' + esc(r.isNazwa) + '</div></td>' +

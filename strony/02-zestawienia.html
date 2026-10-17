@@ -9,13 +9,15 @@
 <link rel="stylesheet" href="../assets/style-listy.css">
 <link rel="stylesheet" href="../assets/style-interfejs.css">
 <link rel="stylesheet" href="../assets/style-listy-0810.css">
+<link rel="stylesheet" href="../assets/style-dofin-1410.css">
+<link rel="stylesheet" href="../assets/style-motyw.css">
 </head>
 <body>
 <div class="page lista">
 
   <div class="page-head">
     <h1 class="page-title">Dofinansowania</h1>
-    <span class="tip-mark" data-tip="Wnioski wybranego roku w układzie z Excela. Status zmieniasz przyciskiem Zmień w wierszu, a do wniosku przechodzisz przyciskiem Szczegóły.">i</span>
+    <span class="tip-mark" data-tip="Wnioski wybranego roku w układzie z Excela. Status zmieniasz, klikając znacznik statusu w wierszu (lista wyboru jak w Excelu). Do wniosku przechodzisz przyciskiem Szczegóły, a przebieg wniosku pokazuje Historia.">i</span>
     <div class="ph-actions">
       <span class="eksport-ekranu" data-pozycje="wnioski"></span>
       <button class="btn primary sm" id="btnNowyProjekt" data-tip="Przenosi na ekran Nowy formularz, zakładka Nowy projekt, z wybranym rokiem i instytucją.">+ Nowy projekt</button>
@@ -46,7 +48,7 @@
       <button class="btn xs" id="btnKolejnosc" type="button" aria-pressed="false" title="Pokazuje przyciski Wyżej i Niżej oraz przeciąganie wierszy">Ustaw kolejność</button>
       <button class="btn xs" id="btnCofnij" onclick="cofnijZbiorcza()">Cofnij ostatnią zmianę zbiorczą</button>
       <button class="btn xs" id="btnUsuniete" style="display:none" title="Wnioski usunięte z listy, z możliwością przywrócenia">Usunięte z listy</button>
-      <span class="tip-mark" data-tip="Usunięty wniosek znika z listy, a klient zostaje w Bazie danych. Przywrócisz go w sekcji Usunięte z listy.">i</span>
+      <span class="tip-mark" data-tip="Wniosek usuwasz na karcie wniosku (Szczegóły). Usunięty wniosek znika z listy, a klient zostaje w Bazie danych. Przywrócisz go w sekcji Usunięte z listy.">i</span>
       <span class="small" id="komZbiorcza" role="status"></span>
       <span class="sp"></span>
       <div class="legend">
@@ -60,34 +62,34 @@
 
     <div id="usunietePanel" class="card-body" style="display:none;border-bottom:1px solid var(--line);max-height:220px;overflow:auto"></div>
 
-    <div id="histPanel" class="card-body" style="display:none;border-bottom:1px solid var(--line);max-height:220px;overflow:auto"></div>
+    <div id="histPanel" class="card-body hist-panel" role="region" aria-labelledby="histTytul" style="display:none"></div>
 
     <div class="card-body" id="notaRok" style="display:none;border-bottom:1px solid var(--line);padding:8px 12px">
       <div class="note mb0" id="notaRokTresc"></div>
     </div>
 
     <div class="lista-tabela">
-      <table class="tbl bez-klikania" id="tab">
+      <table class="tbl bez-klikania tabela-dofin" id="tab">
         <thead>
           <tr>
-            <th><span class="sr-only">Szczegóły</span><span class="tip-mark" data-tip="Szczegóły i edycja wniosku. Kolejność wierszy zmieniasz po włączeniu Ustaw kolejność, przyciskami albo przeciągnięciem wiersza, zawsze z potwierdzeniem (D-261).">i</span></th>
+            <th class="kol-akcje"><span class="sr-only">Szczegóły i historia</span><span class="tip-mark" data-tip="Szczegóły: karta i edycja wniosku. Historia: przebieg wniosku, czyli co i kiedy się działo (zmiany statusu i etapu, wpisy, zadania z terminem, maile). Kolejność wierszy zmieniasz po włączeniu Ustaw kolejność, przyciskami albo przeciągnięciem wiersza, zawsze z potwierdzeniem (D-261).">i</span></th>
             <th style="width:36px">Nr<span class="tip-mark" data-tip="Numer wniosku (ID) jest stały, trafia na fakturę i nie zmienia się przy zmianie kolejności (D-112, D-261).">i</span></th>
-            <th>Klient</th>
+            <th class="kol-klient">Klient<span class="tip-mark" data-tip="Nazwa skrócona klienta, pełna nazwa w dymku po najechaniu na nazwę. Wyszukiwarka znajduje po obu nazwach.">i</span></th>
             <th class="kol-is">Instytucja</th>
             <th>Wykonawca<span class="tip-mark" data-tip="Realizator szkolenia (podwykonawca), obok instytucji (D-258).">i</span></th>
             <th>Kontakt<span class="tip-mark" data-tip="Osoba do kontaktu i telefon z wniosku, a gdy wniosek ich nie ma, z karty klienta (D-241).">i</span></th>
             <th>E-mail<span class="tip-mark" data-tip="E-mail osoby do kontaktu (D-262).">i</span></th>
             <th>Urząd</th>
-            <th class="c">Osób<span class="tip-mark" data-tip="Zakwalifikowani; po ukośniku wszyscy zgłoszeni. Do wyliczeń wchodzą tylko zakwalifikowani (D-79).">i</span></th>
+            <th class="c">Osób<span class="tip-mark" data-tip="Liczba osób, o które wnioskowano: wszyscy uczestnicy wniosku.">i</span></th>
             <th class="num">Wartość<span class="tip-mark" data-tip="Kwota wnioskowana, znana od początku (D-259).">i</span></th>
+            <th>Status<span class="tip-mark" data-tip="Status zaraz po wartości, jak w Excelu LDIT. Kliknij znacznik statusu, aby wybrać nowy z listy. Zmiana trafia do historii wniosku.">i</span></th>
             <th class="num">Przyznano<span class="tip-mark" data-tip="Dofinansowanie z urzędu: koszt całkowity × procent progu (D-131). Puste przed decyzją pozytywną (D-259).">i</span></th>
             <th class="num">Koszt całk.<span class="tip-mark" data-tip="Wartość uznana przez urząd, z dopłatą staje się podstawą prowizji (D-64). Puste przed decyzją pozytywną (D-259).">i</span></th>
-            <th>Status</th>
+            <th class="c">Osób z dof.<span class="tip-mark" data-tip="Liczba osób z dofinansowaniem: uczestnicy zakwalifikowani przez urząd. Widoczna po decyzji pozytywnej, wcześniej kreska.">i</span></th>
             <th>Rozl.<span class="tip-mark" data-tip="Etap finansowy: Oczekuje, Zafakturowany, Rozliczone.">i</span></th>
             <th>Dokumenty<span class="tip-mark" data-tip="U: umowa (z urzędem pracy), F: faktura, C: certyfikat. Znaczniki tylko do podglądu, edycja wyłącznie w Szczegółach wniosku (D-232, D-263).">i</span></th>
             <th>Przygotował<span class="tip-mark" data-tip="Kto przygotował wniosek (jedna osoba). Nie zawsze jest to opiekun instytucji (D-233, D-260).">i</span></th>
             <th>Opiekunowie<span class="tip-mark" data-tip="Opiekunowie wniosku, może być kilku (np. zastępstwo). Ustawiasz ich w Szczegółach wniosku (D-260).">i</span></th>
-            <th><span class="sr-only">Akcje</span></th>
           </tr>
         </thead>
         <tbody id="body"></tbody>
@@ -108,6 +110,7 @@
 <script src="../assets/auth.js"></script>
 <script src="../assets/haslo-zmiana.js"></script>
 <script src="../assets/walidacja.js"></script>
+<script src="../assets/akceptacje-uprawnienia.js"></script>
 <script src="../assets/straznik-wlasnosc.js"></script>
 <script src="../assets/straznik-katalog.js"></script>
 <script src="../assets/straznik.js"></script>
@@ -120,13 +123,16 @@
 <script src="../assets/db.js"></script>
 <script src="../assets/lata.js"></script>
 <script src="../assets/nabory-import.js"></script>
+<script src="../assets/nabory-zrzuty.js"></script>
 <script src="../assets/html.js"></script>
 <script src="../assets/powiadomienia.js"></script>
 <script src="../assets/statusy.js"></script>
 <script src="../assets/akceptacje.js"></script>
+<script src="../assets/akceptacje-zmiany.js"></script>
 <script src="../assets/akceptacje-edycja.js"></script>
 <script src="../assets/akceptacje-katalog.js"></script>
 <script src="../assets/xlsx.js"></script>
+<script src="../assets/xlsx-zapis.js"></script>
 <script src="../assets/eksport.js"></script>
 <script src="../assets/wielowybor.js"></script>
 <script src="../assets/nawigacja.js"></script>
@@ -145,6 +151,8 @@
 <script src="js/02-zestawienia-kolejnosc.js"></script>
 <script src="js/02-zestawienia-status.js"></script>
 <script src="js/02-zestawienia-usuwanie.js"></script>
+<script src="js/02-zestawienia-historia-dane.js"></script>
+<script src="js/02-zestawienia-historia.js"></script>
 <script src="js/eksporty-ekranow.js"></script>
 <script type="text/kfs-strona">
 inicjuj02();

@@ -5,6 +5,8 @@
    czy kolumne nigdzie nie przenosi. Kolejnosc wierszy: 02-zestawienia-kolejnosc.js. Same deklaracje. */
 
 var BRAK_02 = '<span class="muted">-</span>';
+/* Kolumny tabeli: Szczegoly i Historia, Nr, Klient, Instytucja, Wykonawca, Kontakt, E-mail, Urzad, Osob,
+   Wartosc, Status, Przyznano, Koszt calk., Osob z dof., Rozl., Dokumenty, Przygotowal, Opiekunowie */
 var LICZBA_KOLUMN_02 = 18;
 
 /* Pierwszy kontakt wniosku, a gdy wniosek go nie ma, kontakt klienta */
@@ -15,11 +17,19 @@ function kontaktWniosku(w) {
   return kl ? { osoba: kl.osoba, tel: kl.tel, mail: kl.mail } : {};
 }
 
-/* Imie z kont widocznych dla roli, a gdy konta nie widac, sam login (id konta = login) */
+/* Imie i nazwisko osoby (id konta = login). Zespol LDIT z DB.ZESPOL_LDIT, ktora maja wszystkie konta LDIT,
+   nie tylko administrator z lista kont (blad ze spotkania 14.10.2026: pracownik widzial e-mail). Pracownicy
+   instytucji z listy kont widocznej dla roli. Konto instytucji nie dostaje imion zespolu LDIT, wiec
+   nieznana mu osoba to "LDIT", a nie adres e-mail. Konto LDIT przy nieznanym koncie widzi login. */
+var NAZWA_ZESPOLU_02 = "LDIT";
+
 function nazwaPrzygotowal(id) {
   if (!id) return "";
+  var zespol = DB.ZESPOL_LDIT || {};
+  if (zespol[id]) return zespol[id];
   var u = DB.UZYTKOWNICY.filter(function (x) { return x.login === id; })[0];
-  return u && u.imie ? u.imie : id;
+  if (u && u.imie) return u.imie;
+  return Auth.sesja() && Auth.sesja().instytucja_nazwa ? NAZWA_ZESPOLU_02 : id;
 }
 
 /* Opiekunowie wniosku (D-260): nazwy kont po przecinku */
@@ -37,13 +47,13 @@ function znacznikiDokumentow(w) {
   }).join("") + '</span>';
 }
 
-/* Tekst do wyszukiwania po wszystkich polach listy (D-262): firma, NIP, osoba, telefon (tez same
+/* Tekst do wyszukiwania po wszystkich polach listy (D-262): firma (nazwa skrocona i pelna), NIP, osoba, telefon (tez same
    cyfry), e-mail, wykonawca, instytucja, urzad, przygotowal, opiekunowie i numer wniosku */
 function cyfry02(t) { return String(t || "").replace(/\D/g, ""); }
 
 function tekstWyszukiwania02(w) {
   var k = kontaktWniosku(w);
-  return [w.klNazwa, w.nip, w.pupNazwa, w.isNazwa, k.osoba, k.tel, cyfry02(k.tel), k.mail, w.wykonawca,
+  return [w.klNazwa, w.klNazwaPelna, w.nip, w.pupNazwa, w.isNazwa, k.osoba, k.tel, cyfry02(k.tel), k.mail, w.wykonawca,
           nazwaPrzygotowal(w.przygotowal), w.przygotowal, nazwyOpiekunow(w), w.id, w.nr]
     .join(" ").toLowerCase();
 }
@@ -54,61 +64,71 @@ function kwotaPoDecyzji(w, kwota) {
   return w.statusDec === "Pozytywna" && kwota != null ? DB.fmtPLN(kwota) : BRAK_02;
 }
 
-/* Pierwsza kolumna: Szczegoly (uwaga 08.10, bez kolumny Lp.). Przyciski Wyzej/Nizej i uchwyt przeciagania
-   sa tylko w trybie "Ustaw kolejnosc" (D-261), zeby lista nie miala strzalek w kazdym wierszu */
+/* Pierwsza kolumna: Szczegoly i Historia razem, zeby nie przewijac listy w bok (spotkanie 14.10.2026).
+   Usun nie ma na liscie: wniosek usuwa sie na karcie wniosku. Przyciski Wyzej/Nizej i uchwyt
+   przeciagania sa tylko w trybie "Ustaw kolejnosc" (D-261), zeby lista nie miala strzalek w kazdym wierszu */
 function komorkaSzczegolow02(w, trybKolejnosci) {
   var nr = esc(w.nr);
-  var szczegoly = '<a class="btn xs" aria-label="Szczegóły wniosku ' + nr + '" title="Szczegóły i edycja wniosku" href="' +
-    esc(adresKarty02(w.id)) + '">&#9998; Szczegóły</a>';
-  if (!trybKolejnosci) return '<td class="nowrap">' + szczegoly + '</td>';
-  return '<td class="nowrap lp-kolejnosc"><button type="button" class="ruch" data-ruch="gora" aria-label="Przesuń wniosek ' + nr + ' wyżej" title="Wyżej (z potwierdzeniem)">&#9650;</button>' +
+  var przyciski = '<a class="btn xs" aria-label="Szczegóły wniosku ' + nr + '" title="Szczegóły i edycja wniosku" href="' +
+    esc(adresKarty02(w.id)) + '">&#9998; Szczegóły</a> ' +
+    '<button type="button" class="btn xs" data-historia="' + esc(w.id) + '" aria-controls="histPanel" aria-label="Historia wniosku ' + nr + '"' +
+    ' title="Przebieg wniosku: co i kiedy się działo">Historia</button>';
+  if (!trybKolejnosci) return '<td class="nowrap kol-akcje">' + przyciski + '</td>';
+  return '<td class="nowrap kol-akcje lp-kolejnosc"><button type="button" class="ruch" data-ruch="gora" aria-label="Przesuń wniosek ' + nr + ' wyżej" title="Wyżej (z potwierdzeniem)">&#9650;</button>' +
     '<span class="uchwyt" aria-hidden="true" title="Przeciągnij wiersz, aby zmienić kolejność">&#8942;&#8942;</span>' +
-    '<button type="button" class="ruch" data-ruch="dol" aria-label="Przesuń wniosek ' + nr + ' niżej" title="Niżej (z potwierdzeniem)">&#9660;</button> ' + szczegoly + '</td>';
+    '<button type="button" class="ruch" data-ruch="dol" aria-label="Przesuń wniosek ' + nr + ' niżej" title="Niżej (z potwierdzeniem)">&#9660;</button> ' + przyciski + '</td>';
 }
 
-/* Status jako znacznik z kolorem; zmiana z menu wiersza (02-zestawienia-status.js), bez pola wyboru w kazdym wierszu */
+/* Status jak lista rozwijana w Excelu (spotkanie 14.10.2026): klikniecie znacznika otwiera menu statusow
+   (02-zestawienia-status.js). Znacznik jest przyciskiem dostepnym z klawiatury. Bez edycji: sam znacznik. */
 function komorkaStatusu02(w, mozeEdytowac) {
-  var zmien = mozeEdytowac
-    ? ' <button type="button" class="btn xs zmien-status" data-status-menu="' + esc(w.id) + '" aria-haspopup="menu" aria-expanded="false"' +
-      ' aria-label="Zmień status wniosku ' + esc(w.nr) + '" title="Zmień status">Zmień</button>' : "";
-  return '<td class="nowrap">' + Statusy.znacznik(w) + zmien + '</td>';
+  if (!mozeEdytowac) return '<td class="nowrap kol-status">' + Statusy.znacznik(w) + '</td>';
+  var status = esc(Statusy.wartosc(w));
+  return '<td class="nowrap kol-status"><button type="button" class="status-wybor" data-status-menu="' + esc(w.id) + '"' +
+    ' aria-haspopup="menu" aria-expanded="false" aria-label="Status wniosku ' + esc(w.nr) + ': ' + status + '. Zmień status"' +
+    ' title="Kliknij, aby zmienić status">' + Statusy.znacznik(w) + '<span class="status-strzalka" aria-hidden="true">&#9662;</span></button></td>';
 }
 
-function przyciskiAkcji(w, mozeEdytowac) {
-  var nr = esc(w.nr);
-  var usun = mozeEdytowac
-    ? ' <button class="btn xs" data-usun="' + esc(w.id) + '" aria-label="Usuń wniosek ' + nr + ' z listy" title="Usuń wniosek z listy (klient zostaje w Bazie danych)">Usuń</button>' : "";
-  return '<td class="right nowrap"><button class="btn xs" data-historia="' + esc(w.id) + '" aria-label="Historia zmian wniosku ' + nr + '" title="Historia zmian wniosku">Historia</button>' +
-    usun + '</td>';
+/* Liczba osob z dofinansowaniem (zakwalifikowani) jest znana dopiero po decyzji pozytywnej */
+function osobZDofinansowaniem02(w) {
+  return w.statusDec === "Pozytywna" ? String(w.osobZakw) : BRAK_02;
 }
 
+/* Kolejnosc kolumn jak w Excelu LDIT (spotkanie 14.10.2026): osoby, wartosc, zaraz po niej status,
+   przyznano, koszt calkowity i osoby z dofinansowaniem; mniej potrzebne kolumny na koncu */
 function wierszWniosku(w) {
   var ukryjIS = STAN_02.forcedInst ? ' style="display:none"' : "";
   var kontakt = kontaktWniosku(w);
   var edycja = Auth.edytujeModul("dofin");
   var kolejnosc = edycja && STAN_02.trybKolejnosci;
+  var opiekunowie = nazwyOpiekunow(w);
   return '<tr class="' + Statusy.klasaWiersza(w) + '" data-id="' + esc(w.id) + '"' + (kolejnosc ? ' draggable="true"' : "") + '>' +
     komorkaSzczegolow02(w, kolejnosc) +
     '<td class="strong nowrap">' + esc(w.nr) + '</td>' +
-    '<td class="strong"><div class="tnij" title="' + esc(w.klNazwa) + '">' + esc(w.klNazwa) + '</div>' +
+    '<td class="strong kol-klient"><div class="tnij" title="' + esc(w.klNazwaPelna || w.klNazwa) + '">' + esc(w.klNazwa) + '</div>' +
       '<span class="pod mono">' + esc(w.nip) + '</span></td>' +
     '<td class="kol-is"' + ukryjIS + '><div class="tnij" title="' + esc(w.isNazwa) + '">' + esc(w.isNazwa) + '</div></td>' +
     '<td><div class="tnij" title="' + esc(w.wykonawca) + '">' + (w.wykonawca ? esc(w.wykonawca) : BRAK_02) + '</div></td>' +
     '<td><div class="tnij" title="' + esc(kontakt.osoba) + '">' + (kontakt.osoba ? esc(kontakt.osoba) : BRAK_02) + '</div>' +
       '<span class="pod nowrap">' + (kontakt.tel ? esc(kontakt.tel) : "") + '</span></td>' +
     '<td><div class="tnij" title="' + esc(kontakt.mail) + '">' + (kontakt.mail ? esc(kontakt.mail) : BRAK_02) + '</div></td>' +
-    '<td class="nowrap muted">' + esc(skrocUrzad(w.pupNazwa)) + '</td>' +
-    '<td class="c">' + w.osobZakw + (w.osob !== w.osobZakw ? '<span class="muted">/' + w.osob + '</span>' : "") + '</td>' +
+    '<td class="nowrap muted">' + (w.pupNazwa ? esc(skrocUrzad(w.pupNazwa)) : BRAK_02) + '</td>' +
+    '<td class="c">' + w.osob + '</td>' +
     '<td class="num">' + (w.kwotaWnioskowana != null ? DB.fmtPLN(w.kwotaWnioskowana) : BRAK_02) + '</td>' +
+    komorkaStatusu02(w, edycja) +
     '<td class="num strong">' + kwotaPoDecyzji(w, w.przyznano) + '</td>' +
     '<td class="num">' + kwotaPoDecyzji(w, w.kosztCalkowity) + '</td>' +
-    komorkaStatusu02(w, edycja) +
+    '<td class="c">' + osobZDofinansowaniem02(w) + '</td>' +
     '<td>' + Statusy.znacznikRozliczenia(w) + '</td>' +
     '<td>' + znacznikiDokumentow(w) + '</td>' +
     '<td class="nowrap">' + (w.przygotowal ? esc(nazwaPrzygotowal(w.przygotowal)) : BRAK_02) + '</td>' +
-    '<td><div class="tnij" title="' + esc(nazwyOpiekunow(w)) + '">' + (nazwyOpiekunow(w) ? esc(nazwyOpiekunow(w)) : BRAK_02) + '</div></td>' +
-    przyciskiAkcji(w, edycja) +
+    '<td><div class="tnij" title="' + esc(opiekunowie) + '">' + (opiekunowie ? esc(opiekunowie) : BRAK_02) + '</div></td>' +
     '</tr>';
+}
+
+/* Wiersz zamiast pustej tabeli, gdy filtr nic nie zwraca */
+function wierszPustejListy02() {
+  return '<tr class="pusta-lista"><td colspan="' + LICZBA_KOLUMN_02 + '" class="muted">Brak wniosków dla wybranych filtrów.</td></tr>';
 }
 
 /* "PUP Poznań" -> "Poznań": w kolumnie Urzad prefiks jest zawsze ten sam */

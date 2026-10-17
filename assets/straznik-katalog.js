@@ -45,7 +45,8 @@
   }
 
   function zatwierdzeniePozwala(operacja, tabela, dane, id) {
-    if ((tabela !== "katalog_szkolen" && tabela !== "ceny_szkolen") || !global.Auth.moze("zmiany.zatwierdzanie")) return false;
+    /* Zmiane katalogu zatwierdza tylko administrator (D-330) */
+    if ((tabela !== "katalog_szkolen" && tabela !== "ceny_szkolen") || !global.AkceptacjeUprawnienia.mozeRozpatrzyc("katalog_szkolen")) return false;
     if (tabela === "ceny_szkolen") {
       var szk = szkolenieCeny(dane, id);
       var inst = (dane && dane.instytucja_id) || (S.one("SELECT instytucja_id FROM katalog_szkolen WHERE id = ?", [szk]) || {}).instytucja_id;

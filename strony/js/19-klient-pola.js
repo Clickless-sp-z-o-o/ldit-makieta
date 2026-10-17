@@ -2,16 +2,18 @@
    Z tej deklaracji korzystaja karta klienta (widok i edycja) oraz formularz nowego klienta w Bazie danych,
    wiec pola sa w obu miejscach identyczne. Klucz pola "kol" to nazwa kolumny w tabeli klienci.
    Typy: tekst, email, tel, liczba (calkowita), dziesietna, wybor, tn (tak/nie), kolejny, pup.
-   Sekcja Zobowiazania ma wlasny sposob zapisu (zob), bo trzy pytania skladaja sie na kolumny zadluzenie i zadluzenie_ugoda. */
+   Sekcja Zobowiazania ma wlasny sposob zapisu (zob): dwa pytania TAK/NIE (spotkanie 14.10.2026) skladaja sie
+   na kolumny zadluzenie ('tak' albo 'brak'; stare 'zus', 'us', 'zus_us', 'inne' to TAK) i zadluzenie_ugoda. */
 (function (global) {
   "use strict";
 
   var WIELKOSCI = [["", "nie podano"], ["mikro", "mikro"], ["mały", "mały"], ["średni", "średni"], ["duży", "duży"], ["inny", "inny"]];
-  var RODZAJE_ZOBOWIAZAN = [["", "wybierz rodzaj"], ["zus", "ZUS"], ["us", "US"], ["zus_us", "ZUS i US"], ["inne", "inne"]];
 
   var SEKCJE = [
     { id: "firma", tytul: "Firma", tip: "Dane firmy z formularza (D-256). Wielkość decyduje o progu dofinansowania: mikro to do 9 osób na umowie o pracę.", pola: [
       { kol: "nazwa", etyk: "Nazwa firmy", wym: true },
+      { kol: "nazwa_skrocona", etyk: "Nazwa skrócona (na listach)",
+        tip: "Nazwa pokazywana na listach (spotkanie 14.10). Domyślnie kopia pełnej nazwy, możesz ją skrócić, np. bez formy prawnej." },
       { kol: "nip", etyk: "NIP", wym: true },
       { kol: "miasto", etyk: "Miasto" },
       { kol: "adres_siedziby", etyk: "Adres siedziby", wym: true },
@@ -53,7 +55,7 @@
       { kol: "reprezentant_2", etyk: "Osoba uprawniona 2, imię i nazwisko" },
       { kol: "reprezentant_2_stanowisko", etyk: "Osoba uprawniona 2, stanowisko" }
     ] },
-    { id: "zobowiazania", tytul: "Zobowiązania", zob: true, tip: "Czy firma ma nieuregulowane zobowiązania. Przy odpowiedzi TAK pytamy o rodzaj i o porozumienie lub ugodę (D-256). Przy NIE pytanie o ugodę jest ukryte, a w bazie zostaje pusta wartość.", pola: [
+    { id: "zobowiazania", tytul: "Zobowiązania", zob: true, tip: "Dwa pytania TAK/NIE (spotkanie 14.10): czy firma ma nieuregulowane zobowiązania, a przy TAK czy zawarła porozumienie lub ugodę. Rodzaj (ZUS, US) nie jest potrzebny. Przy NIE pytanie o ugodę jest ukryte, a w bazie zostaje pusta wartość.", pola: [
       { kol: "zadluzenie", etyk: "Nieuregulowane zobowiązania", typ: "zob" },
       { kol: "zadluzenie_ugoda", etyk: "Porozumienie lub ugoda", typ: "tn" }
     ] },
@@ -77,5 +79,5 @@
     return lista;
   }
 
-  global.KlientPola = { SEKCJE: SEKCJE, WIELKOSCI: WIELKOSCI, RODZAJE_ZOBOWIAZAN: RODZAJE_ZOBOWIAZAN, braki: braki, pusty: pusty, tak: tak };
+  global.KlientPola = { SEKCJE: SEKCJE, WIELKOSCI: WIELKOSCI, braki: braki, pusty: pusty, tak: tak };
 })(window);

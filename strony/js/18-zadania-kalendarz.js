@@ -25,7 +25,7 @@ function przesunKalendarz18(kierunek) {
 
 /* Zadanie w kalendarzu prowadzi do szczegolow: karta wniosku albo edycja zadania bez wniosku */
 function otworzZadanie18(id) {
-  var z = DB.ZADANIA.filter(function (x) { return x.id === id; })[0];
+  var z = mojeZadania().filter(function (x) { return x.id === id; })[0];
   if (!z) return;
   var cel = Zadania18.szczegolyZadania(z);
   if (cel.rodzaj === "wniosek") location.href = cel.adres;

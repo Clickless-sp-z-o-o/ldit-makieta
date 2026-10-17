@@ -72,20 +72,16 @@ function znacznik22(tak, etykieta) {
   return '<span class="tag ' + (tak ? "pos" : "mute") + ' dot">' + esc(etykieta) + ": " + (tak ? "tak" : "nie") + "</span> ";
 }
 
-/* Certyfikaty i przebieg czytamy tylko dla wniosku z zakresu i tylko w instytucji konta */
+/* Dokumenty projektu bez certyfikatow: certyfikaty uczestnikow generuje LDIT jednorazowo i zapisuje u siebie,
+   instytucja ich nie pobiera ani nie przeglada (spotkanie 14.10.2026, koryguje D-319). Nie czytamy tabeli certyfikaty. */
 function sekcjaDokumentow22(w) {
-  var cert = Store.query("SELECT c.numer, c.wystawiono, uk.imie_nazwisko FROM certyfikaty c JOIN uczestnik_szkolenia s ON s.id = c.uczestnik_szkolenie_id " +
-    "JOIN uczestnicy u ON u.id = s.uczestnik_id JOIN uczestnicy_klienta uk ON uk.id = u.uczestnik_klienta_id " +
-    "WHERE c.wniosek_id = ? AND c.instytucja_id = ? ORDER BY c.numer", [w.id, w.is]);
-  var wiersze = cert.map(function (c) {
-    return '<tr><td class="mono">' + esc(c.numer) + "</td><td>" + esc(c.imie_nazwisko) + '</td><td class="nowrap">' + esc(DB.fmtDate(c.wystawiono)) + "</td></tr>";
-  });
-  return karta22("Dokumenty i certyfikaty", "", '<div style="padding:12px 16px">' + znacznik22(w.umowa, "Umowa z urzędem") +
-    znacznik22(w.fakturaWystawiona, "Faktura") + znacznik22(w.certyfikat, "Certyfikaty") + "</div>" +
-    tabela22(["Numer certyfikatu", "Uczestnik", "Wystawiono"], wiersze, "Certyfikaty jeszcze nie zostały wystawione."));
+  return karta22("Dokumenty", "", '<div style="padding:12px 16px">' + znacznik22(w.umowa, "Umowa z urzędem") +
+    znacznik22(w.fakturaWystawiona, "Faktura") +
+    '<div class="small muted" style="margin-top:8px">Certyfikaty uczestników przygotowuje i przechowuje LDIT.</div></div>');
 }
 
-/* Tylko wpisy automatyczne (zmiany etapu): reczne wpisy to robocze notatki LDIT */
+/* Przebieg czytamy tylko dla wniosku z zakresu i tylko w instytucji konta.
+   Tylko wpisy automatyczne (zmiany etapu): reczne wpisy to robocze notatki LDIT */
 function sekcjaPrzebiegu22(w) {
   var wpisy = Store.query("SELECT czas, etap_z, etap_do FROM przebieg_wniosku WHERE wniosek_id = ? AND instytucja_id = ? AND rodzaj = 'automatyczny' ORDER BY czas", [w.id, w.is]);
   var wiersze = wpisy.map(function (p) {

@@ -26,11 +26,22 @@
   .kolejka .tag { grid-area: tag; }
   .kolejka-strzalka { grid-area: strz; justify-self: end; }
 
-  /* Skutecznosc pracownikow na telefonie: imie, procent i pasek */
-  #skutecznosc th:nth-child(2), #skutecznosc td:nth-child(2),
+  /* Skutecznosc pracownikow na telefonie: imie, kwota przyznana, procent i pasek (D-325) */
   #skutecznosc th:nth-child(3), #skutecznosc td:nth-child(3),
-  #skutecznosc th:nth-child(4), #skutecznosc td:nth-child(4) { display: none; }
+  #skutecznosc th:nth-child(4), #skutecznosc td:nth-child(4),
+  #skutecznosc th:nth-child(5), #skutecznosc td:nth-child(5) { display: none; }
 }
+
+/* ------------------------------ Na teraz (D-324) ------------------------------ */
+.na-teraz-boczne { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.na-teraz-boczne .card { margin-bottom: 0; }
+.nabory-dnia { border-bottom: 1px solid var(--line); }
+.nabory-dnia:last-child { border-bottom: 0; }
+.nabory-dnia summary { display: flex; align-items: baseline; gap: 12px; padding: 10px 16px; cursor: pointer; }
+.nabory-dnia summary:hover { background: var(--surface-2); }
+.nabory-data { font-weight: 600; min-width: 0; }
+.nabory-liczba { margin-left: auto; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.nabory-lista { margin: 0; padding: 0 16px 10px 32px; display: flex; flex-direction: column; gap: 4px; overflow-wrap: anywhere; }
 
 /* ------------------------------ sygnaly i przekroczenia ------------------------------ */
 /* Kolor zawsze z tekstem obok: zielony tylko dla stanu w porzadku */

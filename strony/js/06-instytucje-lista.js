@@ -52,6 +52,7 @@ function kafelek(i) {
           '<div class="small">' + esc(i.miasto) + ' &middot; NIP ' + esc(i.nip) + '</div>' +
         '</div>' +
         '<span class="pill" style="margin-left:auto">' + esc(i.skrot) + '</span>' +
+        (i.powiadomieniaAuto ? "" : '<span class="tag mute" data-tip="Automatyczne powiadomienia do instytucji są wyłączone.">bez powiadomień</span>') +
       '</div>' +
       '<div class="small is-kontakt"><b>Kontakt:</b> ' + esc(i.kontakt) + '<br><b>Opiekunowie:</b> ' + esc(i.opiekun) + '</div>' +
       '<div class="miniset">' +

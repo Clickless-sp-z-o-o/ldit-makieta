@@ -32,7 +32,8 @@
 
   function ustaw(zwiniete, zapisz) {
     app.classList.toggle("menu-zwiniete", zwiniete);
-    przycisk.innerHTML = zwiniete ? "&raquo;" : "&laquo;";
+    /* Ta sama strzalka, w zwinietym menu obrocona przez CSS */
+    przycisk.innerHTML = global.Ikony ? global.Ikony.svg("zwin") : (zwiniete ? "&raquo;" : "&laquo;");
     przycisk.setAttribute("data-tip", zwiniete ? "Rozwiń menu" : "Zwiń menu");
     przycisk.setAttribute("aria-label", zwiniete ? "Rozwiń menu" : "Zwiń menu");
     przycisk.setAttribute("aria-expanded", String(!zwiniete));

@@ -50,12 +50,24 @@ function imieUzytkownika(id) {
 
 function opisWniosku(id) {
   var w = DB.WNIOSKI_WSZYSTKIE.filter(function (x) { return x.id === id; })[0];
-  return w ? w.nr + " · " + w.klNazwa : "bez wniosku";
+  return w ? w.nr + " · " + w.klNazwa : "zadanie ogólne (bez wniosku)";
+}
+
+/* Zadania bez wniosku (ogolne, spotkanie 14.10.2026) nie naleza do zadnej instytucji, wiec filtr zakresu
+   instytucji ich nie przepuszcza; dokladamy je z bazy, dalej tylko wlasne albo wszystkie dla administratora */
+function zadaniaOgolne18() {
+  return Store.query("SELECT * FROM zadania WHERE wniosek_id IS NULL");
 }
 
 /* Plan dnia: pracownik widzi swoje zadania, administrator wszystkie (D-140) */
 function mojeZadania() {
-  return Zadania18.widoczne(DB.ZADANIA, STAN_18.sesja.uzytkownik_id, STAN_18.widziWszystkie);
+  var znane = {};
+  var wszystkie = DB.ZADANIA.concat(zadaniaOgolne18()).filter(function (z) {
+    if (znane[z.id]) return false;
+    znane[z.id] = true;
+    return true;
+  });
+  return Zadania18.widoczne(wszystkie, STAN_18.sesja.uzytkownik_id, STAN_18.widziWszystkie);
 }
 
 function kontekst18() {
@@ -87,6 +99,7 @@ function przyciskiZadania(z) {
   var id = escJs(z.id);
   return '<div class="btn-row" style="justify-content:flex-end;margin-top:5px">' +
     '<button class="btn xs" onclick="edytujZadanie(\'' + id + '\')">Edytuj</button>' +
+    (STAN_18.widziWszystkie && z.status === "otwarte" ? '<button class="btn xs" onclick="przepiszZadanie18(\'' + id + '\')" aria-label="Przepisz zadanie na inną osobę">Przepisz</button>' : "") +
     (z.status === "otwarte" ? '<button class="btn xs" onclick="anulujZadanie(\'' + id + '\')">Anuluj</button>' : "") +
     '<button class="btn xs" onclick="usunZadanie(\'' + id + '\')">Usuń</button></div>';
 }
@@ -119,7 +132,16 @@ function listaHtml18(zad, pusty) {
   return zad.length ? zad.map(wierszZadania).join("") : '<div class="empty"><div class="et">' + pusty + '</div></div>';
 }
 
+/* Na dzis: zadania z dniem wykonania dzis i zalegle. Przypomnienie to zadanie na konkretny dzien (spotkanie 14.10.2026). */
+function renderNaDzis18() {
+  var lista = Zadania18.naDzis(mojeZadania(), dzisiaj());
+  var zalegle = lista.filter(function (z) { return z.termin < dzisiaj(); }).length;
+  document.getElementById("subDzis").textContent = lista.length + (zalegle ? ", w tym zaległe: " + zalegle : "");
+  document.getElementById("listaDzis").innerHTML = listaHtml18(lista, "Na dziś nie ma zadań");
+}
+
 function renderZadania() {
+  renderNaDzis18();
   var doZrobienia = poSekcji("doZrobienia"), plan = poSekcji("zaplanowane");
   var hist = poSekcji("historia").filter(function (z) { return !STAN_18.filtrHistorii || z.status === STAN_18.filtrHistorii; });
   document.getElementById("subZad").textContent = doZrobienia.length + " do zrobienia";

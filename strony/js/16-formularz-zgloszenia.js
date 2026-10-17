@@ -1,5 +1,7 @@
-/* Formularz zgloszeniowy klienta (D-244, D-245): wspolny dla panelu instytucji (16) i ekranu
-   Do akceptacji (20). Trzy sposoby wprowadzenia: recznie, plik CSV, zalacznik PDF.
+/* Formularz zgloszeniowy klienta (D-244, D-245): wspolny dla panelu instytucji (16), Nowy formularz (21)
+   i ekranu Do akceptacji (20). Trzy sposoby wprowadzenia: recznie, plik CSV, zalacznik PDF.
+   Uklad jak formularz LDIT w Excelu (spotkanie 14.10): dane firmy w wierszach (etykieta | wartosc),
+   uczestnicy w tabeli (osoba w wierszu), wszystko na jednej stronie.
    Klient koncowy nie wypelnia formularzy, wprowadza LDIT albo instytucja.
    Parser CSV: 16-formularz-csv.js. Zapis: Akceptacje.zglosFormularz (assets/akceptacje.js). */
 
@@ -17,40 +19,70 @@ var ZF = { opcje: null, zrodlo: "reczny", plik: null, uczestnicy: [] };
 
 function zfEl(id) { return document.getElementById(id); }
 
-function zfPole(id, etykieta, wartosc, typ) {
-  return '<label class="small" style="display:flex;flex-direction:column;gap:3px"><span class="muted">' + etykieta + '</span>' +
-    (typ === "textarea" ? '<textarea class="inp" id="' + id + '" rows="2">' + esc(wartosc) + '</textarea>'
-      : '<input class="inp" id="' + id + '" value="' + esc(wartosc) + '"' + (typ ? ' type="' + typ + '"' : "") + '>') + '</label>';
+/* ------------------------------ uklad jak formularz LDIT w Excelu (spotkanie 14.10) ------------------------------ */
+
+/* Arkusz stylow formularza (assets/style-formularz-1410.css): strony 19 i 21 maja go w naglowku,
+   panel instytucji i Do akceptacji dostaja go przy pierwszym rysowaniu formularza */
+function zfWczytajStyl() {
+  if (document.querySelector('link[href$="style-formularz-1410.css"]')) return;
+  var link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = "../assets/style-formularz-1410.css";
+  document.head.appendChild(link);
 }
 
-function zfWybor(id, etykieta, opcje, wybrana, bezPustej) {
-  return '<label class="small" style="display:flex;flex-direction:column;gap:3px"><span class="muted">' + etykieta + '</span>' +
-    '<select class="inp" id="' + id + '">' + (bezPustej ? "" : '<option value="">wybierz</option>') + opcje.map(function (o) {
-      return '<option value="' + esc(o[0]) + '"' + (o[0] === wybrana ? " selected" : "") + '>' + esc(o[1]) + '</option>';
-    }).join("") + '</select></label>';
+/* Jeden wiersz: etykieta po lewej, wartosc po prawej. o: { wymagane, dodatek (html za polem), podpowiedz,
+   idWiersza, ukryty }. Bez id (podglad) etykieta nie wskazuje pola. */
+function zfWiersz(id, etykieta, wartosc, o) {
+  o = o || {};
+  var etyk = esc(etykieta) + (o.wymagane ? ' <span class="zf-wym" aria-hidden="true">*</span>' : "");
+  return '<div class="zf-wiersz"' + (o.idWiersza ? ' id="' + o.idWiersza + '"' : "") + (o.ukryty ? " hidden" : "") + '>' +
+    (id ? '<label class="zf-etyk" for="' + id + '">' + etyk + '</label>' : '<div class="zf-etyk">' + etyk + '</div>') +
+    '<div class="zf-wart">' + wartosc + (o.dodatek || "") + '</div></div>';
 }
 
-/* Liczba kolumn wynika z szerokosci: formularz na calej stronie ma 3 - 4 kolumny, na telefonie jedna */
-function zfSiatka(pola) { return '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px">' + pola.join("") + '</div>'; }
+function zfPole(id, etykieta, wartosc, typ, o) {
+  var podpowiedz = o && o.podpowiedz ? ' placeholder="' + esc(o.podpowiedz) + '"' : "";
+  var wymagane = o && o.wymagane ? ' aria-required="true"' : "";
+  return zfWiersz(id, etykieta, typ === "textarea" ? '<textarea class="inp" id="' + id + '" rows="2">' + esc(wartosc) + '</textarea>'
+    : '<input class="inp" id="' + id + '" value="' + esc(wartosc) + '"' + (typ ? ' type="' + typ + '"' : "") + podpowiedz + wymagane + '>', o);
+}
 
-/* ------------------------------ uczestnicy ------------------------------ */
+function zfWybor(id, etykieta, opcje, wybrana, bezPustej, o) {
+  return zfWiersz(id, etykieta, '<select class="inp" id="' + id + '">' + (bezPustej ? "" : '<option value="">wybierz</option>') + opcje.map(function (op) {
+    return '<option value="' + esc(op[0]) + '"' + (op[0] === wybrana ? " selected" : "") + '>' + esc(op[1]) + '</option>';
+  }).join("") + '</select>', o);
+}
+
+/* Sekcja formularza: granatowy pasek z nazwa i wiersze pol, jak w Excelu LDIT */
+function zfArkusz(tytul, wiersze) {
+  return '<div class="zf-arkusz">' + (tytul ? '<div class="zf-sekcja">' + esc(tytul) + '</div>' : "") + wiersze.join("") + '</div>';
+}
+
+/* ------------------------------ uczestnicy: tabela, osoba w wierszu ------------------------------ */
 
 function zfPoleUczestnika(u, i, kolumna) {
-  var k = kolumna[0], wspolne = ' class="inp zf-u" data-i="' + i + '" data-k="' + k + '"';
+  var k = kolumna[0];
+  var wspolne = ' class="inp zf-u" data-i="' + i + '" data-k="' + k + '" aria-label="' + esc(kolumna[1] + ", uczestnik " + (i + 1)) + '"';
   if (k === "rodzaj_zatrudnienia") {
-    return '<label class="small" style="display:flex;flex-direction:column;gap:3px"><span class="muted">' + kolumna[1] + '</span><select' + wspolne + '>' +
-      '<option value="">wybierz</option>' + RODZAJE_ZF.map(function (r) {
-        return '<option value="' + r[0] + '"' + (u[k] === r[0] ? " selected" : "") + '>' + r[1] + '</option>';
-      }).join("") + '</select></label>';
+    return '<select' + wspolne + '><option value="">wybierz</option>' + RODZAJE_ZF.map(function (r) {
+      return '<option value="' + r[0] + '"' + (u[k] === r[0] ? " selected" : "") + '>' + r[1] + '</option>';
+    }).join("") + '</select>';
   }
-  return '<label class="small" style="display:flex;flex-direction:column;gap:3px"><span class="muted">' + kolumna[1] +
-    '</span><input' + wspolne + ' value="' + esc(u[k] || "") + '"></label>';
+  return '<input' + wspolne + ' value="' + esc(u[k] || "") + '">';
 }
 
-function zfBlokUczestnika(u, i) {
-  return '<div style="border:1px solid var(--line);border-radius:6px;padding:8px;margin-top:8px">' +
-    zfSiatka(KOLUMNY_UCZESTNIKA_ZF.map(function (k) { return zfPoleUczestnika(u, i, k); })) +
-    '<div style="margin-top:6px"><button type="button" class="btn xs" onclick="zfUsunUczestnika(' + i + ')">Usuń uczestnika</button></div></div>';
+function zfWierszUczestnika(u, i) {
+  return '<tr><td class="num muted">' + (i + 1) + '</td>' +
+    KOLUMNY_UCZESTNIKA_ZF.map(function (k) { return "<td>" + zfPoleUczestnika(u, i, k) + "</td>"; }).join("") +
+    '<td><button type="button" class="btn xs" onclick="zfUsunUczestnika(' + i + ')" aria-label="Usuń uczestnika ' + (i + 1) + '">Usuń</button></td></tr>';
+}
+
+function zfTabelaUczestnikow() {
+  return '<div class="zf-arkusz zf-arkusz-tab"><div class="zf-sekcja">Uczestnicy <span class="zf-sekcja-opis">jedna osoba w wierszu</span></div>' +
+    '<div class="zf-tab-ramka"><table class="zf-tab"><thead><tr><th class="num">Lp.</th>' +
+    KOLUMNY_UCZESTNIKA_ZF.map(function (k) { return "<th>" + esc(k[1]) + "</th>"; }).join("") +
+    '<th><span class="sr-only">Akcje</span></th></tr></thead><tbody id="zfUczestnicy"></tbody></table></div></div>';
 }
 
 function zfZbierzUczestnikow() {
@@ -64,8 +96,8 @@ function zfZbierzUczestnikow() {
 }
 
 function zfRenderUczestnikow() {
-  zfEl("zfUczestnicy").innerHTML = ZF.uczestnicy.length ? ZF.uczestnicy.map(zfBlokUczestnika).join("")
-    : '<div class="small muted">Brak uczestników. Formularz bez uczestników zostanie przyjęty z komunikatem o brakach.</div>';
+  zfEl("zfUczestnicy").innerHTML = ZF.uczestnicy.length ? ZF.uczestnicy.map(zfWierszUczestnika).join("")
+    : '<tr><td colspan="' + (KOLUMNY_UCZESTNIKA_ZF.length + 2) + '" class="small muted">Brak uczestników. Formularz bez uczestników zostanie przyjęty z komunikatem o brakach.</td></tr>';
 }
 
 function zfDodajUczestnika() {
@@ -153,16 +185,18 @@ function zfPobierzSzablon() {
 /* Instytucja: konto instytucji ma ja ustawiona na sztywno, konto LDIT wybiera z listy (D-269) */
 function zfBlokInstytucji(o) {
   if (o.instytucje) return zfWybor("zfInst", "Instytucja szkoleniowa (formularz trafi do jej klientów)", o.instytucje, "");
-  return '<div class="small muted">Formularz zostanie przypisany do instytucji: <b>' + esc(o.instytucjaNazwa || o.instytucjaId) + '</b>.</div>';
+  var inst = (DB.INSTYTUCJE || []).filter(function (i) { return i.id === o.instytucjaId; })[0];
+  var nazwa = o.instytucjaNazwa || (inst ? inst.nazwa : o.instytucjaId);
+  return zfWiersz("", "Instytucja szkoleniowa", '<span>Formularz zostanie przypisany do instytucji: <b>' + esc(nazwa) + '</b>.</span>');
 }
 
 function zfBlokPliku() {
-  return '<div id="zfPlikBlok" hidden style="margin:6px 0">' +
+  return zfWiersz("zfPlik", "Plik formularza", '<div class="zf-plik">' +
     '<div id="zfSzablonBlok" hidden class="small" style="margin-bottom:6px">Pobierz szablon, uzupełnij go w Excelu, zapisz jako CSV i wczytaj poniżej. ' +
     '<button type="button" class="btn xs" onclick="zfPobierzSzablon()">Pobierz szablon</button></div>' +
     '<div id="zfOpisPdf" hidden class="note warn" style="margin-bottom:6px">' + esc(OPIS_PDF_ZF) + '</div>' +
     '<input type="file" id="zfPlik" accept=".csv,.xls,.xlsx" onchange="zfWczytajPlik(this)">' +
-    '<div class="small" id="zfPlikInfo" role="status" style="margin-top:4px"></div></div>';
+    '<div class="small" id="zfPlikInfo" role="status" style="margin-top:4px"></div></div>', { idWiersza: "zfPlikBlok", ukryty: true });
 }
 
 function zfHtml(o) {
@@ -170,24 +204,29 @@ function zfHtml(o) {
   /* Edycja wyslanego formularza (D-314): bez wyboru zrodla i pliku, ktore zostaja z wyslania */
   var e = o.edycja;
   var przycisk = !e ? "Wyślij do akceptacji LDIT" : e.zwrot ? "Zapisz i wyślij ponownie" : "Zapisz zmiany";
-  return '<div class="small strong" style="margin-bottom:8px">' + (e ? "Edycja formularza " + esc(e.id) : "Nowy formularz klienta do akceptacji") + '</div>' +
-    zfBlokInstytucji(o) + (e ? "" : zfWybor("zfZrodlo", "Sposób wprowadzenia", zrodla, "reczny", true) + zfBlokPliku()) + zfSekcjeHtml(o) +
-    '<div class="small strong" style="margin-top:12px">Uczestnicy</div><div id="zfUczestnicy"></div>' +
+  return '<div class="zf-formularz"><div class="small strong" style="margin-bottom:8px">' + (e ? "Edycja formularza " + esc(e.id) : "Nowy formularz klienta do akceptacji") + '</div>' +
+    '<div class="small muted" style="margin-bottom:8px">Do zapisania wystarczą nazwa firmy i NIP (pola z gwiazdką). Brakujące dane uzupełnisz później przyciskiem Edytuj, ' +
+    'ale LDIT zaakceptuje tylko kompletny formularz.</div>' +
+    zfArkusz("Zgłoszenie", [zfBlokInstytucji(o)].concat(e ? [] : [zfWybor("zfZrodlo", "Sposób wprowadzenia", zrodla, "reczny", true), zfBlokPliku()])) +
+    zfSekcjeHtml(o) + zfTabelaUczestnikow() +
     '<div style="margin-top:8px"><button type="button" class="btn sm" onclick="zfDodajUczestnika()">+ Dodaj uczestnika</button></div>' +
-    '<div class="btn-row" style="margin-top:10px"><button class="btn primary sm" onclick="zfWyslij()">' + przycisk + '</button>' +
+    '<div class="btn-row" style="margin-top:12px"><button class="btn primary sm" onclick="zfWyslij()">' + przycisk + '</button>' +
     (o.bezAnulowania ? "" : '<button class="btn sm" onclick="zfZamknij()">Anuluj</button>') +
-    '</div><div class="small" id="zfKomunikat" role="status" style="margin-top:6px"></div>';
+    '</div><div class="small" id="zfKomunikat" role="status" style="margin-top:6px"></div></div>';
 }
 
 /* opcje: { kontener, instytucjaId (+ instytucjaNazwa) albo instytucje [[id, nazwa]], szkolenia [[nazwa, nazwa]],
    poWyslaniu(nowy, braki), poZamknieciu() opcjonalnie, bezAnulowania i zostaje opcjonalnie (strona Nowy formularz) } */
 function zfPokaz(opcje) {
   ZF = { opcje: opcje, zrodlo: "reczny", plik: null, uczestnicy: [] };
+  zfWczytajStyl();
   var kontener = zfEl(opcje.kontener);
   kontener.innerHTML = zfHtml(opcje);
   kontener.style.display = "";
   if (zfEl("zfZrodlo")) zfEl("zfZrodlo").addEventListener("change", zfZmienZrodlo);
   zfEl("zf_zadluzenie").addEventListener("change", zfPrzelaczUgode);
+  /* Nazwa skrocona idzie za pelna nazwa, dopoki nie zostala skrocona recznie (spotkanie 14.10) */
+  zfEl("zf_firma").addEventListener("input", function () { zfNadazSkrocona(zfEl("zf_nazwa_skrocona"), zfEl("zf_firma").value); });
   if (opcje.edycja) zfWypelnijZFormularza(opcje.edycja.id);
   zfRenderUczestnikow();
 }
@@ -211,7 +250,7 @@ function zfOdczytaj() {
 
 /* Komunikat dla wysylajacego: formularz z brakami jest przyjety, ale wskazujemy braki (D-245) */
 function tekstBrakowFormularza(braki) {
-  return braki.length ? "Niekompletne dane przesłanego formularza. Brakuje: " + braki.join(", ") + ". Formularz został przyjęty, uzupełnij dane."
+  return braki.length ? "Niekompletne dane przesłanego formularza. Brakuje: " + braki.join(", ") + ". Formularz został zapisany. LDIT zaakceptuje go po uzupełnieniu danych."
     : "Formularz kompletny.";
 }
 

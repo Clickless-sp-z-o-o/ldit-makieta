@@ -73,20 +73,13 @@ function renderKlienci16() {
     return !q || (w.klNazwa + " " + w.szkolenie + " " + (w.pupNazwa || "")).toLowerCase().indexOf(q) >= 0;
   });
   el16("glowa16").innerHTML = NAGLOWKI_16[STAN_16.widok];
+  el16("tytulListy16").textContent = zlozoneWidok ? "Złożone wnioski" : "Moi klienci i ich projekty";
   el16("nZlozone").textContent = zlozone16().length;
   el16("chipy16").hidden = zlozoneWidok;
   el16("subTab").textContent = lista.length + " z " + W.length + (zlozoneWidok ? " złożonych wniosków" : " projektów instytucji");
   el16("wiersze").innerHTML = lista.length ? wiersze16(lista, zlozoneWidok ? wierszZlozonego16 : wierszWniosku16) :
     '<tr><td colspan="8"><div class="empty"><div class="ei">&#9788;</div>' +
     '<div class="et">Brak wyników w Twoim katalogu</div>Wyszukiwarka nie sięga poza dane tej instytucji.</div></td></tr>';
-}
-
-function przelaczWidok16(widok) {
-  STAN_16.widok = widok;
-  Array.prototype.forEach.call(document.querySelectorAll("#zakladki16 a"), function (a) {
-    a.classList.toggle("on", a.getAttribute("data-widok") === widok);
-  });
-  renderKlienci16();
 }
 
 function podepnijFiltry16() {

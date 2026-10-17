@@ -1,6 +1,6 @@
 /* Ekran 02, czesc 10: zmiana statusu wniosku z menu wiersza (przeglad 08.10, zamiast pola wyboru
-   w kazdym wierszu). Przycisk "Zmien" przy znaczniku statusu otwiera male menu z pozostalymi
-   statusami; wybor pyta o potwierdzenie i zapisuje przez zmienStatus (02-zestawienia-dane.js).
+   w kazdym wierszu). Od spotkania 14.10.2026 sam znacznik statusu jest przyciskiem (jak lista
+   rozwijana w Excelu, bez osobnego "Zmien") i otwiera male menu z pozostalymi statusami; wybor pyta o potwierdzenie i zapisuje przez zmienStatus (02-zestawienia-dane.js).
    Bez zmian zbiorczych (D-262). Escape i klik poza menu je zamykaja. Same deklaracje. */
 
 var MENU_STATUSU_02 = "menuStatusu02";

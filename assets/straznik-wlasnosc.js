@@ -10,10 +10,15 @@
 
    API:  StraznikWlasnosc.sprawdz(operacja, tabela, dane, id, odmowa)
          StraznikWlasnosc.modulyPliku(operacja, dane, id), plikFormularzaPozwala(dane, odmowa),
-         ponowneWyslanie(dane, id, polaDecyzji) autor ponownie wysyla zwrocony formularz (D-314)
+         statusOdInstytucji(dane, id, polaDecyzji) instytucja ponownie wysyla zwrocony (D-314) albo wycofuje formularz (D-331)
          odczytZgloszeniaPozwala(operacja, dane, id, odmowa) tylko wlasne odczyty zgloszen (D-315)
          powiadomieniePozwala(operacja, dane, id, odmowa) powiadomienia instytucji: tworzy LDIT, oznacza adresat (D-317)
          pracownicyInstytucji(operacja, tabela, dane, id, odmowa) Administrator IS i konta swojej instytucji (D-318)
+         terminUczestnika(...) termin uczestnika z modulu Terminy, a dla tabeli terminy termin pozycji wniosku
+                               z karty wniosku (edycja Dofinansowan, spotkanie 14.10.2026)
+     wniosek_szkolenia.termin_id  termin tej samej instytucji i szkolenia co pozycja (14.10.2026)
+     wnioski.usuniety = 1         usuwa tylko administrator; prosbe o usuniecie podpisuje wlasne konto,
+                                  czysci ja administrator albo sam proszacy (14.10.2026)
          odmowa(kod, tresc) rzuca StraznikError ze straznik.js
    ============================================================================ */
 
@@ -69,21 +74,27 @@
       var r = S.one("SELECT przypisane_do AS p FROM zadania WHERE id = ?", [id]);
       if (r && r.p !== ja) odmowa("poza_zakresem", "To zadanie jest przypisane do innej osoby.");
     }
-    if (operacja !== "remove" && dane && dane.przypisane_do !== undefined && dane.przypisane_do !== ja) {
+    /* Nowe zadanie pracownik moze dodac innej osobie z LDIT (spotkanie 14.10.2026), typ konta sprawdza
+       przypisanyPracownik. Zmiana osoby w istniejacym zadaniu zostaje przy administratorze (zespol.zadania). */
+    if (operacja === "update" && dane && dane.przypisane_do !== undefined && dane.przypisane_do !== ja) {
       odmowa("poza_zakresem", "Zadania innym osobom przypisuje administrator.");
     }
   }
 
-  /* Autor albo konto calej tej instytucji (Administrator IS) ponownie wysyla formularz zwrocony do
-     uzupelnienia (D-314). Wolno tylko wrocic do "oczekuje" i wyczyscic decyzje (polaDecyzji);
-     akceptacji ani odrzucenia instytucja sama sobie nie ustawi. */
-  function ponowneWyslanie(dane, id, polaDecyzji) {
+  /* Autor albo konto calej tej instytucji (Administrator IS) zmienia status wlasnego formularza tylko na dwa
+     sposoby: ponownie wysyla formularz zwrocony do uzupelnienia (D-314), czyli wraca do "oczekuje" z czysta
+     decyzja, albo sam wycofuje czekajacy formularz do uzupelnienia (D-331): zwrot z powodem
+     Akceptacje.POWOD_WYCOFANIA, bez rozpatrujacego. Akceptacji ani odrzucenia instytucja sama sobie nie ustawi. */
+  function statusOdInstytucji(dane, id, polaDecyzji) {
     var f = S.one("SELECT zglosil_id, instytucja_id, status, powod_odrzucenia FROM formularze_oczekujace WHERE id = ?", [id]);
     var A = global.Akceptacje;
-    var prefiks = A ? A.PREFIKS_ZWROTU : null;
-    return !!(f && prefiks && A.wysylaZaInstytucje && A.wysylaZaInstytucje(f) && f.status === "odrzucony" &&
-      String(f.powod_odrzucenia || "").indexOf(prefiks) === 0 && dane.status === "oczekuje" &&
-      polaDecyzji.every(function (k) { return !(k in dane) || dane[k] == null; }));
+    if (!f || !A || !A.wysylaZaInstytucje || !A.wysylaZaInstytucje(f)) return false;
+    var bezDecyzji = function (pomin) { return polaDecyzji.every(function (k) { return k === pomin || !(k in dane) || dane[k] == null; }); };
+    var ponowne = f.status === "odrzucony" && String(f.powod_odrzucenia || "").indexOf(A.PREFIKS_ZWROTU) === 0 &&
+      dane.status === "oczekuje" && bezDecyzji();
+    var wycofanie = f.status === "oczekuje" && dane.status === "odrzucony" && dane.powod_odrzucenia === A.POWOD_WYCOFANIA &&
+      bezDecyzji("powod_odrzucenia");
+    return ponowne || wycofanie;
   }
 
   /* Odczyt zgloszenia (D-315): konto z dostepem do Zgloszen (D-107) zapisuje tylko wlasne odczyty */
@@ -100,6 +111,7 @@
      wniosku. Zmiana samego termin_id jest dozwolona z modulu Terminy (instytucja wystawia terminy),
      bez edycji Dofinansowan; zwraca true, gdy ten wyjatek zastepuje sprawdzenie modulu. */
   function terminUczestnika(operacja, tabela, dane, id, odmowa) {
+    if (tabela === "terminy") return terminPozycji(operacja, dane, id);
     if (tabela !== "uczestnik_szkolenia" || operacja !== "update" || !dane || !("termin_id" in dane)) return false;
     if (dane.termin_id != null) {
       var t = S.one("SELECT instytucja_id AS i FROM terminy WHERE id = ?", [dane.termin_id]);
@@ -108,6 +120,47 @@
     }
     var tylkoTermin = Object.keys(dane).every(function (k) { return k === "termin_id"; });
     return tylkoTermin && global.Auth.edytujeModul("terminy");
+  }
+
+  /* Termin pozycji wniosku (spotkanie 14.10.2026): ustawienie dat szkolenia na karcie wniosku zapisuje termin
+     w kalendarzu. Konto z edycja Dofinansowan (bez edycji Terminow) moze dodac termin Zaplanowany albo
+     oznaczyc wolny termin instytucji jako Zaplanowany. Instytucje terminu sprawdza dalej regula wiersza. */
+  function terminPozycji(operacja, dane, id) {
+    if (!global.Auth.edytujeModul("dofin") || !dane) return false;
+    if (operacja === "insert") return dane.status_realizacji === "Zaplanowany";
+    /* Nowe daty terminu pozycji (15.10.2026): tylko daty terminu, ktory jest terminem pozycji wniosku */
+    if (operacja === "update" && Object.keys(dane).every(function (k) { return k === "data_od" || k === "data_do"; })) {
+      return !!S.one("SELECT 1 AS x FROM wniosek_szkolenia WHERE termin_id = ? LIMIT 1", [id]);
+    }
+    if (operacja !== "update" || Object.keys(dane).join() !== "status_realizacji" || dane.status_realizacji !== "Zaplanowany") return false;
+    var t = S.one("SELECT status_realizacji AS st FROM terminy WHERE id = ?", [id]);
+    return !!t && t.st === "Wolny";
+  }
+
+  /* Termin pozycji wniosku nalezy do instytucji i szkolenia tej pozycji (separacja instytucji) */
+  function terminPozycjiZgodny(operacja, tabela, dane, id, odmowa) {
+    if (tabela !== "wniosek_szkolenia" || operacja === "remove" || !dane || dane.termin_id == null) return;
+    var ws = operacja === "insert" ? dane : Object.assign({}, S.one("SELECT instytucja_id, szkolenie_id FROM wniosek_szkolenia WHERE id = ?", [id]) || {}, dane);
+    var t = S.one("SELECT instytucja_id AS i, szkolenie_id AS s FROM terminy WHERE id = ?", [dane.termin_id]);
+    if (!t || t.i !== ws.instytucja_id || t.s !== ws.szkolenie_id) odmowa("poza_zakresem", "Termin musi należeć do instytucji i szkolenia tej pozycji.");
+  }
+
+  /* Usuniecie wniosku tylko przez administratora (konto z edycja modulu Instytucje, jak w D-330); prosba
+     o usuniecie podpisana wlasnym kontem, czysci ja administrator albo sam proszacy (14.10.2026).
+     Dotyczy edycji: nowy wniosek (takze z importu kopii przez administratora) przechodzi bez zmian. */
+  function usuniecieWniosku(operacja, tabela, dane, id, odmowa) {
+    if (tabela !== "wnioski" || operacja !== "update" || !dane) return;
+    var Auth = global.Auth, admin = Auth.edytujeModul("inst"), ja = Auth.sesja().uzytkownik_id;
+    if ("usuniety" in dane && Number(dane.usuniety) === 1 && !admin) {
+      var byl = S.one("SELECT usuniety FROM wnioski WHERE id = ?", [id]);
+      if (!byl || byl.usuniety !== 1) odmowa("brak_uprawnien", "Wniosek usuwa administrator. Pracownik wysyła prośbę o usunięcie.");
+    }
+    if (!("usuniecie_prosba_id" in dane)) return;
+    var obecna = (S.one("SELECT usuniecie_prosba_id AS p FROM wnioski WHERE id = ?", [id]) || {}).p || null;
+    var nowa = dane.usuniecie_prosba_id == null ? null : dane.usuniecie_prosba_id;
+    if (nowa === obecna) return;
+    if (nowa !== null && nowa !== ja) odmowa("brak_uprawnien", "Prośbę o usunięcie podpisuje Twoje konto.");
+    if (nowa === null && !admin && obecna !== ja) odmowa("brak_uprawnien", "Prośbę o usunięcie rozpatruje administrator.");
   }
 
   /* Powiadomienia (D-297, D-317). Wiersz instytucji (instytucja_id) tworzy wylacznie konto LDIT, przy swojej
@@ -177,9 +230,11 @@
     sprawdz: function (operacja, tabela, dane, id, odmowa) {
       klientWierszaPozwala(operacja, tabela, dane, id, odmowa);
       zadaniePozwala(operacja, tabela, dane, id, odmowa);
+      terminPozycjiZgodny(operacja, tabela, dane, id, odmowa);
+      usuniecieWniosku(operacja, tabela, dane, id, odmowa);
       if (operacja !== "remove") przypisanyPracownik(tabela, dane, odmowa);
     },
-    modulyPliku: modulyPliku, plikFormularzaPozwala: plikFormularzaPozwala, ponowneWyslanie: ponowneWyslanie,
+    modulyPliku: modulyPliku, plikFormularzaPozwala: plikFormularzaPozwala, statusOdInstytucji: statusOdInstytucji,
     odczytZgloszeniaPozwala: odczytZgloszeniaPozwala
   };
 })(window);

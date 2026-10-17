@@ -10,12 +10,16 @@ function nazwaUrzedu20(id) {
   return p ? p.nazwa : id;
 }
 
-/* dodatkowe: opcjonalny przycisk obok akceptacji (np. zwrot formularza do uzupelnienia) */
-function decyzja20(etykietaTak, opisTak, dodatkowe) {
-  if (!Auth.moze("zmiany.zatwierdzanie")) return '<div class="note mb0">Podgląd: decyzję podejmuje pracownik LDIT albo administrator.</div>';
+/* d: { rodzaj, isId, etykietaTak, opisTak, dodatkowe (np. zwrot do uzupelnienia), blokada (powod, gdy akceptacja niedostepna) }.
+   Decyzje podejmuje opiekun instytucji albo administrator, zmiany instytucji i katalogu tylko administrator (D-330). */
+function decyzja20(d) {
+  if (!AkceptacjeUprawnienia.mozeRozpatrzyc(d.rodzaj, d.isId)) return '<div class="note mb0">Podgląd: ' + esc(AkceptacjeUprawnienia.powodOdmowy(d.rodzaj)) + '</div>';
+  var tak = d.blokada ? '<button class="btn primary sm" disabled aria-describedby="blokada20">' + d.etykietaTak + '</button>'
+    : '<button class="btn primary sm" onclick="zatwierdz20()">' + d.etykietaTak + '</button>';
   return '<div class="card mb0" style="margin-top:14px"><div class="card-body">' +
-    '<div class="small muted" style="margin-bottom:8px">' + opisTak + '</div>' +
-    '<div class="btn-row"><button class="btn primary sm" onclick="zatwierdz20()">' + etykietaTak + '</button>' + (dodatkowe || "") + '</div>' +
+    '<div class="small muted" style="margin-bottom:8px">' + d.opisTak + '</div>' +
+    (d.blokada ? '<div class="note warn mb0" id="blokada20" style="margin-bottom:8px">' + esc(d.blokada) + '</div>' : "") +
+    '<div class="btn-row">' + tak + (d.dodatkowe || "") + '</div>' +
     '<label class="small" style="display:flex;flex-direction:column;gap:4px;margin-top:12px"><span class="muted">Powód odrzucenia (zobaczy instytucja)</span>' +
     '<textarea class="inp" id="powod" rows="2"></textarea></label>' +
     '<div class="btn-row" style="margin-top:8px"><button class="btn danger sm" onclick="odrzuc20()">Odrzuć</button></div>' +
@@ -28,13 +32,16 @@ function zwrotFormularza20() {
 
 function rozpatrzenie20(r) {
   if (r.status === "oczekuje") return "";
+  if (r.powod === Akceptacje.POWOD_WYCOFANIA) return '<div class="note mb0" style="margin-top:14px"><b>Wycofany przez instytucję do uzupełnienia</b>, ' +
+    esc(DB.fmtDate(r.rozpatrzono || r.data)) + ". Wróci do akceptacji po zapisaniu poprawek.</div>";
   return '<div class="note mb0" style="margin-top:14px"><b>Rozpatrzone:</b> ' + esc(etykietaStatusu20(r)) + ", " + esc(DB.fmtDate(r.rozpatrzono)) +
     ", " + esc(imieKonta(r.rozpatrzyl)) + (r.powod ? "<br>Powód: " + esc(r.powod) : "") +
     (r.klientId ? '<br><a class="link-rekordu" href="' + esc(Nawigacja.adresKlienta(r.klientId)) + '">Karta klienta</a>' : "") + "</div>" +
     projektZFormularza20(r);
 }
 
-/* Po akceptacji projekt zaklada sie ta sama sciezka co recznie, z danymi formularza (D-264 pkt 4) */
+/* Akceptacja od razu zaklada projekt (D-328). Gdy sie nie udalo (np. szkolenia nie ma w katalogu), projekt
+   zaklada sie ta sama sciezka co recznie, z danymi formularza (D-264 pkt 4) */
 function projektZFormularza20(r) {
   if (r.status !== "zaakceptowany" || !r.klientId) return "";
   if (r.projektId) {
@@ -49,7 +56,7 @@ function projektZFormularza20(r) {
 
 /* NIP z formularza czesto ma literowke: zatwierdzajacy moze go poprawic przed akceptacja */
 function poleNip20(f) {
-  if (f.status !== "oczekuje" || !Auth.moze("zmiany.zatwierdzanie")) return '<span class="mono">' + esc(f.nip) + "</span>";
+  if (f.status !== "oczekuje" || !AkceptacjeUprawnienia.mozeRozpatrzyc("formularz", f.isId)) return '<span class="mono">' + esc(f.nip) + "</span>";
   var bledy = f.nip ? Walidacja.bledy("klienci", { nip: f.nip }) : [];
   return '<input class="inp mono" id="poprawNip" value="' + esc(f.nip) + '" style="width:160px">' +
     (bledy.length ? '<div class="small" style="color:var(--neg-ink)">' + esc(bledy[0].komunikat) + ', popraw przed akceptacją</div>' : "");
@@ -85,12 +92,12 @@ function panelZmiany20(p) {
     ["Instytucja", esc(p.is)], ["Dotyczy", esc(opisRekordu20(p)) + " · " + link],
     ["Zgłosił", esc(imieKonta(p.zglosil)) + ", " + esc(DB.fmtDate(p.zgloszono))], ["Uzasadnienie", esc(p.uzasadnienie)]
   ]) + tabela +
-  (p.status === "oczekuje" ? decyzja20("Zatwierdź i wprowadź zmianę", "Zatwierdzenie wprowadza nowe wartości do danych i zapisuje je w rejestrze aktywności.") : rozpatrzenie20(p));
+  (p.status === "oczekuje" ? decyzja20({ rodzaj: p.tabela, isId: p.isId, etykietaTak: "Zatwierdź i wprowadź zmianę",
+    opisTak: "Zatwierdzenie wprowadza nowe wartości do danych i zapisuje je w rejestrze aktywności." }) : rozpatrzenie20(p));
 }
 
 function renderPanel20() {
-  var zrodlo = STAN_20.widok === "formularze" ? DB.KOLEJKA : DB.PROPOZYCJE;
-  var r = zrodlo.filter(function (x) { return x.id === STAN_20.wybrany; })[0];
+  var r = zrodlo20(STAN_20.widok).filter(function (x) { return x.id === STAN_20.wybrany; })[0];
   if (!r) {
     el20("tytulPanelu").textContent = "Szczegóły";
     el20("subPanelu").textContent = "";
@@ -98,6 +105,11 @@ function renderPanel20() {
     return;
   }
   if (STAN_20.widok === "formularze") panelFormularza20(r); else panelZmiany20(r);
+  /* Wynik akceptacji (projekt zalozony albo powod, dla ktorego nie powstal) nad szczegolami, jednorazowo */
+  if (STAN_20.komunikat) {
+    el20("panel").insertAdjacentHTML("afterbegin", '<div class="note mb0" id="wynik20" role="status" style="margin-bottom:10px">' + esc(STAN_20.komunikat) + "</div>");
+    STAN_20.komunikat = "";
+  }
 }
 
 /* Blad decyzji (brak powodu, odmowa straznika, np. bledny NIP) pokazujemy przy przyciskach;
@@ -115,7 +127,10 @@ function zatwierdz20() {
   wykonaj20(function () {
     if (STAN_20.widok === "formularze") {
       var nip = document.getElementById("poprawNip");
-      Akceptacje.zaakceptujFormularz(STAN_20.wybrany, Akceptacje.ktoTeraz(), nip ? { nip: nip.value.trim() } : null);
+      var wynik = ProjektZFormularza.zaakceptujIZaloz(STAN_20.wybrany, Akceptacje.ktoTeraz(), nip ? { nip: nip.value.trim() } : null);
+      STAN_20.komunikat = wynik.projekt.ok ? "Formularz zaakceptowany, założono projekt " + wynik.projekt.id + "."
+        : "Formularz zaakceptowany. Projektu nie założono automatycznie: " + wynik.projekt.bledy.join(" ");
+      render20();
     }
     else Akceptacje.zatwierdzZmiane(STAN_20.wybrany, Akceptacje.ktoTeraz());
   });

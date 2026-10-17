@@ -39,3 +39,58 @@
   #stronaWniosku .ph-actions { flex-wrap: wrap; }
   #stronaWniosku .card-head .ch-actions { margin-left: 0; flex-wrap: wrap; }
 }
+
+/* ============================================================================
+   Spotkanie 14.10.2026: pozycja szkolenia z terminem i uczestnikami, osoba raz z lista
+   szkolen, prosba o usuniecie wniosku.
+   ============================================================================ */
+.tabela-pozycji { overflow-x: auto; }
+.tabela-pozycji .data-pozycji { width: 140px; height: 28px; font-size: 0.78rem; }
+.tabela-pozycji tr.pozycja-otwarta td { background: var(--accent-soft); }
+.przycisk-wyboru { white-space: nowrap; min-width: 76px; justify-content: space-between; }
+.formularz-szkolenia .pole-daty { display: flex; flex-direction: column; gap: 2px; flex: 1 1 140px; font-size: 0.72rem; color: var(--ink-3); }
+.formularz-szkolenia .pole-daty .inp { width: 100%; }
+
+/* Lista wyboru uczestnikow pozycji, jak filtr w Excelu */
+tr.wiersz-wyboru > td { background: var(--surface-2, #f8fafc); padding: 0; }
+.panel-wyboru { padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.panel-wyboru-glowa { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; justify-content: space-between; }
+.panel-wyboru-narzedzia { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.panel-wyboru-narzedzia input[type="search"] { flex: 1 1 220px; min-width: 0; height: 30px; }
+.wybor-lista {
+  max-height: 300px; overflow: auto; background: #fff; border: 1px solid var(--line-strong); border-radius: 8px; padding: 4px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0 8px; align-content: start;
+}
+.wybor-osoba { display: flex; gap: 8px; align-items: flex-start; padding: 4px 6px; border-radius: 5px; font-size: 0.78rem; cursor: pointer; }
+.wybor-osoba[hidden] { display: none; }
+.wybor-osoba:hover { background: var(--surface-2, #f1f5f9); }
+.wybor-osoba input { margin-top: 2px; }
+.wybor-ostrz { color: var(--neg, #b91c1c); }
+.panel-wyboru-stopka { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; }
+.panel-wyboru-stopka > .small { flex: 1 1 260px; }
+
+/* Uczestnik raz: jego szkolenia z terminem, kwota, kwalifikacja i akcje w jednym wierszu kazde */
+.szk-osoby { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 4px 0; }
+.szk-osoby + .szk-osoby { border-top: 1px dashed var(--line); }
+.szk-osoby .wybor-pozycji { flex: 1 1 100%; min-width: 0; height: 28px; font-size: 0.78rem; }
+.szk-osoby .num { width: 96px; height: 28px; font-size: 0.78rem; }
+.szk-osoby.niezakw .wybor-pozycji { border-color: #fca5a5; }
+.szk-osoby-akcje { margin-left: auto; white-space: nowrap; }
+.szk-osoby-powod { flex: 1 1 100%; }
+
+/* Prosba o usuniecie wniosku */
+#banerUsuniecia .baner-usuniecia { margin: 0 0 14px; }
+.baner-usuniecia .btn-row { margin-top: 8px; }
+.baner-usuniecia textarea { width: 100%; margin: 6px 0 4px; }
+#akcjeUsuniecia:empty { display: none; }
+@media (max-width: 700px) {
+  .tabela-pozycji .data-pozycji { width: 128px; }
+  .wybor-lista { grid-template-columns: minmax(0, 1fr); }
+  .szk-osoby-akcje { margin-left: 0; }
+  /* Telefon: panel wyboru zostaje w ekranie przy przewijanej tabeli, dane z karty klienta sa w karcie klienta */
+  .panel-wyboru { position: sticky; left: 0; max-width: calc(100vw - 40px); }
+  .wybor-osoba { white-space: normal; }
+  #uczestnicy td:nth-child(2) { display: none; }
+  #stronaWniosku table:has(#uczestnicy) thead th:nth-child(2) { display: none; }
+  .szk-osoby .wybor-pozycji { min-width: 180px; }
+}

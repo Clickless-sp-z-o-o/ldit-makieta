@@ -1,0 +1,55 @@
+/* ============================================================================
+   Lista Dofinansowan (02-zestawienia) po spotkaniu 14.10.2026: wyglad jak w Excelu
+   LDIT. Pionowe linie miedzy kolumnami w calej tabeli, komorki wysrodkowane oprocz
+   kolumny Klient, nazwa klienta bez zawijania (pelna nazwa w dymku), status jako
+   przycisk otwierajacy liste wyboru, panel Historia z przebiegiem wniosku.
+   Wszystkie reguly zawezone do tabeli .tabela-dofin i panelu .hist-panel.
+   ============================================================================ */
+
+/* Pionowe linie w kazdym wierszu, takze w wierszach kolorowanych statusem */
+table.tabela-dofin th,
+table.tabela-dofin td { border-right: 1px solid var(--line-strong); text-align: center; }
+table.tabela-dofin th:last-child,
+table.tabela-dofin td:last-child { border-right: 0; }
+table.tabela-dofin tbody td { border-bottom-color: var(--line-strong); }
+
+/* Wysrodkowanie: liczby, kwoty, kreski przy pustych polach i teksty skracane */
+table.tabela-dofin .num,
+table.tabela-dofin .c { text-align: center; }
+table.tabela-dofin td .tnij { margin: 0 auto; }
+
+/* Klient do lewej, w jednej linii; pelna nazwa w dymku (title) */
+table.tabela-dofin th.kol-klient,
+table.tabela-dofin td.kol-klient { text-align: left; }
+table.tabela-dofin td.kol-klient .tnij { margin: 0; max-width: 240px; white-space: nowrap; }
+
+/* Szczegoly i Historia w pierwszej kolumnie */
+table.tabela-dofin td.kol-akcje .btn + .btn { margin-left: 2px; }
+
+/* Status: znacznik jest przyciskiem listy wyboru (jak lista rozwijana w Excelu) */
+table.tabela-dofin .status-wybor {
+  display: inline-flex; align-items: center; gap: 3px; padding: 2px; margin: 0;
+  border: 1px solid transparent; border-radius: 999px; background: none; cursor: pointer;
+  font: inherit; color: inherit; min-height: 24px;
+}
+table.tabela-dofin .status-wybor:hover { border-color: var(--line-strong); background: rgba(255, 255, 255, .6); }
+table.tabela-dofin .status-wybor:focus-visible { outline: 2px solid var(--brand-900); outline-offset: 1px; }
+table.tabela-dofin .status-wybor[aria-expanded="true"] { border-color: var(--accent-border); background: var(--accent-soft); }
+table.tabela-dofin .status-strzalka { font-size: 0.6875rem; color: var(--ink-3); line-height: 1; }
+
+/* Pusta lista po filtrze */
+table.tabela-dofin tr.pusta-lista td { text-align: center; padding: 18px 8px; }
+
+/* Panel Historia: przebieg wniosku nad tabela */
+.hist-panel { border-bottom: 1px solid var(--line); max-height: 320px; overflow: auto; padding: 10px 14px; }
+.hist-naglowek { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.hist-naglowek .sp { flex: 1 1 auto; }
+.hist-tytul { font-size: 0.875rem; font-weight: 650; margin: 0; }
+.hist-tytul:focus { outline: none; }
+.hist-tytul:focus-visible { outline: 2px solid var(--brand-900); outline-offset: 2px; }
+.hist-lista { list-style: none; margin: 0; padding-left: 22px; }
+.hist-lista .tl-item { padding-bottom: 9px; }
+.hist-lista .tl-item .t { font-weight: 600; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; }
+.hist-lista .tl-item .tag { font-size: 0.6875rem; }
+.hist-lista .hist-czas { font-variant-numeric: tabular-nums; color: var(--ink-3); font-weight: 500; min-width: 7.5em; }
+.hist-lista .tl-item.hist-plan .t { color: var(--ink-2, var(--ink)); }

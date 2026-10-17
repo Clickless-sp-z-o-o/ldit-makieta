@@ -21,8 +21,9 @@
       .map(function (r) { return r.k; });
   }
 
-  function szkolenieWniosku(wniosekId, szkolenieId) {
-    return global.Store.one("SELECT * FROM wniosek_szkolenia WHERE wniosek_id = ? AND szkolenie_id = ?", [wniosekId, szkolenieId]);
+  /* Pozycja wniosku (szkolenie + termin) po jej id; id szkolenia z katalogu = pierwsza pozycja tego szkolenia */
+  function szkolenieWniosku(wniosekId, klucz) {
+    return global.SzkoleniaWniosku.pozycjaWniosku(wniosekId, klucz);
   }
 
   /* Uczestnik wniosku = osoba z puli klienta, raz we wniosku (D-280); zwraca jego id */
@@ -32,8 +33,10 @@
     return global.Store.insert("uczestnicy", { wniosek_id: wniosek.id, instytucja_id: wniosek.is, uczestnik_klienta_id: idKlienta }, "UCZ-").id;
   }
 
-  /* Dodaje osobom z puli klienta szkolenie wniosku (D-279). Cena = cena szkolenia w tym wniosku,
-     potem prowadzi sie ja recznie per szkolenie uczestnika (D-237). Ta sama osoba moze miec kilka szkolen. */
+  /* Dodaje osobom z puli klienta szkolenie wniosku (D-279). Cena = cena pozycji w tym wniosku,
+     potem prowadzi sie ja recznie per szkolenie uczestnika (D-237). Ta sama osoba moze miec kilka szkolen.
+     szkolenieId: id pozycji (wniosek_szkolenia.id) albo, jak dotad, id szkolenia (pierwsza pozycja).
+     Uczestnik dostaje termin pozycji (spotkanie 14.10.2026). */
   function dodajUczestnikowDoWniosku(wniosek, idKlienta, szkolenieId) {
     if (!idKlienta.length) return { ok: false, bledy: ["Zaznacz co najmniej jednego uczestnika z listy klienta."] };
     var dozwolone = uczestnicyKlienta(wniosek.klient).map(function (u) { return u.id; });
@@ -45,7 +48,7 @@
       var uczestnik = uczestnikWniosku(wniosek, id);
       if (global.Store.one("SELECT 1 AS x FROM uczestnik_szkolenia WHERE uczestnik_id = ? AND wniosek_szkolenie_id = ?", [uczestnik, ws.id])) return;
       global.Store.insert("uczestnik_szkolenia", { uczestnik_id: uczestnik, wniosek_szkolenie_id: ws.id, wniosek_id: wniosek.id,
-        instytucja_id: wniosek.is, cena: ws.cena, status_kwalifikacji: "zakwalifikowany" }, "US-");
+        instytucja_id: wniosek.is, cena: ws.cena, status_kwalifikacji: "zakwalifikowany", termin_id: ws.termin_id || null }, "US-");
       dodano++;
     });
     return { ok: true, dodano: dodano };
@@ -64,9 +67,19 @@
     var kwota = String(kwotaTekst).replace(/\s/g, "").replace(",", ".");
     if (!/^\d+(\.\d{1,2})?$/.test(kwota)) return { ok: false, bledy: ["Kwota to liczba nie mniejsza niż 0, np. 4500 albo 4500,50."] };
     var s = global.Store.find("uczestnik_szkolenia", szkolenieUczestnikaId);
-    var ws = szkolenieId ? szkolenieWniosku(s.wniosek_id, szkolenieId) : null;
+    if (!s) return { ok: false, bledy: ["Nie znaleziono uczestnika."] };
+    /* Pozycja tego wiersza ma pierwszenstwo, gdy podano id szkolenia, ktore uczestnik juz ma */
+    var obecna = global.Store.find("wniosek_szkolenia", s.wniosek_szkolenie_id);
+    var ws = obecna && (szkolenieId === obecna.id || szkolenieId === obecna.szkolenie_id) ? obecna
+      : szkolenieId ? szkolenieWniosku(s.wniosek_id, szkolenieId) : null;
     if (!ws) return { ok: false, bledy: ["Wybierz szkolenie z listy szkoleń tego projektu."] };
-    global.Store.update("uczestnik_szkolenia", s.id, { wniosek_szkolenie_id: ws.id, cena: parseFloat(kwota) });
+    var nowaPozycja = ws.id !== s.wniosek_szkolenie_id;
+    if (nowaPozycja && global.Store.one("SELECT 1 AS x FROM uczestnik_szkolenia WHERE uczestnik_id = ? AND wniosek_szkolenie_id = ?", [s.uczestnik_id, ws.id])) {
+      return { ok: false, bledy: ["Ta osoba jest już na tym szkoleniu w tym terminie."] };
+    }
+    /* Przeniesienie do innej pozycji daje termin tej pozycji */
+    global.Store.update("uczestnik_szkolenia", s.id, nowaPozycja
+      ? { cena: parseFloat(kwota), wniosek_szkolenie_id: ws.id, termin_id: ws.termin_id || null } : { cena: parseFloat(kwota) });
     return { ok: true };
   }
 

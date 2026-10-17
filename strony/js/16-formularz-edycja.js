@@ -7,8 +7,12 @@ function zfWypelnijZFormularza(id) {
   if (!f) return;
   zfDefinicjePol().forEach(function (p) {
     var pole = zfEl("zf_" + p.k);
-    if (pole && f[p.k] != null) pole.value = String(f[p.k]);
+    /* Stary rodzaj zobowiazan (ZUS, US) to odpowiedz TAK (spotkanie 14.10) */
+    var wartosc = p.k === "zadluzenie" && zfZadluzenieTak(f[p.k]) ? "tak" : f[p.k];
+    if (pole && wartosc != null) pole.value = String(wartosc);
   });
+  /* Skrocona rowna pelnej idzie dalej za pelna nazwa, skrocona recznie zostaje */
+  zfEl("zf_nazwa_skrocona").setAttribute("data-zrodlo", f.firma || "");
   zfPrzelaczUgode();
   ZF.uczestnicy = JSON.parse(f.uczestnicy_json || "[]");
 }

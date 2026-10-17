@@ -6,13 +6,18 @@
        zapis zwroconego formularza wysyla go ponownie do akceptacji,
      - Administrator IS (konto instytucji z zakresem calej instytucji) wszystkie formularze swojej
        instytucji, takze wyslane przez jej pracownikow; zapis zwroconego tez wysyla go ponownie,
-     - pracownik LDIT i administrator (funkcja zmiany.zatwierdzanie) przed akceptacja.
+     - opiekun tej instytucji i administrator (ci, ktorzy formularz rozpatruja, D-330) przed akceptacja.
+   Formularz musi zachowac nazwe firmy i NIP (D-331). Autor albo Administrator IS moze tez sam
+   wycofac czekajacy formularz do uzupelnienia (D-331): wraca jak zwrocony, a zapis wysyla go ponownie.
    Formularz zaakceptowany albo ostatecznie odrzucony jest zamkniety: dane klienta
    zmienia sie wtedy w karcie klienta. Instytucja, zrodlo i plik formularza zostaja.
    Kazde zmienione pole trafia do rejestru aktywnosci.
 
    API:  Akceptacje.edycjaFormularza(f)            { mozna, zwrot, powod } dla wiersza formularze_oczekujace
          Akceptacje.edytujFormularz(id, dane, kto)  dane jak w zglosFormularz; zwraca wiersz po zapisie
+         Akceptacje.mozeWycofac(f), wycofajFormularz(id, kto)   wycofanie czekajacego formularza przez instytucje
+         Akceptacje.POWOD_WYCOFANIA                 powod zapisany przy wycofaniu (zaczyna sie od PREFIKS_ZWROTU)
+         Akceptacje.etykietaStatusu(status, powod)  napis statusu formularza: zwrocony albo wycofany do uzupelnienia
    ============================================================================ */
 (function (global) {
   "use strict";
@@ -43,8 +48,8 @@
     }
     /* zwrot = zapis wysyla formularz ponownie; robi to autor albo konto calej instytucji. LDIT poprawia bez zmiany statusu. */
     if (wysylaZaInstytucje(f)) return { mozna: true, zwrot: zwrot, powod: "" };
-    if (global.Auth.moze("zmiany.zatwierdzanie")) return { mozna: true, zwrot: false, powod: "" };
-    return { mozna: false, zwrot: false, powod: "Ten formularz edytuje osoba, która go wysłała, albo pracownik LDIT przed akceptacją." };
+    if (global.AkceptacjeUprawnienia.mozeRozpatrzyc("formularz", f.instytucja_id)) return { mozna: true, zwrot: false, powod: "" };
+    return { mozna: false, zwrot: false, powod: "Ten formularz edytuje osoba, która go wysłała, albo opiekun instytucji w LDIT przed akceptacją." };
   }
 
   function zmianyPol(f, dane) {
@@ -54,6 +59,8 @@
       var nowa = dane[k] === "" ? null : dane[k];
       if (String(nowa == null ? "" : nowa) !== String(f[k] == null ? "" : f[k])) zmiany[k] = nowa;
     });
+    /* TAK przy starym rodzaju zobowiazan (np. 'zus') to ta sama odpowiedz, bez zmiany (spotkanie 14.10) */
+    if (zmiany.zadluzenie === "tak" && f.zadluzenie && f.zadluzenie !== "brak") delete zmiany.zadluzenie;
     /* Ugoda dotyczy tylko firm z zobowiazaniami (D-256), jak przy wysylaniu */
     var zadluzenie = "zadluzenie" in zmiany ? zmiany.zadluzenie : f.zadluzenie;
     if (!zadluzenie || zadluzenie === "brak") {
@@ -68,6 +75,7 @@
     var ocena = edycjaFormularza(f);
     if (!ocena.mozna) W.blad(f ? "brak_uprawnien" : "nie_ma", ocena.powod);
     if ("firma" in dane && (!dane.firma || !String(dane.firma).trim())) W.blad("brak_firmy", "Podaj nazwę firmy.");
+    if ("nip" in dane && (!dane.nip || !String(dane.nip).trim())) W.blad("brak_nip", "Podaj NIP firmy, bez niego formularza nie można zapisać.");
     var patch = zmianyPol(f, dane);
     if (patch.firma) patch.firma = String(patch.firma).trim();
     if (dane.uczestnicy) {
@@ -90,6 +98,33 @@
     return S.find("formularze_oczekujace", id);
   }
 
+  var POWOD_WYCOFANIA = A.PREFIKS_ZWROTU + ". Wycofany przez instytucję do uzupełnienia; zapis po poprawkach wyśle go ponownie do akceptacji.";
+
+  /* Instytucja sama wycofuje czekajacy formularz do uzupelnienia (D-331): LDIT go nie rozpatruje,
+     a autor albo Administrator IS poprawia go i wysyla ponownie jak zwrocony */
+  function mozeWycofac(f) {
+    return !!(f && f.status === "oczekuje" && global.Auth.sesja().instytucja_id && wysylaZaInstytucje(f));
+  }
+
+  function wycofajFormularz(id, kto) {
+    var f = S.find("formularze_oczekujace", id);
+    if (!f) W.blad("nie_ma", "Nie ma takiego formularza.");
+    if (!mozeWycofac(f)) W.blad("brak_uprawnien", "Wycofać do uzupełnienia można tylko czekający formularz własnej instytucji.");
+    S.update("formularze_oczekujace", id, { status: "odrzucony", powod_odrzucenia: POWOD_WYCOFANIA });
+    W.doRejestru(kto, "Wycofanie formularza do uzupełnienia", id, "Status", "oczekuje", "wycofany przez instytucję");
+    return S.find("formularze_oczekujace", id);
+  }
+
+  /* Napis statusu formularza na listach: zwrot i wycofanie to odrzucenie z powodem od PREFIKS_ZWROTU (D-269) */
+  function etykietaStatusu(status, powod) {
+    if (status !== "odrzucony" || String(powod || "").indexOf(A.PREFIKS_ZWROTU) !== 0) return status;
+    return powod === POWOD_WYCOFANIA ? "wycofany do uzupełnienia" : "zwrócony do uzupełnienia";
+  }
+
+  A.POWOD_WYCOFANIA = POWOD_WYCOFANIA;
+  A.etykietaStatusu = etykietaStatusu;
+  A.mozeWycofac = mozeWycofac;
+  A.wycofajFormularz = wycofajFormularz;
   A.wysylaZaInstytucje = wysylaZaInstytucje;
   A.edycjaFormularza = edycjaFormularza;
   A.edytujFormularz = edytujFormularz;

@@ -7,6 +7,8 @@ function renderDane(i) {
     ["Identyfikator", '<span class="mono">' + esc(i.id) + '</span> <span class="pill">' + esc(i.skrot) + '</span>'],
     ["Status", czyAktywna(i.id) ? '<span class="tag pos">aktywna</span>' : '<span class="tag mute">nieaktywna</span>'],
     ["Model terminów", esc(MODEL_TERMINOW[i.modelTerminow] || i.modelTerminow) + ' <span class="ref">D-142</span>'],
+    /* Przelacznik w karcie Komunikacja z instytucja obok (06-instytucje-powiadomienia.js, spotkanie 14.10.2026) */
+    ["Automatyczne powiadomienia", tagPowiadomien06(i.powiadomieniaAuto)],
     ["Programy szkoleń", szkoleniaIS(i.id).length],
     ["Klientów przypisanych", DB.fmtNum(kl.length)],
     ["Projekty aktywne", aktywneIS(i.id).length + " z " + wn.length + " w roku 2026"],
@@ -75,6 +77,7 @@ function renderSzczegol() {
   pokazTylkoGdyEdycja("btnEdytujIS");
   pokazTylkoGdyEdycja("btnNowaIS");
   renderDane(i);
+  renderPowiadomieniaIS06(i);
   renderKatalog(i);
   renderOsoby(i);
   renderMaile(i);

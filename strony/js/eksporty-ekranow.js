@@ -60,10 +60,15 @@ var EKSPORTY_EKRANOW = {
     } },
   skutecznosc: { etykieta: "Skuteczność pracowników",
     dane: function () {
-      var rok = document.getElementById("okres") ? document.getElementById("okres").value : String(new Date().getFullYear());
-      return { kolumny: [{ k: "imie", n: "Pracownik" }, { k: "rok", n: "Rok" }, { k: "przygotowane", n: "Przygotowane" },
-        { k: "pozytywne", n: "Pozytywne" }, { k: "negatywne", n: "Negatywne" }, { k: "proc", n: "Skuteczność %" }],
-        wiersze: DB.SKUTECZNOSC.filter(function (r) { return String(r.rok) === String(rok); }) };
+      /* Rok z tekstu wybranego okresu ("Rok 2026", "Porownanie 2025 / 2026": ostatni rok), bo wartosci
+         opcji roznia sie miedzy Dashboardem a Statystykami. Te same wiersze i kolejnosc co tabela
+         na dashboardzie: ranking wedlug kwoty przyznanej (D-325) */
+      var sel = document.getElementById("okres"), lata = sel.options[sel.selectedIndex].text.match(/\d{4}/g);
+      var rok = lata ? lata[lata.length - 1] : String(new Date().getFullYear());
+      return { kolumny: [{ k: "imie", n: "Pracownik" }, { k: "rok", n: "Rok" }, { k: "kwota", n: "Kwota przyznana" },
+        { k: "przygotowane", n: "Przygotowane" }, { k: "pozytywne", n: "Pozytywne" }, { k: "negatywne", n: "Negatywne" },
+        { k: "proc", n: "% pozytywnych" }],
+        wiersze: wierszeSkutecznosci(rok) };
     } },
   prowizje: { etykieta: "Prowizje per instytucja", wymaga: "finanse.prowizja",
     dane: function () {

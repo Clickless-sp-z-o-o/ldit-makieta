@@ -45,6 +45,14 @@
     return (r && r.m ? r.m : 0) + 1;
   }
 
+  /* Konta LDIT: z listy kont widocznej dla roli i z DB.ZESPOL_LDIT, ktora ma takze pracownik LDIT bez
+     listy kont (spotkanie 14.10.2026). Konto instytucji ma pusty ZESPOL_LDIT, wiec nie wskaze konta LDIT. */
+  function idKontLdit() {
+    var ids = SZK().kontaLdit().map(function (k) { return k.id; });
+    Object.keys(global.DB.ZESPOL_LDIT || {}).forEach(function (login) { if (ids.indexOf(login) < 0) ids.push(login); });
+    return ids;
+  }
+
   /* Walidacja calego wejscia przed pierwszym zapisem, zeby projekt nie powstal polowicznie */
   function bledyWejscia(d, klient) {
     var b = [];
@@ -71,8 +79,10 @@
       if (!pusty(u.kwota) && SZK().parsujKwote(u.kwota) === null) b.push("Kwota uczestnika to liczba nie mniejsza niż 0.");
     });
     if (!pusty(d.kwotaWnioskowana) && SZK().parsujKwote(d.kwotaWnioskowana) === null) b.push("Wartość wnioskowana to kwota nie mniejsza niż 0.");
-    var konta = SZK().kontaLdit().map(function (k) { return k.id; });
+    var konta = idKontLdit();
     if ((d.opiekunowie || []).some(function (id) { return konta.indexOf(id) < 0; })) b.push("Opiekunem może być tylko konto LDIT.");
+    /* Przygotowal to osoba z listy kont LDIT, nie wpis reczny (ankieta 09.10, D-329) */
+    if (!pusty(d.przygotowalId) && konta.indexOf(d.przygotowalId) < 0) b.push("Przygotował wybierasz z listy kont LDIT.");
     if (global.Statusy.LISTA.indexOf(d.status || "Niezłożony") < 0) b.push("Nieznany status projektu.");
     if (!pusty(d.formularzId)) b = b.concat(bledyFormularza(d.formularzId, d.klientId));
     return b;

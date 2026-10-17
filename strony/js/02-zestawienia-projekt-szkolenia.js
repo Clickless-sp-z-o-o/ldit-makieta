@@ -72,11 +72,30 @@ function pfRenderUczestnicy() {
     return;
   }
   if (!PROJEKT_NOWY.szkolenia.length) { pole.innerHTML = '<div class="small muted">Najpierw dodaj szkolenia, potem wybierzesz uczestników.</div>'; return; }
-  pole.innerHTML = '<table class="tbl"><thead><tr><th></th><th>Uczestnik</th><th>Szkolenie</th><th class="num">Kwota (puste = cena szkolenia)</th></tr></thead><tbody>' +
+  pole.innerHTML = '<div class="toolbar" style="gap:8px;padding:0 0 6px">' +
+    '<button type="button" class="btn xs" id="pfZaznaczWszystkich" onclick="pfZaznaczUczestnikow(true)">Zaznacz wszystkich uczestników klienta</button>' +
+    '<button type="button" class="btn xs" id="pfOdznaczWszystkich" onclick="pfZaznaczUczestnikow(false)">Odznacz wszystkich</button>' +
+    '<span class="small muted" id="pfLiczbaWybranych" role="status"></span></div>' +
+    '<table class="tbl"><thead><tr><th></th><th>Uczestnik</th><th>Szkolenie</th><th class="num">Kwota (puste = cena szkolenia)</th></tr></thead><tbody>' +
     pula.map(function (u) {
-      return '<tr data-uk="' + esc(u.id) + '"><td><input type="checkbox" class="pfUczCk" aria-label="Wybierz ' + esc(u.imie) + '"></td><td>' + esc(u.imie) + "</td><td>" +
+      return '<tr data-uk="' + esc(u.id) + '"><td><input type="checkbox" class="pfUczCk" onchange="pfPokazLiczbeWybranych()" aria-label="Wybierz ' + esc(u.imie) + '"></td><td>' + esc(u.imie) + "</td><td>" +
         pfSelectSzkolenia(u.id) + '</td><td class="num"><input class="inp num pfUczKwota" style="width:100px;height:28px" aria-label="Kwota"></td></tr>';
     }).join("") + "</tbody></table>";
+}
+
+/* Przycisk "Zaznacz wszystkich uczestnikow klienta" (spotkanie 14.10.2026): zaznacza cala pule klienta,
+   a uzytkownik odznacza zbednych. Recznie wybrane szkolenia i kwoty w wierszach zostaja. */
+function pfZaznaczUczestnikow(zaznacz) {
+  Array.prototype.forEach.call(document.querySelectorAll("#pfUczestnicy .pfUczCk"), function (ck) { ck.checked = !!zaznacz; });
+  pfPokazLiczbeWybranych();
+}
+
+/* Licznik liczy zaznaczenia na biezaco, wiec zgadza sie tez po podstawieniu uczestnikow z formularza */
+function pfPokazLiczbeWybranych() {
+  var pole = document.getElementById("pfLiczbaWybranych");
+  if (!pole) return;
+  var wszystkich = document.querySelectorAll("#pfUczestnicy .pfUczCk").length;
+  pole.textContent = "Wybrano " + pfZebraniUczestnicy().length + " z " + wszystkich;
 }
 
 function pfPulaKlienta(klientId) {

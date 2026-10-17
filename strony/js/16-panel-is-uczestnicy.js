@@ -32,6 +32,7 @@ function renderUczestnicy16() {
   el16("glowa16").innerHTML = "<tr><th>Uczestnik</th><th>Klient</th><th>Projekt</th><th>Szkolenie</th><th>Termin</th><th>Kwalifikacja</th>" +
     '<th><span class="sr-only">Projekt</span></th></tr>';
   el16("chipy16").hidden = true;
+  el16("tytulListy16").textContent = "Uczestnicy wniosków";
   el16("subTab").textContent = lista.length + " z " + wszyscy.length + " uczestników wniosków instytucji";
   el16("wiersze").innerHTML = lista.length ? lista.map(wierszUczestnika16).join("") :
     '<tr><td colspan="7"><div class="empty"><div class="et">Brak uczestników</div>Wyszukiwarka nie sięga poza dane tej instytucji.</div></td></tr>';

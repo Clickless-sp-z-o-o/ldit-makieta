@@ -6,7 +6,17 @@
 var POLA_FILTRA_13 = { terminy: "fTerminy" };
 var WSZYSTKIE_TERMINY_13 = "wszystkie";
 
-function maWniosek13(t) { return zapisani(t) > 0; }
+/* Termin pozycji szkolenia z karty wniosku (wniosek_szkolenia.termin_id, spotkanie 14.10.2026) tez jest
+   terminem z wnioskiem, nawet zanim pozycja dostanie uczestnikow */
+function terminyPozycji13() {
+  if (!STAN_13.terminyPozycji) {
+    STAN_13.terminyPozycji = {};
+    Store.query("SELECT DISTINCT termin_id AS t FROM wniosek_szkolenia WHERE termin_id IS NOT NULL")
+      .forEach(function (r) { STAN_13.terminyPozycji[r.t] = true; });
+  }
+  return STAN_13.terminyPozycji;
+}
+function maWniosek13(t) { return zapisani(t) > 0 || !!terminyPozycji13()[t.id]; }
 function wolnyTermin13(t) { return !maWniosek13(t); }
 function pokazujeWolne13() { return STAN_13.filtrTerminow === WSZYSTKIE_TERMINY_13; }
 

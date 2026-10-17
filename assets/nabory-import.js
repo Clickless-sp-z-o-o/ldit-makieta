@@ -8,11 +8,17 @@
    4. urzad spoza slownika nie trafia do naborow, tylko do powiadomien.
    Zapis idzie przez Store, wiec przechodzi przez straznika i walidacje.
 
+   Zrodlem jest arkusz Google o ustalonej strukturze, odpytywany cyklicznie (D-333). Kazde pobranie
+   to zrzut dopisywany do tabeli src_ (append) z wlasna data wczytania; trzymamy RETENCJA_ZRZUTOW
+   ostatnich zrzutow kazdego rodzaju, starszy wypada przy kolejnym wczytaniu. Plik o innej strukturze
+   (brak kolumny urzad albo kolumna spoza tabeli zrodlowej) jest odrzucany przed zapisem.
+
    API:  NaboryImport.wczytaj(rodzaj, wiersze, plik) -> {wczytane, nowe, zaktualizowane, nieznane, partia}
          NaboryImport.ostatnieWczytanie()           -> {partia, plik, czas, wierszy} albo null
          NaboryImport.cofnijWczytanie(partia)       -> {usuniete, przywrocone} (P-79 b, tylko edycja Naborow)
          NaboryImport.dopasujUrzad(nazwa)           -> wiersz urzedy_pracy albo null
          NaboryImport.parsujCsv(tekst)              -> [{kolumna: wartosc}]
+         NaboryImport.naborZeZrodla(rodzaj, surowy) -> nabor (pola tabeli nabory) albo null (urzad spoza slownika)
    ============================================================================ */
 
 (function (global) {
@@ -28,6 +34,8 @@
                     kolumny: ["wojewodztwo", "urzad", "prognoza_opis", "data_od", "data_do", "data_weryfikacji", "podsumowanie"] }
   };
   var STATUSY_OGLOSZONYCH = ["trwa", "zakończony", "oczekuje"];
+  var RETENCJA_ZRZUTOW = 7;            /* tyle ostatnich zrzutow arkusza kazdego rodzaju zostaje w bazie (D-333) */
+  var KOLUMNA_WYMAGANA = "urzad";
 
   function NaboryImportError(kod, komunikat) {
     this.name = "NaboryImportError"; this.kod = kod; this.message = komunikat;
@@ -70,6 +78,45 @@
       prognoza_opis: prognoza ? pusteNaNull(w.prognoza_opis) : null, srodki: pusteNaNull(w.srodki),
       link: pusteNaNull(w.link), podsumowanie: pusteNaNull(w.podsumowanie), zrodlo_id: zrodloId
     };
+  }
+
+  /* Surowy wiersz src_ jako nabor; null, gdy urzedu nie ma w slowniku */
+  function naborZeZrodla(rodzaj, surowy) {
+    var def = RODZAJE[rodzaj];
+    if (!def) throw new NaboryImportError("zly_rodzaj", "Nieznany rodzaj pliku naborów: " + rodzaj);
+    var urzad = dopasujUrzad(surowy.urzad);
+    return urzad ? naborZWiersza(def, surowy, urzad, surowy.id || null, dzis()) : null;
+  }
+
+  /* Struktura arkusza jest ustalona (D-333): kazdy wiersz ma kolumne urzad i tylko kolumny tabeli zrodlowej */
+  function sprawdzStrukture(def, wiersze) {
+    wiersze.forEach(function (w) {
+      var obce = Object.keys(w).filter(function (k) { return def.kolumny.indexOf(k) < 0; });
+      if (obce.length || !Object.prototype.hasOwnProperty.call(w, KOLUMNA_WYMAGANA)) {
+        throw new NaboryImportError("zla_struktura", "Plik ma inną strukturę niż arkusz naborów: " +
+          (obce.length ? "nieznane kolumny " + obce.join(", ") : "brak kolumny " + KOLUMNA_WYMAGANA) +
+          ". Oczekiwane kolumny: " + def.kolumny.join(", ") + ".");
+      }
+    });
+  }
+
+  /* Data wczytania wyznacza zrzut, wiec kolejny zrzut zawsze dostaje pozniejsza date niz poprzedni */
+  function czasZrzutu(def) {
+    var teraz = new Date();
+    var ostatni = S.one("SELECT MAX(wczytano) AS m FROM " + def.tabela);
+    if (ostatni && ostatni.m && new Date(ostatni.m) >= teraz) teraz = new Date(new Date(ostatni.m).getTime() + 1);
+    return teraz.toISOString();
+  }
+
+  /* Zrzuty starsze niz RETENCJA_ZRZUTOW ostatnich wypadaja; wpis w partii pozwala je przywrocic przy cofnieciu */
+  function przytnijZrzuty(def, wpis) {
+    var daty = S.query("SELECT DISTINCT wczytano FROM " + def.tabela + " ORDER BY wczytano DESC").map(function (r) { return r.wczytano; });
+    daty.slice(RETENCJA_ZRZUTOW).forEach(function (data) {
+      S.query("SELECT * FROM " + def.tabela + " WHERE wczytano = ?", [data]).forEach(function (w) {
+        wpis.zapisz(def.tabela, w.id, "usuniety", JSON.stringify(w));
+        S.remove(def.tabela, w.id);
+      });
+    });
   }
 
   function zglosNieznany(def, w, zrodloId, plik) {
@@ -123,7 +170,7 @@
     var ostatni = wczytania.reduce(function (a, b) { return String(b.czas) >= String(a.czas) ? b : a; });
     var partii = wczytania.filter(function (r) { return r.partia === ostatni.partia; });
     return { partia: ostatni.partia, plik: ostatni.obiekt, czas: ostatni.czas, wpisy: partii,
-             wierszy: partii.filter(function (r) { return /^src_/.test(r.tabela); }).length };
+             wierszy: partii.filter(function (r) { return /^src_/.test(r.tabela) && r.pole === "dodany"; }).length };
   }
 
   /* Usuwa wiersze dodane przez wczytanie i przywraca nabory sprzed niego, w odwrotnej kolejnosci zapisu */
@@ -136,6 +183,7 @@
     var wynik = { usuniete: 0, przywrocone: 0 };
     biezace.wpisy.slice().reverse().forEach(function (r) {
       if (r.pole === "zmieniony") { S.update(r.tabela, r.rekord_id, JSON.parse(r.przed)); wynik.przywrocone++; return; }
+      if (r.pole === "usuniety") { S.insert(r.tabela, JSON.parse(r.przed)); return; }
       var wiersz = S.find(r.tabela, r.rekord_id);
       if (!wiersz || (r.tabela === "powiadomienia" && wiersz.rozwiazano)) return;
       S.remove(r.tabela, r.rekord_id);
@@ -151,7 +199,8 @@
     var def = RODZAJE[rodzaj];
     if (!def) throw new NaboryImportError("zly_rodzaj", "Nieznany rodzaj pliku naborów: " + rodzaj);
     if (!Array.isArray(wiersze) || !wiersze.length) throw new NaboryImportError("pusty_plik", "Plik nie ma żadnego wiersza naborów.");
-    var data = dzis(), teraz = new Date().toISOString();
+    sprawdzStrukture(def, wiersze);
+    var data = dzis(), teraz = czasZrzutu(def);
     var wpis = Cofanie.rejestrWczytania(teraz, plik);
     var wynik = { wczytane: 0, nowe: 0, zaktualizowane: 0, nieznane: [], partia: wpis.partia };
     wiersze.forEach(function (w) {
@@ -178,6 +227,7 @@
         wynik.nowe++;
       }
     });
+    przytnijZrzuty(def, wpis);
     return wynik;
   }
 
@@ -209,5 +259,6 @@
 
   global.NaboryImport = { wczytaj: wczytaj, dopasujUrzad: dopasujUrzad, parsujCsv: parsujCsv,
                           ostatnieWczytanie: ostatnieWczytanie, cofnijWczytanie: cofnijWczytanie,
-                          RODZAJE: RODZAJE, NaboryImportError: NaboryImportError };
+                          naborZeZrodla: naborZeZrodla, RODZAJE: RODZAJE, RETENCJA_ZRZUTOW: RETENCJA_ZRZUTOW,
+                          NaboryImportError: NaboryImportError };
 })(window);

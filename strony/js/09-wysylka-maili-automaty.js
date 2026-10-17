@@ -1,4 +1,5 @@
-/* Wysylka maili, zakladka 3: katalog automatyzacji, odbiorcy alertu faktur i alert 8 dni przed szkoleniem */
+/* Wysylka maili, zakladka 3: katalog automatyzacji, odbiorcy alertu faktur i alert 8 dni przed szkoleniem.
+   Automatyczne maile do instytucji respektuja przelacznik instytucji (09-wysylka-maili-powiadomienia-is.js). */
 var AUTOMATY = [
   { wyz: "Status projektu = decyzja pozytywna", pow: "Prośba o ustalenie terminu", odb: "Instytucja, osoba od terminów", kiedy: "natychmiast", tryb: "Auto", on: true },
   { wyz: "Instytucja wpisała termin", pow: "Termin ustalony, zgłoś do urzędu", odb: "LDIT", kiedy: "natychmiast", tryb: "Auto", on: true },
@@ -22,12 +23,6 @@ function odbiorcyAlertuFaktur() {
     return '<label class="chk"><input type="checkbox"' + (jestOdpowiedzialny ? " checked" : "") + "> " +
       esc(u.imie) + (jestOdpowiedzialny ? " (admin)" : "") + "</label>";
   }).join("");
-}
-
-/* Szablony wycofane z biblioteki: komunikat "wniosek w trakcie przygotowania" (D-247). Wiersz zostaje w danych, ekran go pomija. */
-var SZABLONY_WYCOFANE = ["SZB-04"];
-function wycofajSzablony09() {
-  DB.SZABLONY = DB.SZABLONY.filter(function (s) { return SZABLONY_WYCOFANE.indexOf(s.id) < 0; });
 }
 
 function wierszAutomatu(a, i) {
@@ -54,9 +49,12 @@ function renderAlert8() {
     .sort(function (a, b) { return a.od < b.od ? -1 : 1; })
     .slice(0, 5).map(function (t) {
       var inst = DB.INSTYTUCJE.filter(function (i) { return i.id === t.is; })[0];
+      /* Mail do instytucji tylko przy wlaczonych automatycznych powiadomieniach instytucji (spotkanie 14.10.2026) */
+      var d = decyzjaAutomatu09(t.is, "przypomnienie");
       return "<tr><td class='nowrap'>" + esc(DB.fmtDate(t.od)) + '<div class="small muted">' + esc(t.nazwa) + "</div></td>" +
         "<td class='small'>" + esc(inst ? inst.nazwa : t.is) + "</td>" +
-        "<td class='nowrap'><span class='tag warn dot'>" + DB.fmtDate(minus8(t.od)) + "</span></td></tr>";
+        "<td class='nowrap'><span class='tag warn dot'>" + DB.fmtDate(minus8(t.od)) + "</span></td>" +
+        "<td class='small'>" + (d.wyslij ? "wyśle" : '<span class="muted">' + esc(d.powod) + "</span>") + "</td></tr>";
     }).join("");
 }
 
@@ -68,4 +66,5 @@ function renderAutomaty09() {
   document.getElementById("tbAuto").innerHTML = AUTOMATY.map(wierszAutomatu).join("");
   renderAlert8();
   renderProsbaTermin();
+  renderKolejkaAutomatow09();
 }

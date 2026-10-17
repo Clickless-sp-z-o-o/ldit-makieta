@@ -58,7 +58,7 @@
     instytucje: ["nazwa", "skrot", "siedziba_miejscowosc", "nip", "strona_www", "osoba_kontaktowa", "email", "telefon",
                  "osoba_kontaktowa_2", "email_2", "telefon_2", "osoba_kontaktowa_3", "email_3", "telefon_3",
                  "opis_dzialalnosci", "standard_godzinowy"],
-    klienci: ["nazwa", "nip", "wielkosc_przedsiebiorstwa", "osoba_kontaktowa", "telefon", "email",
+    klienci: ["nazwa", "nazwa_skrocona", "nip", "wielkosc_przedsiebiorstwa", "osoba_kontaktowa", "telefon", "email",
               "osoba_kontaktowa_2", "telefon_2", "email_2", "osoba_kontaktowa_3", "telefon_3", "email_3",
               "miasto", "adres_siedziby", "pup_id", "telefon_biura", "email_firmy", "stanowisko_kontaktowej",
               "nazwa_banku", "numer_konta", "liczba_zatrudnionych", "etaty", "liczba_innych_umow",
@@ -107,7 +107,11 @@
   /* Instytucja wiersza, ktory juz jest w bazie */
   function instytucjaIstniejacego(tabela, id) {
     if (id == null) return undefined;
-    if (INSTYTUCJA_PRZEZ[tabela]) { var r = S.one(INSTYTUCJA_PRZEZ[tabela], [id]); return r ? r.i : undefined; }
+    if (INSTYTUCJA_PRZEZ[tabela]) {
+      var r = S.one(INSTYTUCJA_PRZEZ[tabela], [id]);  /* zadanie bez wniosku: konto LDIT, nie instytucja (14.10.2026) */
+      if (r && r.i === null && tabela === "zadania" && !global.Auth.sesja().instytucja_nazwa && !S.one("SELECT 1 AS x FROM zadania WHERE id = ? AND wniosek_id IS NOT NULL", [id])) return undefined;
+      return r ? r.i : undefined;
+    }
     var kol = S.query("PRAGMA table_info(" + tabela + ")").some(function (c) { return c.name === "instytucja_id"; });
     if (!kol) return undefined;
     var wiersz = S.one("SELECT instytucja_id AS i FROM " + tabela + " WHERE id = ?", [id]);
@@ -210,11 +214,11 @@
      Poza zatwierdzeniem pracownik z podgladem nadal niczego tu nie zmieni. */
   function zatwierdzeniePozwala(operacja, tabela, dane, id) {
     if (operacja !== "update" || !POLA_ZGLASZANE[tabela] || !dane) return false;
-    if (!global.Auth.moze("zmiany.zatwierdzanie")) return false;
     var klucze = Object.keys(dane);
     if (klucze.some(function (k) { return POLA_ZGLASZANE[tabela].indexOf(k) < 0; })) return false;
-    var propozycje = S.query("SELECT zmiany FROM propozycje_zmian WHERE tabela = ? AND rekord_id = ? AND status = 'oczekuje'",
-                             [tabela, id]);
+    /* Tylko propozycje, ktore to konto rozpatruje: opiekun instytucji albo administrator (D-330) */
+    var propozycje = S.query("SELECT zmiany, instytucja_id FROM propozycje_zmian WHERE tabela = ? AND rekord_id = ? AND status = 'oczekuje'",
+                             [tabela, id]).filter(function (p) { return global.AkceptacjeUprawnienia.mozeRozpatrzyc(tabela, p.instytucja_id); });
     return propozycje.some(function (p) {
       var zmiany = JSON.parse(p.zmiany || "{}");
       return klucze.length === Object.keys(zmiany).length && klucze.every(function (k) {
@@ -226,10 +230,11 @@
   /* Rozpatrzenie zmienia tylko status propozycji. Tresci zgloszenia (zmiany, rekord)
      nikt nie poprawia, bo zatwierdzenie wprowadza do danych dokladnie to, co w niej jest. */
   var POLA_ROZPATRZENIA = ["status", "rozpatrzyl_id", "rozpatrzono", "powod_odrzucenia"];
-  function rozpatrzeniePozwala(dane) {
+  function rozpatrzeniePozwala(dane, id) {
     if (Object.keys(dane || {}).some(function (k) { return POLA_ROZPATRZENIA.indexOf(k) < 0; })) {
       odmowa("pole_chronione", "Treści zgłoszonej zmiany nie można edytować, można ją zatwierdzić albo odrzucić.");
     }
+    global.AkceptacjeUprawnienia.wymagaj("propozycje_zmian", id, odmowa);
   }
 
   /* Zgloszenie przez funkcje (bez edycji modulu) jest zawsze nowe, oczekujace i podpisane
@@ -249,10 +254,9 @@
   function decyzjaFormularzaPozwala(operacja, tabela, dane, id) {
     if (tabela !== "formularze_oczekujace" || operacja === "insert" || !dane) return;
     var decyzja = ["status"].concat(POLA_ROZPATRZONEGO).some(function (k) { return k in dane; });
-    if (operacja === "update" && decyzja && global.StraznikWlasnosc.ponowneWyslanie(dane, id, POLA_ROZPATRZONEGO)) return;
-    if (operacja === "remove" || decyzja) {
-      if (!global.Auth.moze("zmiany.zatwierdzanie")) odmowa("brak_uprawnien", "Formularz rozpatruje pracownik LDIT albo administrator.");
-    }
+    if (operacja === "update" && decyzja && global.StraznikWlasnosc.statusOdInstytucji(dane, id, POLA_ROZPATRZONEGO)) return;
+    /* Rozpatruje opiekun instytucji formularza albo administrator (D-330) */
+    if (operacja === "remove" || decyzja) global.AkceptacjeUprawnienia.wymagaj(tabela, id, odmowa);
   }
 
   function straznik(operacja, tabela, dane, id) {
@@ -285,7 +289,7 @@
     if (tabela === "propozycje_zmian" && operacja === "insert") propozycjaPozwala(dane);
     if (przezFunkcje && tabela === "pliki") global.StraznikWlasnosc.plikFormularzaPozwala(dane, odmowa);
     else if (przezFunkcje) zgloszeniePozwala(dane);
-    if (tabela === "propozycje_zmian" && operacja === "update") rozpatrzeniePozwala(dane);
+    if (tabela === "propozycje_zmian" && operacja === "update") rozpatrzeniePozwala(dane, id);
     decyzjaFormularzaPozwala(operacja, tabela, dane || {}, id);
     wierszPozwala(operacja, tabela, dane, id);
     handlowiecPozwala(operacja, tabela, dane, id);

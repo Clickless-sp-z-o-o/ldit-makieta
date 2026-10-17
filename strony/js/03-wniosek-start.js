@@ -12,6 +12,7 @@ function renderWszystko() {
   renderMaile();
   renderNotatkiWniosku03();
   renderPrzebieg();
+  renderUsuniecie03();
 }
 
 function zablokujEdycje() {

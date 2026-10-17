@@ -11,11 +11,10 @@ function wyslaneFormularze21() {
     .sort(function (a, b) { return b.data < a.data ? -1 : b.data > a.data ? 1 : 0; });
 }
 
-/* Zwrot do uzupelnienia to odrzucenie z powodem zaczynajacym sie od Akceptacje.PREFIKS_ZWROTU (D-269) */
+/* Zwrot i wycofanie do uzupelnienia (D-269, D-331): napis z Akceptacje.etykietaStatusu */
 function tagStatusu21(f) {
   var klasa = f.status === "oczekuje" ? "warn" : f.status === "zaakceptowany" ? "pos" : "neg";
-  var zwrot = f.status === "odrzucony" && f.powod && f.powod.indexOf(Akceptacje.PREFIKS_ZWROTU) === 0;
-  return '<span class="tag ' + klasa + ' dot">' + esc(zwrot ? "zwrócony do uzupełnienia" : f.status) + '</span>';
+  return '<span class="tag ' + klasa + ' dot">' + esc(Akceptacje.etykietaStatusu(f.status, f.powod)) + '</span>';
 }
 
 function uwagiWiersza21(f) {

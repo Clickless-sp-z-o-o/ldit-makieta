@@ -9,7 +9,9 @@
     ["umowa_o_prace", "umowa o pracę"], ["umowa_zlecenie", "umowa zlecenie"], ["umowa_o_dzielo", "umowa o dzieło"],
     ["wlasciciel", "właściciel"], ["inna", "inna"]
   ];
-  var ZADLUZENIA = [["brak", "brak"], ["zus", "ZUS"], ["us", "US"], ["zus_us", "ZUS i US"], ["inne", "inne"]];
+  /* Zobowiazania: TAK albo NIE (spotkanie 14.10.2026). Stare rodzaje z danych sprzed spotkania sa dozwolone i znacza TAK. */
+  var ZADLUZENIA = [["brak", "NIE"], ["tak", "TAK"]];
+  var STARE_ZADLUZENIA = ["zus", "us", "zus_us", "inne"];
   var WZOR_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   var WZOR_TELEFONU = /^\+?[\d\s()-]{9,20}$/;
   var WZOR_DZIESIETNEJ = /^\d+([.,]\d+)?$/;
@@ -19,7 +21,7 @@
   var POLA_TELEFONU = [["telefon_biura", "Telefon do biura"], ["telefon", "Telefon osoby do kontaktu"], ["telefon_2", "Telefon 2"], ["telefon_3", "Telefon 3"]];
   var POLA_TAK_NIE = ["zadluzenie_ugoda", "konto_praca_gov"];
   var WZOR_KONTA = /^(PL)?\d{26}$/;
-  var KOLUMNY_KLIENTA = ["nazwa", "nip", "miasto", "adres_siedziby", "wielkosc_przedsiebiorstwa", "pup_id",
+  var KOLUMNY_KLIENTA = ["nazwa", "nazwa_skrocona", "nip", "miasto", "adres_siedziby", "wielkosc_przedsiebiorstwa", "pup_id",
     "liczba_zatrudnionych", "numer_konta", "zadluzenie", "osoba_kontaktowa", "telefon", "email",
     "osoba_kontaktowa_2", "telefon_2", "email_2", "osoba_kontaktowa_3", "telefon_3", "email_3", "zainteresowany_naborem",
     "telefon_biura", "email_firmy", "stanowisko_kontaktowej", "nazwa_banku", "etaty", "liczba_innych_umow", "forma_opodatkowania",
@@ -74,10 +76,9 @@
   }
 
   function bledyZobowiazan(dane) {
-    var bledy = [];
-    if (dane.zadluzenie === "tak") bledy.push("Przy zobowiązaniach wybierz rodzaj: ZUS, US, ZUS i US albo inne.");
-    else if (!pusty(dane.zadluzenie) && !znany(ZADLUZENIA, dane.zadluzenie)) bledy.push("Nieznany rodzaj zadłużenia.");
-    return bledy;
+    var z = dane.zadluzenie;
+    if (pusty(z) || znany(ZADLUZENIA, z) || STARE_ZADLUZENIA.indexOf(z) >= 0) return [];
+    return ["Nieznana odpowiedź o nieuregulowanych zobowiązaniach: wybierz TAK albo NIE."];
   }
 
   function bledyDanychKlienta(dane) {
@@ -100,10 +101,13 @@
   }
 
   /* Wartosci puste zapisujemy jako NULL, liczby jako liczby, konto bez spacji. Pytanie o ugode ma sens tylko
-     przy zobowiazaniach (TAK), przy NIE i przy braku odpowiedzi zapisujemy NULL (D-256). */
+     przy zobowiazaniach (TAK), przy NIE i przy braku odpowiedzi zapisujemy NULL (D-256). TAK przy starym
+     rodzaju (np. 'zus') niczego nie zmienia. Pusta nazwa skrocona to kopia pelnej (spotkanie 14.10). */
   function normalizujDaneKlienta(dane, obecny) {
     var out = {};
     KOLUMNY_KLIENTA.forEach(function (k) { if (k in dane) out[k] = wartoscKolumny(k, dane[k]); });
+    if (out.zadluzenie === "tak" && obecny && STARE_ZADLUZENIA.indexOf(obecny.zadluzenie) >= 0) out.zadluzenie = obecny.zadluzenie;
+    if (!obecny || "nazwa_skrocona" in out) out.nazwa_skrocona = out.nazwa_skrocona || out.nazwa || (obecny || {}).nazwa || null;
     if ("zadluzenie" in out || "zadluzenie_ugoda" in out) {
       var zadluzenie = "zadluzenie" in out ? out.zadluzenie : (obecny || {}).zadluzenie;
       if (!zadluzenie || zadluzenie === "brak") out.zadluzenie_ugoda = null;

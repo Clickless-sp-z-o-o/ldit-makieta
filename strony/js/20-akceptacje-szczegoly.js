@@ -1,13 +1,15 @@
 /* Ekran 20, czesc 3: pelne dane formularza w panelu szczegolow (D-245) i wprowadzanie
    formularza przez LDIT lub instytucje (D-244). Formularz z brakami jest przyjmowany,
-   braki pokazujemy zatwierdzajacemu i wysylajacemu. Same deklaracje. */
+   braki pokazujemy zatwierdzajacemu i wysylajacemu. Podglad w tym samym ukladzie co formularz
+   (spotkanie 14.10): sekcje z wierszami Pole | Wartosc (zfPodgladHtml z 16-formularz-pola.js),
+   uczestnicy w tabeli, osoba w wierszu. Same deklaracje. */
 
 var RODZAJE_ZATRUDNIENIA_20 = { umowa_o_prace: "umowa o pracę", umowa_zlecenie: "umowa zlecenie", umowa_o_dzielo: "umowa o dzieło",
                                 wlasciciel: "właściciel / JDG", inna: "inna" };
 var POWIADOMIENIE_20 = { id: null };
 
 function zrodloFormularza20(f) {
-  var nazwa = f.zrodlo === "csv" ? "plik CSV" : f.zrodlo === "pdf" ? "plik PDF" : "ręcznie w systemie";
+  var nazwa = { csv: "plik CSV", xlsx: "plik Excel", pdf: "plik PDF" }[f.zrodlo] || "ręcznie w systemie";
   var podglad = f.plikId ? ' <button class="btn xs" onclick="podgladPliku20(\'' + escJs(f.plikId) + '\')">Podgląd</button>' : "";
   return esc(nazwa) + (f.plik ? ", " + esc(f.plik) + podglad : "");
 }
@@ -27,23 +29,38 @@ function peselFormularza20(pesel) {
 }
 
 function tabelaUczestnikow20(lista) {
-  if (!lista.length) return '<div class="small muted">Formularz nie zawiera uczestników.</div>';
-  return '<table class="tbl" style="margin-top:6px"><thead><tr><th>Imię i nazwisko</th><th>Zatrudnienie</th><th>Wykształcenie</th><th>Zawód</th><th>PESEL</th></tr></thead><tbody>' +
-    lista.map(function (u) {
-      return "<tr><td class='strong'>" + esc(u.imie_nazwisko) + "</td><td class='small'>" + esc(RODZAJE_ZATRUDNIENIA_20[u.rodzaj_zatrudnienia] || u.rodzaj_zatrudnienia || "") +
-        "</td><td class='small'>" + esc(u.wyksztalcenie) + "</td><td class='small'>" + esc(u.zawod) + "</td><td>" + peselFormularza20(u.pesel) + "</td></tr>";
-    }).join("") + "</tbody></table>";
+  var tytul = '<div class="zf-sekcja">Uczestnicy (' + lista.length + ') <span class="zf-sekcja-opis">jedna osoba w wierszu</span></div>';
+  if (!lista.length) return '<div class="zf-arkusz">' + tytul + '<div class="small muted" style="padding:8px 10px">Formularz nie zawiera uczestników.</div></div>';
+  return '<div class="zf-arkusz">' + tytul + '<div class="zf-tab-ramka"><table class="zf-tab"><thead><tr><th class="num">Lp.</th><th>Imię i nazwisko</th><th>Rodzaj zatrudnienia</th>' +
+    '<th>Wykształcenie</th><th>Zawód</th><th>PESEL</th></tr></thead><tbody>' +
+    lista.map(function (u, i) {
+      return "<tr><td class='num muted'>" + (i + 1) + "</td><td class='strong'>" + esc(u.imie_nazwisko) + "</td><td>" +
+        esc(RODZAJE_ZATRUDNIENIA_20[u.rodzaj_zatrudnienia] || u.rodzaj_zatrudnienia || "") +
+        "</td><td>" + esc(u.wyksztalcenie) + "</td><td>" + esc(u.zawod) + "</td><td>" + peselFormularza20(u.pesel) + "</td></tr>";
+    }).join("") + "</tbody></table></div></div>";
 }
 
 function notaBrakow20(f) {
   var wyslano = POWIADOMIENIE_20.id === f.id ? '<b>Wysłano do akceptacji.</b> ' : "";
   if (!f.braki.length) return wyslano ? '<div class="note mb0" style="margin-bottom:12px">' + wyslano + 'Formularz kompletny.</div>' : "";
   return '<div class="note warn mb0" style="margin-bottom:12px">' + wyslano + '<b>Niekompletne dane przesłanego formularza.</b> Brakuje: ' +
-    esc(f.braki.join(", ")) + '. Formularz jest przyjęty, bo nabór trzeba obserwować, ale dane trzeba uzupełnić.</div>';
+    esc(f.braki.join(", ")) + '. Formularz jest zapisany, bo nabór trzeba obserwować, ale zaakceptować można go dopiero po uzupełnieniu. Odeślij go do uzupełnienia.</div>';
 }
 
+/* Zgloszenie (szkolenie, instytucja, kto i jak wprowadzil) w tym samym ukladzie wierszy co dane firmy */
+function sekcjaZgloszeniaZf20(f) {
+  return zfArkusz("Zgłoszenie", [
+    zfWiersz("", "Szkolenie", esc(f.szkolenie) || '<span class="muted">brak</span>'), zfWiersz("", "Instytucja", esc(f.is)),
+    zfWiersz("", "Wypełnił", esc(WYPELNIL_20[f.wypelnil] || f.wypelnil) + (f.zglosil ? ", " + esc(imieKonta(f.zglosil)) : "")),
+    zfWiersz("", "Sposób wprowadzenia", zrodloFormularza20(f)),
+    zfWiersz("", "Data wpłynięcia", esc(DB.fmtDate(f.data)) + ' <span class="tag mute">auto</span>'),
+    zfWiersz("", "Uwagi dla LDIT", esc(f.uwagi) || '<span class="muted">brak</span>')]);
+}
+
+/* Dane firmy z wiersza formularze_oczekujace w sekcjach formularza; NIP do poprawy przed akceptacja */
 function daneFirmy20(f) {
-  return sekcjeKlienta20(f) + sekcjaZgloszenia20(f);
+  var wiersz = Store.find("formularze_oczekujace", f.id) || {};
+  return zfPodgladHtml(wiersz, { pomin: ["Szkolenie i uwagi"], wartosci: { nip: poleNip20(f) } }) + sekcjaZgloszeniaZf20(f);
 }
 
 function panelFormularza20(f) {
@@ -51,9 +68,13 @@ function panelFormularza20(f) {
   el20("tytulPanelu").textContent = f.firma;
   el20("subPanelu").textContent = "formularz " + f.id;
   el20("panel").innerHTML = przyciskEdycji20(f) + notaBrakow20(f) + daneFirmy20(f) +
-    '<div class="small strong" style="margin-top:12px">Uczestnicy (' + f.uczestnicy.length + ')</div>' + tabelaUczestnikow20(f.uczestnicy) +
+    tabelaUczestnikow20(f.uczestnicy) +
     (duplikat ? ostrzezenieDuplikatu20(f, duplikat) : "") +
-    (f.status === "oczekuje" ? decyzja20("Akceptuj i dodaj do bazy klientów", "Akceptacja tworzy klienta w Bazie klientów (albo dopisuje istniejącego), przenosi na jego kartę komplet danych z formularza i uczestników oraz przypisuje go do instytucji. Po akceptacji założysz projekt tą samą ścieżką co ręcznie, z danymi z formularza. Niekompletny formularz możesz zwrócić instytucji do uzupełnienia.", f.braki.length ? zwrotFormularza20() : "")
+    (f.status === "oczekuje" ? decyzja20({ rodzaj: "formularz", isId: f.isId, etykietaTak: "Akceptuj, dodaj klienta i załóż projekt",
+      opisTak: "Akceptacja tworzy klienta w Bazie klientów (albo dopisuje istniejącego), przenosi na jego kartę komplet danych z formularza i uczestników, przypisuje go do instytucji i od razu zakłada projekt z danymi z formularza.",
+      dodatkowe: f.braki.length ? zwrotFormularza20() : "",
+      /* Zaakceptowac mozna tylko kompletny formularz (D-331) */
+      blokada: f.braki.length ? "Akceptacja jest możliwa dopiero po uzupełnieniu formularza. Brakuje: " + f.braki.join(", ") + ". Odeślij go do uzupełnienia." : "" })
       : rozpatrzenie20(f));
 }
 

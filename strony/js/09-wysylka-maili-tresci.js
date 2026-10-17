@@ -1,4 +1,6 @@
-/* Wysylka maili: tresci szablonow (docs/08-powiadomienia-i-automatyzacje.md). Stala, bez dostepu do danych. */
+/* Wysylka maili: tresci startowe szablonow (docs/08-powiadomienia-i-automatyzacje.md). Stala, bez dostepu do danych.
+   Szablon zapisany przez LDIT w edytorze (szablony_maili.temat i tresc_html) ma pierwszenstwo przed trescia stad.
+   Szablonu dla uczestnikow szkolen nie ma: do uczestnikow nic nie wysylamy (spotkanie 14.10.2026). */
 var TRESCI = {
   "SZB-01": {
     temat: "Krajowy Fundusz Szkoleniowy: zakładanie konta na praca.gov.pl",
@@ -17,7 +19,7 @@ var TRESCI = {
 "Uwaga: profil zaufany musi należeć do osoby uprawnionej do reprezentacji firmy zgodnie\n" +
 "z KRS lub CEIDG. Jeżeli wniosek ma składać pracownik, potrzebne będzie pełnomocnictwo.\n\n" +
 "W razie pytań proszę o kontakt.\n\n" +
-"Pozdrawiam\n{opiekun.imie}\nLDIT"
+"Pozdrawiam\n{ldit.podpis}\nLDIT"
   },
   "SZB-02": {
     temat: "Instrukcja złożenia pisma w urzędzie {projekt.pup}",
@@ -31,7 +33,7 @@ var TRESCI = {
 "4. Podpisz pismo profilem zaufanym i wyślij.\n" +
 "5. Zachowaj Urzędowe Poświadczenie Przedłożenia i prześlij nam jego numer.\n\n" +
 "Nabór w tym urzędzie kończy się {nabor.do}, prosimy o złożenie pisma najpóźniej dzień wcześniej.\n\n" +
-"Pozdrawiam\n{opiekun.imie}\nLDIT"
+"Pozdrawiam\n{ldit.podpis}\nLDIT"
   },
   "SZB-03": {
     temat: "Prośba o wystawienie faktury: {klient.nazwa}, {projekt.szkolenie}",
@@ -47,7 +49,7 @@ var TRESCI = {
 "Cena jedn.: {projekt.cenaJednostkowa}\n" +
 "Cena całk.: {projekt.cenaCalkowita}\n" +
 "VAT: ZW\n" +
-"Termin płatności: {projekt.terminPlatnosci}\n\n" +
+"Termin płatności: 14 dni od wystawienia\n\n" +
 "Uwagi:\n" +
 "- Usługa zwolniona z podatku VAT na podstawie § 3 ust. 1 pkt 14 Rozporządzenia Ministra\n" +
 "  Finansów z dnia 20 grudnia 2013 r. w sprawie zwolnień od podatku od towarów i usług\n" +
@@ -55,7 +57,7 @@ var TRESCI = {
 "  finansowane w {projekt.procentDofinansowania} z Krajowego Funduszu Szkoleniowego.\n" +
 "- Uczestnicy: {projekt.listaUczestnikow}\n" +
 "- Termin: {termin.od} do {termin.do}\n\n" +
-"Pozdrawiam\n{opiekun.imie}\nLDIT",
+"Pozdrawiam\n{ldit.podpis}\nLDIT",
     uwaga:
       'Klauzula w dokumencie klienta zakłada jeden procent finansowania. Wskaźnik zależy jednak od wielkości firmy ' +
       'i progu z tabeli progów dofinansowania, dlatego procent jest tu placeholderem ' +
@@ -74,7 +76,7 @@ var TRESCI = {
 "Planowany termin złożenia: {nabor.do}\n\n" +
 "Na tym etapie nie jest potrzebne żadne działanie po Państwa stronie. Odezwiemy się,\n" +
 "gdy urząd wyda decyzję albo gdy będziemy potrzebowali dodatkowego dokumentu.\n\n" +
-"Pozdrawiam\n{opiekun.imie}\nLDIT"
+"Pozdrawiam\n{ldit.podpis}\nLDIT"
   },
   "SZB-05": {
     temat: "Decyzja pozytywna, prosimy o ustalenie terminu: {klient.nazwa}",
@@ -87,7 +89,7 @@ var TRESCI = {
 "Tryb: {szkolenie.tryb}, {szkolenie.godziny} godzin, {szkolenie.dni} dni\n\n" +
 "Prosimy o wskazanie terminu realizacji i wpisanie go w systemie. Termin musimy zgłosić\n" +
 "do urzędu, więc prosimy o odpowiedź w ciągu 3 dni roboczych.\n\n" +
-"Pozdrawiam\n{opiekun.imie}\nLDIT"
+"Pozdrawiam\n{ldit.podpis}\nLDIT"
   },
   "SZB-06": {
     temat: "Termin ustalony, zgłoś do urzędu: {klient.nazwa}",
@@ -100,24 +102,6 @@ var TRESCI = {
 "Termin: {termin.od} do {termin.do}, {termin.miejsce}\n" +
 "Urząd do zgłoszenia: {projekt.pup}\n\n" +
 "Do wykonania: zgłoszenie terminu do urzędu."
-  },
-  "SZB-07": {
-    temat: "Szczegóły organizacyjne szkolenia: {projekt.szkolenie}",
-    do: "{uczestnik.mail}",
-    tresc:
-"Dzień dobry,\n\n" +
-"przypominamy o szkoleniu, na które są Państwo zapisani.\n\n" +
-"Szkolenie: {projekt.szkolenie}\n" +
-"Termin: {termin.od} do {termin.do}\n" +
-"Miejsce: {termin.miejsce}\n" +
-"Godzina rozpoczęcia: 9:00\n" +
-"Prowadzący: {instytucja.nazwa}\n\n" +
-"Prosimy o zabranie dokumentu tożsamości. Lista obecności jest wymagana przez urząd\n" +
-"do rozliczenia dofinansowania.\n\n" +
-"Pozdrawiam\n{opiekun.imie}\nLDIT",
-    uwaga:
-      'Szablon autorstwa instytucji, ale wysyłany z domeny LDIT <span class="ref">D-87</span>. ' +
-      'Instytucja może go otworzyć w Outlooku i wysłać z własnej skrzynki <span class="ref">D-88</span>.'
   },
   "SZB-08": {
     temat: "Paczka rozliczeniowa i certyfikaty: {klient.nazwa}",
@@ -132,7 +116,7 @@ var TRESCI = {
 "- instrukcja złożenia rozliczenia przez praca.gov.pl.\n\n" +
 "Rozliczenie należy złożyć w urzędzie {projekt.pup} w terminie wynikającym z umowy.\n" +
 "W razie pytań proszę o kontakt.\n\n" +
-"Pozdrawiam\n{opiekun.imie}\nLDIT",
+"Pozdrawiam\n{ldit.podpis}\nLDIT",
     uwaga:
       'System nie wysyła certyfikatów automatycznie <span class="ref">D-49</span>. ' +
       'Paczka ZIP jest pobierana z karty projektu i dołączana ręcznie. ' +
@@ -151,6 +135,6 @@ var TRESCI = {
 "Jeżeli cokolwiek poszło nie tak, prosimy o wiadomość zwrotną zamiast opinii.\n" +
 "Poprawimy to.\n\n" +
 "Dziękujemy za zaufanie i zapraszamy w przyszłym roku, KFS jest przyznawany co roku.\n\n" +
-"Pozdrawiam\n{opiekun.imie}\nLDIT"
+"Pozdrawiam\n{ldit.podpis}\nLDIT"
   }
 };

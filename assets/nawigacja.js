@@ -202,9 +202,11 @@
     zglosEkran();
   }
 
-  /* Licznik w pasku gornym: formularze i zmiany danych czekajace na decyzje LDIT (D-223, D-224) */
+  /* Licznik w pasku gornym: formularze i zmiany danych czekajace na decyzje LDIT (D-223, D-224),
+     tylko te, ktore to konto rozpatruje (D-330) */
   function licznikDlaPowloki(auth, db) {
-    return auth.widziModul("akcept") ? liczbaDoAkceptacji(db.KOLEJKA) + liczbaDoAkceptacji(db.PROPOZYCJE) : null;
+    var U = global.AkceptacjeUprawnienia;
+    return auth.widziModul("akcept") ? liczbaDoAkceptacji(U.doRozpatrzenia(db.KOLEJKA)) + liczbaDoAkceptacji(U.doRozpatrzenia(db.PROPOZYCJE)) : null;
   }
 
   /* Zgloszenia nieprzeczytane przez zalogowane konto (D-315), null gdy konto nie ma dostepu (D-107) */

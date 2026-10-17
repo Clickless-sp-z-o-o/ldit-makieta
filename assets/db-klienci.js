@@ -43,7 +43,8 @@
     return S.get("klienci").map(function (k) {
       var cl = czarnaLista[k.id] || {};
       return polacz({
-        id: k.id, nr: k.numer_klienta, nazwa: k.nazwa, nip: k.nip,
+        /* nazwa = pelna nazwa firmy; nazwaLista = skrocona, pokazywana na listach (spotkanie 14.10.2026) */
+        id: k.id, nr: k.numer_klienta, nazwa: k.nazwa, nazwaSkrocona: k.nazwa_skrocona || null, nazwaLista: k.nazwa_skrocona || k.nazwa, nip: k.nip,
         wielkosc: k.wielkosc_przedsiebiorstwa,
         /* Czarna lista (D-249): regula z incydentow albo reczne ustawienie (D-19) */
         czarnaLista: cl.czarna_lista_efektywna === 1, czarnaListaRegula: k.czarna_lista_regula_aktywna !== 0,
@@ -107,5 +108,5 @@
     });
   }
 
-  global.DBKlienci = { klienciView: klienciView, kolejkaView: kolejkaView, daneFormularza: daneFormularza };
+  global.DBKlienci = { klienciView: klienciView, kolejkaView: kolejkaView, daneFormularza: daneFormularza, brakiFormularza: brakiFormularza };
 })(window);

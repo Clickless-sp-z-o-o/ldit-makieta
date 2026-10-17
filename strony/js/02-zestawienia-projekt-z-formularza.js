@@ -6,7 +6,12 @@
    ProjektZFormularza.podpowiedz(formularzId) zwraca
      { ok: true, dane: { formularzId, klientId, instytucjaId, pupId, szkolenia: [{ szkolenieId, cena }],
                          uczestnicy: [{ uczestnikKlientaId, szkolenieId }] }, nieznaneSzkolenie }
-     albo { ok: false, bledy }. nieznaneSzkolenie to nazwa z formularza bez odpowiednika w katalogu. */
+     albo { ok: false, bledy }. nieznaneSzkolenie to nazwa z formularza bez odpowiednika w katalogu.
+
+   ProjektZFormularza.zaakceptujIZaloz(formularzId, kto, poprawki) akceptuje formularz i od razu zaklada
+     projekt (ankieta klienta 09.10, D-328): { klientId, projekt: { ok, id } albo { ok: false, bledy } }.
+     Projekt powstaje w roku domyslnym zestawien ze statusem Niezlozony. Gdy szkolenia z formularza nie ma
+     w katalogu instytucji, projekt nie powstaje, a zatwierdzajacy zaklada go recznie z podpowiedzia. */
 (function (global) {
   "use strict";
 
@@ -50,5 +55,20 @@
     };
   }
 
-  global.ProjektZFormularza = { podpowiedz: podpowiedz };
+  function zalozPoAkceptacji(formularzId) {
+    var podp = podpowiedz(formularzId);
+    if (!podp.ok) return podp;
+    if (!podp.dane.szkolenia.length) {
+      return { ok: false, bledy: [podp.nieznaneSzkolenie ? "Szkolenia „" + podp.nieznaneSzkolenie + "” nie ma w katalogu instytucji, wybierz je przy zakładaniu projektu."
+        : "Formularz nie wskazuje szkolenia, wybierz je przy zakładaniu projektu."] };
+    }
+    return global.ProjektLogika.utworz(Object.assign({ rok: global.Lata.domyslny() }, podp.dane));
+  }
+
+  function zaakceptujIZaloz(formularzId, kto, poprawki) {
+    var klientId = global.Akceptacje.zaakceptujFormularz(formularzId, kto, poprawki);
+    return { klientId: klientId, projekt: zalozPoAkceptacji(formularzId) };
+  }
+
+  global.ProjektZFormularza = { podpowiedz: podpowiedz, zaakceptujIZaloz: zaakceptujIZaloz };
 })(window);

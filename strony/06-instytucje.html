@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="../assets/style-sesja.css">
 <link rel="stylesheet" href="../assets/style-instytucje-0810.css">
 <link rel="stylesheet" href="../assets/style-interfejs.css">
+<link rel="stylesheet" href="../assets/style-motyw.css">
 <style>
   .cert {
     border: 1px solid var(--line-strong); border-radius: var(--radius);
@@ -92,13 +93,14 @@
               <div id="isForm" style="display:none"></div>
             </div>
             <div>
+              <div id="powiadomieniaIS06" style="margin-bottom:12px"></div>
               <div class="note mb0">
                 <b>Siedziba jest źródłem miejscowości na certyfikacie</b> <span class="ref">D-99</span>.
                 Na dokumencie drukuje się miasto siedziby instytucji, nigdy miejsce realizacji szkolenia.
               </div>
               <div class="note warn mb0" style="margin-top:12px">
-                <b>Standard godzinowy</b> to powtarzalny wzorzec godzin i dni.
-                <b>Do potwierdzenia z klientem</b> <span class="ref">D-248</span>: czy dotyczy godzin szkoleń, czy godzin pracy instytucji.
+                <b>Standard godzinowy szkoleń</b> to powtarzalny wzorzec dni i godzin, w których instytucja prowadzi szkolenia.
+                Nie są to godziny pracy biura instytucji (potwierdzone przez klienta 09.10) <span class="ref">D-335</span>.
               </div>
             </div>
           </div>
@@ -206,6 +208,7 @@
 <script src="../assets/auth.js"></script>
 <script src="../assets/haslo-zmiana.js"></script>
 <script src="../assets/walidacja.js"></script>
+<script src="../assets/akceptacje-uprawnienia.js"></script>
 <script src="../assets/straznik-wlasnosc.js"></script>
 <script src="../assets/straznik-katalog.js"></script>
 <script src="../assets/straznik.js"></script>
@@ -218,13 +221,16 @@
 <script src="../assets/db.js"></script>
 <script src="../assets/lata.js"></script>
 <script src="../assets/nabory-import.js"></script>
+<script src="../assets/nabory-zrzuty.js"></script>
 <script src="../assets/html.js"></script>
 <script src="../assets/powiadomienia.js"></script>
 <script src="../assets/statusy.js"></script>
 <script src="../assets/akceptacje.js"></script>
+<script src="../assets/akceptacje-zmiany.js"></script>
 <script src="../assets/akceptacje-edycja.js"></script>
 <script src="../assets/akceptacje-katalog.js"></script>
 <script src="../assets/xlsx.js"></script>
+<script src="../assets/xlsx-zapis.js"></script>
 <script src="../assets/eksport.js"></script>
 <script src="../assets/wielowybor.js"></script>
 <script src="../assets/nawigacja.js"></script>
@@ -237,6 +243,7 @@
 <script src="js/06-instytucje-widoki.js"></script>
 <script src="js/konto-instytucji.js"></script>
 <script src="js/06-instytucje-szczegol.js"></script>
+<script src="js/06-instytucje-powiadomienia.js"></script>
 <script src="js/06-instytucje-katalog.js"></script>
 <script src="js/06-instytucje-plan.js"></script>
 <script src="js/06-instytucje-cennik.js"></script>

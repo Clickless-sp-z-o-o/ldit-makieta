@@ -23,8 +23,9 @@ function liczbaTekst19(w) { return String(w).replace(".", ","); }
 function zobowiazaniaTekst19(wiersz) {
   if (KlientPola.pusty(wiersz.zadluzenie)) return BRAK_19;
   if (!KlientPola.tak(wiersz.zadluzenie)) return "NIE";
-  var ugoda = wiersz.zadluzenie_ugoda == null ? BRAK_19 : (wiersz.zadluzenie_ugoda === 1 ? "tak" : "nie");
-  return "TAK, " + esc(KlientLogika.etykieta(KlientLogika.ZADLUZENIA, wiersz.zadluzenie)) + '<div class="small">Porozumienie lub ugoda: ' + ugoda + "</div>";
+  /* Rodzaj (ZUS, US) LDIT nie interesuje: stare wartosci pokazujemy jako TAK (spotkanie 14.10) */
+  var ugoda = wiersz.zadluzenie_ugoda == null ? BRAK_19 : (wiersz.zadluzenie_ugoda === 1 ? "TAK" : "NIE");
+  return 'TAK<div class="small">Porozumienie lub ugoda: ' + ugoda + "</div>";
 }
 
 /* Wartosc pola do wyswietlenia, puste pole to szare "brak" */
@@ -85,8 +86,11 @@ function renderDane19() {
   var kl = STAN_19.kl;
   var wiersz = Store.find("klienci", kl.id);
   el19("sekcjeDanych").innerHTML = KlientPola.SEKCJE.map(function (s) { return kartaSekcji19(s, wiersz); }).join("") + kartaStatusu19(kl);
-  el19("tytul").textContent = kl.nazwa;
+  /* Naglowek: nazwa skrocona, obok pelna, gdy sie rozni (spotkanie 14.10) */
+  el19("tytul").textContent = kl.nazwaLista;
+  el19("tytulPelna").textContent = kl.nazwaLista !== kl.nazwa ? kl.nazwa : "";
+  el19("tytulPelna").title = kl.nazwaLista !== kl.nazwa ? "Pełna nazwa firmy" : "";
   el19("znacznikCzarnej").innerHTML = kl.czarnaLista ? '<span class="tag neg">Widnieje na czarnej liście</span>' : "";
   renderLicznikBrakow19(wiersz);
-  document.title = "Karta klienta · " + kl.nazwa;
+  document.title = "Karta klienta · " + kl.nazwaLista;
 }

@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="../assets/style-sesja.css">
 <link rel="stylesheet" href="../assets/style-interfejs.css">
 <link rel="stylesheet" href="../assets/style-zadania-0810.css">
+<link rel="stylesheet" href="../assets/style-motyw.css">
 <style>
   .zad-row { display:flex; align-items:flex-start; gap:11px; padding:11px 0; border-top:1px solid var(--line); }
   .zad-row:first-child { border-top:0; }
@@ -65,9 +66,9 @@
       <div style="display:grid;grid-template-columns:2fr 2fr 1fr;gap:10px">
         <label class="small" style="display:flex;flex-direction:column;gap:3px"><span class="muted">Tytuł</span>
           <input class="inp" id="tytulZadania"></label>
-        <label class="small" style="display:flex;flex-direction:column;gap:3px"><span class="muted">Wniosek</span>
+        <label class="small" style="display:flex;flex-direction:column;gap:3px"><span class="muted">Wniosek (opcjonalnie)</span>
           <select class="inp" id="wniosekZadania"></select></label>
-        <label class="small" style="display:flex;flex-direction:column;gap:3px"><span class="muted">Termin</span>
+        <label class="small" style="display:flex;flex-direction:column;gap:3px"><span class="muted">Dzień wykonania</span>
           <input class="inp" type="date" id="terminZadania"></label>
       </div>
       <div style="display:grid;grid-template-columns:2fr 2fr 1fr;gap:10px;margin-top:10px">
@@ -87,12 +88,25 @@
     </div>
   </div>
 
+  <div class="note warn" id="komunikat18" role="status" style="display:none"></div>
+
   <div class="grid g-2-1">
     <div>
 
+      <!-- NA DZIS: przypomnienie = zadanie na konkretny dzien (spotkanie 14.10.2026) -->
+      <div class="card" id="kartaDzis">
+        <div class="card-head">
+          <h3>Na dziś
+            <span class="tip-mark" data-tip="Zadania z dniem wykonania dziś oraz zaległe z wcześniejszych dni. Przypomnienie to zadanie na konkretny dzień; żeby przypomnieć sobie o sprawie innego dnia, zmień dzień wykonania zadania.">i</span>
+          </h3>
+          <span class="sub" id="subDzis"></span>
+        </div>
+        <div class="card-body" id="listaDzis"></div>
+      </div>
+
       <div class="card">
         <div class="card-head">
-          <h3>Do zrobienia
+          <h3>Wszystkie do zrobienia
             <span class="tip-mark" data-tip="Zadania otwarte, ktorych okno przypomnienia juz sie zaczelo. Zadanie z przypomnieniem pojawia sie tu dopiero na zadana liczbe dni przed terminem (D-239). Typ automatyczne = z reguly statusu, typ reczne = dopisane z reki (D-140, P-57).">i</span>
           </h3>
           <span class="sub" id="subZad"></span>
@@ -156,10 +170,10 @@
         <b>Jak działają zadania</b> <span class="ref">D-140</span>
         <div>
           <dl class="dl">
-            <dt>Ręczne</dt><dd>Dopisywane z ręki, np. „kontakt za 4 dni" po rozmowie z klientem. Przypięte do wniosku i pracownika.</dd>
+            <dt>Ręczne</dt><dd>Dopisywane z ręki, np. „kontakt za 4 dni" po rozmowie z klientem. Przypięte do pracownika i do wniosku albo ogólne, bez wniosku (spotkanie 14.10.2026).</dd>
             <dt>Automatyczne</dt><dd>Wyzwalane statusem lub datą. Przykład: przygotowanie rozliczenia z daty ostatniego dnia szkolenia, wysłanie danych do faktury. Które są automatyczne, pozostaje do rozpisania <span class="ref p">P-57</span>.</dd>
             <dt>Reagują na terminy</dt><dd>Przesunięcie terminu szkolenia przesuwa powiązane zadanie.</dd>
-            <dt>Widoczność</dt><dd>Pracownik widzi i edytuje swoje zadania (plan dnia). Administrator ma wgląd we wszystkie, przypisuje je dowolnej osobie z LDIT i widzi historię <span class="ref">D-140</span> <span class="ref">D-246</span>.</dd>
+            <dt>Widoczność</dt><dd>Pracownik widzi i edytuje swoje zadania (plan dnia) i dodaje zadania sobie albo innym osobom z LDIT. Administrator ma wgląd we wszystkie, przepisuje je na inne osoby i widzi historię <span class="ref">D-140</span> <span class="ref">D-246</span>.</dd>
             <dt>Przypomnienie</dt><dd>Notatka z terminem z karty wniosku to zadanie z przypomnieniem, domyślnie 3 dni przed terminem. Do tego czasu leży w sekcji Zaplanowane <span class="ref">D-239</span>.</dd>
           </dl>
         </div>
@@ -181,6 +195,7 @@
 <script src="../assets/auth.js"></script>
 <script src="../assets/haslo-zmiana.js"></script>
 <script src="../assets/walidacja.js"></script>
+<script src="../assets/akceptacje-uprawnienia.js"></script>
 <script src="../assets/straznik-wlasnosc.js"></script>
 <script src="../assets/straznik-katalog.js"></script>
 <script src="../assets/straznik.js"></script>
@@ -193,13 +208,16 @@
 <script src="../assets/db.js"></script>
 <script src="../assets/lata.js"></script>
 <script src="../assets/nabory-import.js"></script>
+<script src="../assets/nabory-zrzuty.js"></script>
 <script src="../assets/html.js"></script>
 <script src="../assets/powiadomienia.js"></script>
 <script src="../assets/statusy.js"></script>
 <script src="../assets/akceptacje.js"></script>
+<script src="../assets/akceptacje-zmiany.js"></script>
 <script src="../assets/akceptacje-edycja.js"></script>
 <script src="../assets/akceptacje-katalog.js"></script>
 <script src="../assets/xlsx.js"></script>
+<script src="../assets/xlsx-zapis.js"></script>
 <script src="../assets/eksport.js"></script>
 <script src="../assets/wielowybor.js"></script>
 <script src="../assets/nawigacja.js"></script>

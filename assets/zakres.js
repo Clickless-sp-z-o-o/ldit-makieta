@@ -56,7 +56,7 @@
       /* Korespondencja bez przypisanej instytucji nie trafia do konta z ograniczonym
          zakresem: brak przypisania oznacza brak dostepu, nie dostep dla wszystkich */
       DB.MAILE = filtruj(DB.MAILE, instytucje, "isId");
-      DB.ZADANIA = this.zadaniaWZakresie(DB.ZADANIA, DB.WNIOSKI_WSZYSTKIE, instytucje);
+      DB.ZADANIA = this.zadaniaWZakresie(DB.ZADANIA, DB.WNIOSKI_WSZYSTKIE, instytucje, !Auth.sesja().instytucja_nazwa);
       DB.PODSUMOWANIA = filtruj(DB.PODSUMOWANIA, instytucje, "isId");
       this.zakresHandlowca(DB, Auth.handlowiec());
       DB.UCZESTNICY_KLIENTA = this.uczestnicyWidocznychKlientow(DB.UCZESTNICY_KLIENTA, DB.KLIENCI);
@@ -126,6 +126,8 @@
         DB.UZYTKOWNICY = mojeInst
           ? DB.UZYTKOWNICY.filter(function (u) { return u.inst === mojeInst; })
           : [];
+        /* Imiona zespolu LDIT tylko dla kont LDIT: instytucja nie dostaje listy pracownikow LDIT */
+        if (mojeInst) DB.ZESPOL_LDIT = {};
         /* Handlowiec nie wie, ze istnieja inni handlowcy (D-251) */
         if (Auth.handlowiec()) {
           DB.UZYTKOWNICY = DB.UZYTKOWNICY.filter(function (u) { return u.login === s.login; });
@@ -171,12 +173,13 @@
     },
 
     /* Zadanie jest widoczne, gdy dotyczy wniosku w zakresie konta. Zadanie bez
-       wniosku (ogolne) widza tylko konta LDIT bez ograniczen. */
-    zadaniaWZakresie: function (zadania, wnioski, instytucje) {
+       wniosku (ogolne) widza wszystkie konta LDIT, takze z przydzialem instytucji
+       (spotkanie 14.10.2026); konto instytucji go nie widzi. */
+    zadaniaWZakresie: function (zadania, wnioski, instytucje, kontoLdit) {
       if (instytucje === null) return zadania;
       var widoczne = {};
       wnioski.forEach(function (w) { widoczne[w.id] = true; });
-      return zadania.filter(function (z) { return z.wniosek_id && widoczne[z.wniosek_id]; });
+      return zadania.filter(function (z) { return z.wniosek_id ? widoczne[z.wniosek_id] : !!kontoLdit; });
     },
 
     /* Brak sesji: zero danych. Strona i tak pokaze komunikat o wygasnieciu. */
@@ -186,6 +189,7 @@
        "PODSUMOWANIA", "UCZESTNICY_KLIENTA", "SKUTECZNOSC",
        "UZYTKOWNICY", "ZGLOSZENIA", "AKTYWNOSC", "LOGOWANIA", "WARUNKI_PRACOWNIKOW", "ZADANIA", "LATA"
       ].forEach(function (k) { DB[k] = []; });
+      DB.ZESPOL_LDIT = {};
       return DB;
     },
 

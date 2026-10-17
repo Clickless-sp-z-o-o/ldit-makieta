@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="../assets/style-sesja.css">
 <link rel="stylesheet" href="../assets/style-listy.css">
 <link rel="stylesheet" href="../assets/style-interfejs.css">
+<link rel="stylesheet" href="../assets/style-motyw.css">
 <style>
   /* Drobny wyjatek: nabory zakonczone wygaszone, brak gotowej klasy */
   tr.past td { color: var(--ink-4); }
@@ -58,9 +59,13 @@
         <option value="ogloszony">Ogłoszone</option>
         <option value="prognozowany">Prognozowane</option>
       </select>
+      <select class="inp" id="fZrzut" aria-label="Zrzut arkusza z dnia"></select>
+      <span class="tip-mark" data-tip="Każde pobranie arkusza naborów to zrzut z datą wczytania. Domyślnie widać bieżący stan, a tu można obejrzeć jeden z 7 ostatnich zrzutów (D-333).">i</span>
       <span class="sp"></span>
       <span class="small muted" id="licz"></span>
     </div>
+
+    <p class="note" id="zrzutInfo" role="status" hidden></p>
 
     <div class="tbl-wrap">
       <table class="tbl">
@@ -152,8 +157,10 @@
   </div>
 
   <div class="note">
-    <b>Skąd biorą się te dane.</b> Nabory nie są wprowadzane ręcznie. Dwie automatyzacje wczytują pliki Excel
-    (nabory ogłoszone i prognozy) do tabel źródłowych <code>src_</code>, a z nich powstają nabory <span class="ref">D-271</span>.
+    <b>Skąd biorą się te dane.</b> Nabory nie są wprowadzane ręcznie. Źródłem jest arkusz Google o ustalonej strukturze
+    (nabory ogłoszone i prognozy). W aplikacji docelowej zadanie cykliczne po stronie serwera odpytuje arkusz i każde pobranie
+    dopisuje jako zrzut do tabel źródłowych <code>src_</code>, a z nich powstają nabory <span class="ref">D-271</span>.
+    Ekran pokazuje najnowszy stan, w bazie zostaje 7 ostatnich zrzutów do podglądu filtrem „Zrzut z dnia” <span class="ref">D-333</span>.
     Urząd z pliku dopasowuje się po nazwie albo aliasie ze słownika; nieznany urząd trafia do powiadomień
     <span class="ref">D-272</span> <span class="ref">D-297</span>. System jest <b>odbiorcą prognoz</b>, sam ich nie wylicza. <span id="notkaUrzedy"></span>
   </div>
@@ -178,6 +185,7 @@
 <script src="../assets/auth.js"></script>
 <script src="../assets/haslo-zmiana.js"></script>
 <script src="../assets/walidacja.js"></script>
+<script src="../assets/akceptacje-uprawnienia.js"></script>
 <script src="../assets/straznik-wlasnosc.js"></script>
 <script src="../assets/straznik-katalog.js"></script>
 <script src="../assets/straznik.js"></script>
@@ -190,13 +198,16 @@
 <script src="../assets/db.js"></script>
 <script src="../assets/lata.js"></script>
 <script src="../assets/nabory-import.js"></script>
+<script src="../assets/nabory-zrzuty.js"></script>
 <script src="../assets/html.js"></script>
 <script src="../assets/powiadomienia.js"></script>
 <script src="../assets/statusy.js"></script>
 <script src="../assets/akceptacje.js"></script>
+<script src="../assets/akceptacje-zmiany.js"></script>
 <script src="../assets/akceptacje-edycja.js"></script>
 <script src="../assets/akceptacje-katalog.js"></script>
 <script src="../assets/xlsx.js"></script>
+<script src="../assets/xlsx-zapis.js"></script>
 <script src="../assets/eksport.js"></script>
 <script src="../assets/wielowybor.js"></script>
 <script src="../assets/nawigacja.js"></script>
@@ -211,12 +222,16 @@
 <script src="js/05-nabory-klienci.js"></script>
 <script src="js/05-nabory-notatka.js"></script>
 <script src="js/05-nabory-wczytaj.js"></script>
+<script src="js/05-nabory-zrzuty.js"></script>
 <script src="js/eksporty-ekranow.js"></script>
 <script type="text/kfs-strona">
 wczytajDane05();
 renderKpi05();
 podepnijFiltry05();
+/* Filtr z adresu: przejscie z tabeli planowanych naborow na Dashboardzie (D-324) */
+Nawigacja.wczytajFiltry({ q: "q", stan: "fStat" });
 renderTabela05();
+wypelnijZrzuty05();
 renderPrognozy05();
 renderOsCzasu05();
 podepnijUrzedy05();

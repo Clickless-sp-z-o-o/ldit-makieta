@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="../assets/style-listy.css">
 <link rel="stylesheet" href="../assets/style-interfejs.css">
 <link rel="stylesheet" href="../assets/style-ekrany-0810.css">
+<link rel="stylesheet" href="../assets/style-motyw.css">
 </head>
 <body>
 <div class="page">
@@ -36,10 +37,11 @@
   <!-- KPI finansowe, tylko admin -->
   <div class="grid g4" style="margin-bottom:18px" id="kpiFin"></div>
 
-  <div class="grid g-2-1">
+  <!-- Na teraz (D-324): sprawy do dzialania, moje zadania i planowane nabory -->
+  <div class="grid g-2-1" style="margin-bottom:18px;align-items:start">
     <div class="card">
       <div class="card-head">
-        <h3>Wymaga działania</h3>
+        <h3>Na teraz</h3>
         <span class="sub">kliknij pozycję, żeby przejść do spraw</span>
       </div>
       <div class="card-body tight">
@@ -47,10 +49,14 @@
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-head"><h3>Statusy wniosków</h3></div>
-      <div class="card-body">
-        <div id="statusy"></div>
+    <div class="na-teraz-boczne">
+      <div id="mojeZadania"></div>
+      <div class="card" id="planowaneNabory"></div>
+      <div class="card">
+        <div class="card-head"><h3>Statusy wniosków</h3></div>
+        <div class="card-body">
+          <div id="statusy"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -70,6 +76,7 @@
 <script src="../assets/auth.js"></script>
 <script src="../assets/haslo-zmiana.js"></script>
 <script src="../assets/walidacja.js"></script>
+<script src="../assets/akceptacje-uprawnienia.js"></script>
 <script src="../assets/straznik-wlasnosc.js"></script>
 <script src="../assets/straznik-katalog.js"></script>
 <script src="../assets/straznik.js"></script>
@@ -82,13 +89,16 @@
 <script src="../assets/db.js"></script>
 <script src="../assets/lata.js"></script>
 <script src="../assets/nabory-import.js"></script>
+<script src="../assets/nabory-zrzuty.js"></script>
 <script src="../assets/html.js"></script>
 <script src="../assets/powiadomienia.js"></script>
 <script src="../assets/statusy.js"></script>
 <script src="../assets/akceptacje.js"></script>
+<script src="../assets/akceptacje-zmiany.js"></script>
 <script src="../assets/akceptacje-edycja.js"></script>
 <script src="../assets/akceptacje-katalog.js"></script>
 <script src="../assets/xlsx.js"></script>
+<script src="../assets/xlsx-zapis.js"></script>
 <script src="../assets/eksport.js"></script>
 <script src="../assets/wielowybor.js"></script>
 <script src="../assets/nawigacja.js"></script>
@@ -99,6 +109,8 @@
 <script src="js/01-dashboard-kafelki.js"></script>
 <script src="js/01-dashboard-kolejki.js"></script>
 <script src="js/01-dashboard-skutecznosc.js"></script>
+<script src="js/18-zadania-logika.js"></script>
+<script src="js/01-dashboard-na-teraz.js"></script>
 <script src="js/eksporty-ekranow.js"></script>
 <script type="text/kfs-strona">
 przygotujStan01();
@@ -106,6 +118,8 @@ document.getElementById("okres").innerHTML = "<option>Rok " + STAN_01.rok + "</o
 renderKpiOperacyjne();
 renderKpiFinansowe();
 renderWymagaDzialania();
+renderMojeZadania01();
+renderPlanowaneNabory01();
 renderStatusy();
 renderSkutecznosc();
 Nawigacja.podlaczLinki(document.body);

@@ -17,8 +17,9 @@ function odnosnikPowiadomienia16(p) {
   return "";
 }
 
-/* Projekt klienta na liscie "Moi klienci i ich projekty": wyszukanie po nazwie klienta */
+/* Projekt klienta na liscie "Moi klienci i ich projekty" (zakladka Klienci i projekty): wyszukanie po nazwie klienta */
 function pokazProjekt16(nazwa) {
+  przelaczWidok16("klienci");
   el16("szukaj").value = nazwa;
   renderKlienci16();
   el16("szukaj").scrollIntoView({ block: "start" });
@@ -37,7 +38,7 @@ function renderPowiadomienia16() {
   el16("powiadomieniaInfo16").textContent = nowe ? nowe + " nieprzeczytanych" : "wszystkie przeczytane";
   el16("btnPrzeczytane16").hidden = !nowe;
   el16("listaPowiadomien16").innerHTML = lista.length ? lista.slice(0, LIMIT_POWIADOMIEN_16).map(wierszPowiadomienia16).join("") :
-    '<tr><td colspan="3" class="small muted">Brak powiadomień. Pojawią się tu decyzje LDIT o formularzach i zmianach danych oraz decyzje urzędów dla Twoich klientów.</td></tr>';
+    '<tr><td colspan="3" class="small muted">Brak zgłoszeń od LDIT. Pojawią się tu decyzje LDIT o formularzach i zmianach danych, decyzje urzędów dla Twoich klientów i przypisania terminów.</td></tr>';
 }
 
 /* Po zapisie powloka dostaje nowy licznik (Nawigacja.zglosEkran) */

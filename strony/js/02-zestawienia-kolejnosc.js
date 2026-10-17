@@ -1,6 +1,7 @@
 /* Ekran 02, czesc 9: kolejnosc wnioskow na liscie (D-261).
    Numer wniosku (ID, kolumna Nr) jest staly. Miejsce na liscie wyznacza kolumna wnioski.pozycja,
-   zawsze bez luk, w obrebie roku w zakresie konta (kolumny Lp. nie ma od 08.10).
+   w obrebie roku w zakresie konta (kolumny Lp. nie ma od 08.10). Kolejnosc ustawia kazdy pracownik
+   LDIT z edycja modulu Dofinansowania (D-326), instytucja nie.
    Zmiana kolejnosci (strzalki albo przeciaganie wiersza) zawsze pyta o potwierdzenie,
    zapisuje pozycje przez Store.update i dopisuje wpis do rejestru aktywnosci.
    Korzysta ze STAN_02. Same deklaracje. */
@@ -28,13 +29,23 @@ function kolejnoscPoPrzeniesieniu(lista, idWniosku, idCelu, polozenie) {
   return reszta;
 }
 
-/* Zapisuje pozycje 1..n tylko tam, gdzie sie zmienily, z wpisem do rejestru dla kazdej zmiany */
+/* Miejsca na liscie, ktore zajmuja wnioski widoczne dla konta, rosnaco (D-326). Pracownik LDIT widzi
+   tylko czesc wnioskow roku, wiec przestawia je wylacznie w obrebie ich dotychczasowych miejsc
+   i nie zajmuje pozycji cudzych wnioskow. Przy pelnej liscie (administrator) to po prostu 1..n.
+   Brak pozycji albo powtorzona pozycja: numeracja od nowa 1..n. */
+function miejscaNaLiscie02(lista) {
+  var miejsca = lista.map(function (w) { return w.pozycja; }).sort(function (a, b) { return a - b; });
+  var poprawne = miejsca.every(function (p, i) { return typeof p === "number" && p > 0 && (i === 0 || p > miejsca[i - 1]); });
+  return poprawne ? miejsca : lista.map(function (w, i) { return i + 1; });
+}
+
+/* Zapisuje pozycje tylko tam, gdzie sie zmienily, z wpisem do rejestru dla kazdej zmiany */
 function zapiszKolejnosc(nowaKolejnosc, idRuszanego) {
-  var zmienione = 0;
+  var zmienione = 0, miejsca = miejscaNaLiscie02(nowaKolejnosc);
   STAN_02.batch = true;
   try {
     nowaKolejnosc.forEach(function (w, i) {
-      var pozycja = i + 1;
+      var pozycja = miejsca[i];
       if (w.pozycja === pozycja) return;
       Store.update("wnioski", w.id, { pozycja: pozycja });
       Store.insert("rejestr_aktywnosci", {

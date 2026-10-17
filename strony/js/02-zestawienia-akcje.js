@@ -1,6 +1,7 @@
 /* Ekran 02, czesc 8: akcje na liscie. Cofanie zmian zbiorczych z historii (D-234),
-   historia zmian wniosku, wybor roku i instytucji z list rozwijanych (D-241) oraz powrot
-   z karty na to samo miejsce listy (D-241). Logika partii: 02-zestawienia-zbiorcza.js. */
+   wybor roku i instytucji z list rozwijanych (D-241) oraz powrot
+   z karty na to samo miejsce listy (D-241). Logika partii: 02-zestawienia-zbiorcza.js.
+   Historia (przebieg wniosku): 02-zestawienia-historia*.js. */
 
 function komunikatZbiorczej(tekst) {
   document.getElementById("komZbiorcza").textContent = tekst;
@@ -27,22 +28,6 @@ function cofnijZbiorcza() {
     STAN_02.batch = false;
     STAN_02.W = budujW(); render();
   }
-}
-
-/* Historia zmian wniosku z rejestru aktywnosci (D-234) */
-function pokazHistorie(id) {
-  var wpisy = historiaWniosku(id);
-  var panel = document.getElementById("histPanel");
-  panel.innerHTML = '<div class="small strong" style="margin-bottom:6px">Historia zmian wniosku ' + esc(id) +
-    ' <button class="btn xs" id="btnZamknijHist">Zamknij</button></div>' + (wpisy.length
-      ? '<table class="tbl"><thead><tr><th>Czas</th><th>Kto</th><th>Zmiana</th><th>Pole</th><th>Przed</th><th>Po</th></tr></thead><tbody>' +
-        wpisy.map(function (r) {
-          return '<tr><td class="nowrap">' + esc(DB.fmtDate(r.czas)) + '</td><td>' + esc(r.kto) + '</td><td>' + esc(r.typ) +
-            '</td><td>' + esc(r.pole) + '</td><td>' + esc(r.przed) + '</td><td>' + esc(r.po) + '</td></tr>';
-        }).join("") + '</tbody></table>'
-      : '<div class="muted small">Brak zapisanych zmian tego wniosku.</div>');
-  panel.style.display = "block";
-  document.getElementById("btnZamknijHist").addEventListener("click", function () { panel.style.display = "none"; });
 }
 
 /* Rok i instytucja z list rozwijanych zamiast dublujacych sie pozycji menu */

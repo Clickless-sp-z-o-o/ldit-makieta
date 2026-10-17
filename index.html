@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="assets/style-sesja.css">
 <link rel="stylesheet" href="assets/style-powloka.css">
 <link rel="stylesheet" href="assets/style-interfejs.css">
+<link rel="stylesheet" href="assets/style-motyw.css">
+<link rel="stylesheet" href="assets/style-motyw-powloka.css">
 </head>
 <body>
 
@@ -32,12 +34,12 @@
 
   <div class="main">
     <div class="topbar">
-      <button class="btn sm menu-tel" id="menuTel" type="button" aria-expanded="false" aria-controls="nav">&#9776; Menu</button>
-      <button class="btn sm wstecz" id="wstecz" disabled data-tip="Poprzedni ekran, z tym samym filtrem i rokiem.">&larr; Wstecz</button>
+      <button class="btn sm menu-tel" id="menuTel" type="button" aria-expanded="false" aria-controls="nav"><span data-ikona="menu"></span>Menu</button>
+      <button class="btn sm wstecz" id="wstecz" disabled aria-label="Wstecz" data-tip="Poprzedni ekran, z tym samym filtrem i rokiem."><span data-ikona="wstecz"></span>Wstecz</button>
       <div class="crumb" id="crumb"><b>Dashboard</b></div>
 
       <div class="global-search">
-        <span class="si">&#128269;</span>
+        <span class="si" data-ikona="szukaj"></span>
         <input type="text" placeholder="Szukaj: NIP, nazwa klienta, urząd pracy..." id="gsearch">
       </div>
 
@@ -45,7 +47,7 @@
         <button class="btn sm przelacznik-uwag" id="przelacznikUwag" type="button" aria-pressed="false"
                 data-tip="Pokazuje ramki z uzasadnieniami i numery decyzji z dokumentacji. Domyślnie ukryte, żeby ekrany wyglądały jak w aplikacji.">Uwagi projektowe</button>
         <button class="akceptacje" id="akceptacje" hidden
-                data-tip="Formularze zgloszeniowe i zmiany danych od instytucji czekajace na akceptacje LDIT. Klik otwiera ekran Do akceptacji. D-105, D-140, D-223, D-224.">&#9993;<span class="n" id="akceptacjeN"></span></button>
+                data-tip="Formularze zgloszeniowe i zmiany danych od instytucji czekajace na akceptacje LDIT. Klik otwiera ekran Do akceptacji. D-105, D-140, D-223, D-224."><span data-ikona="skrzynka"></span><span class="n" id="akceptacjeN"></span></button>
         <div class="uzytkownik">
           <div class="uzytkownik-dane">
             <div class="uzytkownik-imie" id="imie">&nbsp;</div>
@@ -80,6 +82,7 @@
 <script src="assets/funkcje.js"></script>
 <script src="assets/auth.js"></script>
 <script src="assets/walidacja.js"></script>
+<script src="assets/akceptacje-uprawnienia.js"></script>
 <script src="assets/straznik-wlasnosc.js"></script>
 <script src="assets/straznik.js"></script>
 <script src="assets/zakres.js"></script>
@@ -96,6 +99,7 @@
 <script src="assets/nawigacja.js"></script>
 <script src="assets/interfejs.js"></script>
 <script src="assets/tips.js"></script>
+<script src="assets/ikony.js"></script>
 <script src="assets/boot.js"></script>
 <script src="assets/powloka-ekran.js"></script>
 <script src="assets/powloka-menu.js"></script>
@@ -144,6 +148,13 @@ function instytucjeKonta() {
   return DB.INSTYTUCJE.map(function (i) { return i.nazwa; });
 }
 
+/* Ikona SVG z assets/ikony.js; modul bez rysunku zostaje przy znaku z tabeli moduly */
+function ikonaModulu(m) {
+  if (window.Ikony && Ikony.ma(m.id)) return Ikony.svg(m.id);
+  /* &#xFE0E; wymusza wariant tekstowy znaku, zeby ikony nie byly kolorowymi emoji roznej wielkosci */
+  return m.ikona ? m.ikona + "&#xFE0E;" : "";
+}
+
 function render() {
   var moduly = Auth.moduly();
   var html = "";
@@ -165,8 +176,7 @@ function render() {
 
     html += '<div class="' + klasy + '" data-id="' + esc(m.id) + '" data-plik="' + esc(m.plik) + '"' +
             ' data-label="' + esc(etykieta) + '" data-tip="' + esc(TIPY_MODULOW[m.id] || "") + '">' +
-            /* &#xFE0E; wymusza wariant tekstowy znaku, zeby ikony nie byly kolorowymi emoji roznej wielkosci */
-            '<span class="ico" aria-hidden="true">' + (m.ikona ? m.ikona + "&#xFE0E;" : "") + '</span><span>' + esc(etykieta) + '</span>' +
+            '<span class="ico" aria-hidden="true">' + ikonaModulu(m) + '</span><span>' + esc(etykieta) + '</span>' +
             (rozwijane ? '<span class="chev">&#9654;</span>' : '') + '</div>';
 
     if (rozwijane) {

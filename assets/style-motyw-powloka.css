@@ -1,0 +1,147 @@
+/* ============================================================================
+   Motyw wizualny, czesc trzecia: powloka (index.html) i ekran logowania.
+   Granatowe menu z logo LDIT i zlotym akcentem marki [D-229], ikony SVG
+   (assets/ikony.js), gorny pasek z wyszukiwarka. Zwijanie menu, szuflada na
+   telefonie i klawiatura dzialaja jak dotad (powloka-zwijanie.js, D-310).
+   ============================================================================ */
+
+/* ------------------------------ lewe menu ------------------------------ */
+.sidebar {
+  background: radial-gradient(120% 60% at 0% 0%, rgba(205, 173, 125, .10) 0%, rgba(205, 173, 125, 0) 60%),
+    linear-gradient(180deg, #24264b 0%, #1c1d3a 100%);
+  color: #c9cce0; border-right: 1px solid rgba(255, 255, 255, .04);
+}
+.sidebar-brand { height: 60px; padding: 0 14px 0 16px; border-bottom: 1px solid rgba(255, 255, 255, .06); gap: 11px; }
+.sidebar-brand .logo-ldit { height: 30px; }
+.sidebar-brand .name { font-size: 0.9375rem; font-weight: 650; letter-spacing: -0.01em; }
+.sidebar-brand .sub { color: #9da1c3; font-size: 0.75rem; }
+.sidebar-scroll { padding: 8px 0 24px; scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, .14) transparent; }
+
+.nav-group-label { color: #9da1c3; font-size: 0.75rem; font-weight: 600; letter-spacing: .08em; padding: 18px 22px 6px; }
+.nav-item {
+  position: relative; margin: 1px 10px; padding: 8px 10px; gap: 11px; border-radius: 8px; border-left: 0;
+  color: #c9cce0; font-size: 0.875rem; font-weight: 500;
+  transition: background-color var(--szybko) ease, color var(--szybko) ease;
+}
+@media (hover: hover) { .nav-item:hover { background: rgba(255, 255, 255, .06); color: #fff; } }
+.nav-item.active { background: rgba(205, 173, 125, .16); color: #fff; font-weight: 600; }
+.nav-item.active::before {
+  content: ""; position: absolute; left: -10px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: var(--gold);
+}
+.nav-item .ico { width: 20px; height: 20px; flex: 0 0 20px; color: #9da1c3; opacity: 1; }
+.nav-item .ico .ikona { width: 19px; height: 19px; }
+.nav-item:hover .ico { color: #fff; }
+.nav-item.active .ico { color: var(--gold); }
+.nav-item .badge { background: var(--gold); color: var(--brand-900); border-radius: 999px; }
+.nav-item .n-nowe { border-radius: 999px; background: var(--neg-ink); }
+/* Strzalka rozwijania jako rysunek zamiast znaku tekstowego */
+.nav-item .chev {
+  font-size: 0; width: 14px; height: 14px; flex: 0 0 14px; background-color: currentColor; color: #9da1c3;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* Podmenu Dofinansowan: lata i instytucje, cienka linia prowadzaca zamiast wciec samym odstepem */
+.nav-sub { margin: 2px 0 6px; }
+.nav-sub .nav-item { font-size: 0.8125rem; color: #b4b8d4; padding-top: 6px; padding-bottom: 6px; }
+.nav-sub .nav-item.sub-rok { margin-left: 30px; padding-left: 8px; color: #c9cce0; }
+.nav-sub .nav-item.sub-rok .n { color: #9da1c3; }
+.nav-sub .nav-sub2 { margin-left: 41px; border-left: 1px solid rgba(255, 255, 255, .10); }
+.nav-sub .nav-sub2 .nav-item { margin-left: 6px; padding-left: 12px; font-size: 0.8125rem; }
+.nav-sub .nav-item.active::before { display: none; }
+
+.sidebar-foot { color: #9da1c3; border-top-color: rgba(255, 255, 255, .06); padding: 14px 18px; line-height: 1.5; }
+
+.zwin-menu {
+  display: inline-grid; place-items: center; width: 28px; height: 28px; flex: 0 0 28px; border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, .12); color: #c9cce0;
+  transition: background-color var(--szybko) ease, color var(--szybko) ease;
+}
+.zwin-menu .ikona { width: 16px; height: 16px; transition: transform 200ms ease; }
+.app.menu-zwiniete .zwin-menu .ikona { transform: rotate(180deg); }
+
+/* Zwiniete menu: same ikony na jednej osi, aktywna pozycja w zlotej ramce */
+.app.menu-zwiniete .nav-item { margin: 2px 10px; padding: 9px 0; justify-content: center; box-shadow: none; }
+.app.menu-zwiniete .nav-item.active { box-shadow: none; }
+.app.menu-zwiniete .nav-item.active::before { left: -10px; }
+.app.menu-zwiniete .nav-group-label { display: block; height: 1px; padding: 0; margin: 12px 18px; background: rgba(255, 255, 255, .08); font-size: 0; }
+
+/* ------------------------------ gorny pasek ------------------------------ */
+.topbar {
+  height: 60px; flex-basis: 60px; padding: 0 20px; gap: 12px;
+  background: rgba(255, 255, 255, .92); backdrop-filter: saturate(1.4) blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.crumb { font-size: 0.875rem; flex: 0 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topbar-right { flex: 0 0 auto; }
+.uzytkownik-dane { white-space: nowrap; }
+.crumb b { font-weight: 650; }
+.wstecz .ikona, .menu-tel .ikona { width: 16px; height: 16px; }
+.global-search { flex: 1 1 220px; max-width: 380px; min-width: 160px; }
+.global-search input {
+  height: 38px; padding: 0 12px 0 38px; border-radius: 10px; border: 1px solid transparent;
+  background: var(--surface-3); font-size: 0.8125rem;
+  transition: background-color var(--szybko) ease, border-color var(--szybko) ease, box-shadow var(--szybko) ease;
+}
+.global-search input::placeholder { color: #6b7189; }
+@media (hover: hover) { .global-search input:hover { border-color: var(--line-strong); } }
+.global-search input:focus, .global-search input:focus-visible { outline: none; background: #fff; border-color: var(--brand-900); box-shadow: var(--ring); }
+.global-search .si { left: 12px; color: var(--ink-3); display: grid; place-items: center; }
+.global-search .si .ikona { width: 16px; height: 16px; }
+
+.akceptacje {
+  width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--line); background: #fff; color: var(--ink-2);
+  transition: background-color var(--szybko) ease, border-color var(--szybko) ease;
+}
+.akceptacje .ikona { width: 18px; height: 18px; }
+@media (hover: hover) { .akceptacje:hover { background: var(--surface-2); border-color: var(--line-strong); } }
+.akceptacje .n { top: -6px; right: -6px; background: var(--neg-ink); box-shadow: 0 0 0 2px #fff; border-radius: 999px; }
+
+.uzytkownik { border-left-color: var(--line); padding-left: 14px; gap: 10px; }
+.uzytkownik-imie { font-size: 0.8125rem; font-weight: 650; }
+.avatar { width: 36px; height: 36px; background: linear-gradient(135deg, #34366a 0%, var(--brand-900) 100%); box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--accent-border); }
+.frame-wrap { background: var(--bg); }
+
+/* ------------------------------ ekran logowania ------------------------------ */
+body.ekran-logowania {
+  background: radial-gradient(70% 55% at 15% 0%, rgba(205, 173, 125, .18) 0%, rgba(205, 173, 125, 0) 60%),
+    radial-gradient(60% 50% at 100% 100%, rgba(120, 124, 200, .16) 0%, rgba(120, 124, 200, 0) 60%),
+    linear-gradient(160deg, #26284f 0%, #1b1c38 100%);
+}
+.logowanie { gap: 24px; max-width: 860px; grid-template-columns: 400px 420px; }
+.logowanie-panel { border-radius: var(--radius-xl); padding: 32px; gap: 16px; box-shadow: 0 24px 60px rgba(8, 9, 24, .45); }
+.logowanie-marka { padding-bottom: 18px; border-bottom-color: var(--line); }
+.logowanie-marka .name { font-size: 0.9375rem; }
+.logowanie-panel h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+.logowanie-panel .pole span { font-size: 0.8125rem; }
+.logowanie-panel .inp { height: 42px; font-size: 0.875rem; }
+.logowanie-panel .btn.primary { height: 44px; font-size: 0.875rem; border-radius: 10px; }
+.logowanie-konta {
+  border-radius: var(--radius-xl); padding: 26px; background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .09); backdrop-filter: blur(6px); color: #c9cce0;
+}
+.logowanie-konta h2 { font-size: 1rem; }
+.logowanie-konta .muted { color: #b4b8d4; }
+.konta-lista { max-height: 360px; gap: 8px; scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, .18) transparent; }
+.konto { border-radius: 10px; padding: 10px 12px; background: rgba(255, 255, 255, .04); border-color: rgba(255, 255, 255, .08);
+  transition: background-color var(--szybko) ease, border-color var(--szybko) ease; }
+@media (hover: hover) { .konto:hover { background: rgba(255, 255, 255, .09); border-color: rgba(205, 173, 125, .45); } }
+.konto-imie { font-size: 0.8125rem; }
+.konto-rola { color: var(--gold); font-weight: 600; }
+.konto-login { font-family: var(--font); color: #b4b8d4; }
+.konto-zakres { color: #9da1c3; }
+
+/* ------------------------------ telefon ------------------------------ */
+@media (max-width: 767px) {
+  .topbar { height: auto; flex-basis: auto; padding: 10px 12px; }
+  .global-search input { height: 40px; }
+  .sidebar { border-right: 0; }
+  .zwin-menu { display: none; }
+  /* Jeden rzad przyciskow nad wyszukiwarka: Wstecz jako sama strzalka, uwagi projektowe tylko na komputerze */
+  .topbar-right { margin-left: auto; gap: 8px; }
+  .uzytkownik { padding-left: 8px; gap: 8px; }
+  .topbar .btn.wstecz { font-size: 0; gap: 0; width: 40px; padding: 0; justify-content: center; }
+  .przelacznik-uwag { display: none; }
+  .global-search { max-width: none; min-width: 0; }
+}
+@media (max-width: 860px) { .logowanie { grid-template-columns: 1fr; max-width: 440px; } }

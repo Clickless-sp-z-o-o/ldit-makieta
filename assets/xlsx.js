@@ -1,11 +1,10 @@
 /* Pliki Excel .xlsx bez zewnetrznych bibliotek (decyzja P-67): xlsx to archiwum zip z plikami XML.
    Odczyt: archiwum rozpakowuje wbudowany DecompressionStream("deflate-raw"), arkusz i teksty
    wspolne czyta DOMParser, wynik to wiersze tekstu zamienione na CSV dla parsera formularza
-   (16-formularz-csv.js). Zapis: pusty szablon z naglowkami, archiwum bez kompresji, wszystkie
-   kolumny w formacie tekstowym, zeby Excel nie gubil zer na poczatku PESEL i NIP.
+   (16-formularz-csv.js). Zapis jest w assets/xlsx-zapis.js.
 
-   XlsxPlik.naCsv(arrayBuffer) -> Promise<string>      (blad: XlsxError)
-   XlsxPlik.szablon(naglowki, wiersze, arkusz) -> Uint8Array pliku .xlsx (wiersze i nazwa arkusza opcjonalne)
+   XlsxPlik.naCsv(arrayBuffer) -> Promise<string>      (pierwszy arkusz; blad: XlsxError)
+   XlsxPlik.arkusze(arrayBuffer) -> Promise<[{ nazwa, wiersze }]>   (wszystkie arkusze, D-327)
    Wspolny dla formularzy (21) i eksportow (assets/eksport.js), dlatego lezy w assets. */
 (function (global) {
   "use strict";
@@ -82,14 +81,21 @@
     });
   }
 
-  /* Pierwszy arkusz skoroszytu, z relacji workbook.xml; bez nich zwykle xl/worksheets/sheet1.xml */
-  function sciezkaPierwszegoArkusza(skoroszyt, relacje) {
-    var arkusz = skoroszyt && xml(skoroszyt).getElementsByTagName("sheet")[0];
-    var id = arkusz && (arkusz.getAttribute("r:id") || arkusz.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id"));
-    var rel = id && relacje && Array.prototype.filter.call(xml(relacje).getElementsByTagName("Relationship"), function (x) { return x.getAttribute("Id") === id; })[0];
-    if (!rel) return "xl/worksheets/sheet1.xml";
-    var cel = rel.getAttribute("Target").replace(/^\//, "");
-    return cel.indexOf("xl/") === 0 ? cel : "xl/" + cel;
+  var NS_REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+
+  /* Arkusze skoroszytu w kolejnosci z workbook.xml: [{ nazwa, sciezka }]; bez opisu skoroszytu
+     zwykle jest jeden arkusz xl/worksheets/sheet1.xml */
+  function listaArkuszy(skoroszyt, relacje) {
+    var arkusze = skoroszyt ? Array.prototype.slice.call(xml(skoroszyt).getElementsByTagName("sheet")) : [];
+    var rel = relacje ? Array.prototype.slice.call(xml(relacje).getElementsByTagName("Relationship")) : [];
+    var lista = arkusze.map(function (a) {
+      var id = a.getAttribute("r:id") || a.getAttributeNS(NS_REL, "id");
+      var r = rel.filter(function (x) { return x.getAttribute("Id") === id; })[0];
+      if (!r) return null;
+      var cel = r.getAttribute("Target").replace(/^\//, "");
+      return { nazwa: a.getAttribute("name") || "", sciezka: cel.indexOf("xl/") === 0 ? cel : "xl/" + cel };
+    }).filter(Boolean);
+    return lista.length ? lista : [{ nazwa: "", sciezka: "xl/worksheets/sheet1.xml" }];
   }
 
   function komorkaCsv(tekst) {
@@ -97,94 +103,26 @@
     return /[;"\r\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
   }
 
-  function naCsv(bufor) {
+  /* Wszystkie arkusze: Promise<[{ nazwa, wiersze: [[tekst]] }]>; pierwszy arkusz musi istniec */
+  function arkusze(bufor) {
     var arch;
     try { arch = wpisyArchiwum(new Uint8Array(bufor)); } catch (e) { return Promise.reject(e); }
     return Promise.all(["xl/workbook.xml", "xl/_rels/workbook.xml.rels", "xl/sharedStrings.xml"].map(function (n) { return tekstWpisu(arch, n); }))
       .then(function (t) {
-        var wspolne = tekstyWspolne(t[2]);
-        return tekstWpisu(arch, sciezkaPierwszegoArkusza(t[0], t[1])).then(function (arkusz) {
-          if (!arkusz) throw new XlsxError("W pliku .xlsx nie ma arkusza z danymi.");
-          return wierszeArkusza(arkusz, wspolne).map(function (w) { return w.map(komorkaCsv).join(";"); }).join("\r\n");
+        var wspolne = tekstyWspolne(t[2]), lista = listaArkuszy(t[0], t[1]);
+        return Promise.all(lista.map(function (a) { return tekstWpisu(arch, a.sciezka); })).then(function (tresci) {
+          if (!tresci[0]) throw new XlsxError("W pliku .xlsx nie ma arkusza z danymi.");
+          return lista.map(function (a, i) { return tresci[i] ? { nazwa: a.nazwa, wiersze: wierszeArkusza(tresci[i], wspolne) } : null; }).filter(Boolean);
         });
       });
   }
 
-  /* ------------------------------ archiwum zip: zapis szablonu ------------------------------ */
-  var TABLICA_CRC = (function () {
-    var t = [];
-    for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; }
-    return t;
-  })();
-  function crc32(b) {
-    var c = 0xffffffff;
-    for (var i = 0; i < b.length; i++) c = TABLICA_CRC[(c ^ b[i]) & 0xff] ^ (c >>> 8);
-    return (c ^ 0xffffffff) >>> 0;
-  }
-
-  /* Archiwum bez kompresji: naglowek lokalny + dane, potem katalog centralny i jego koniec */
-  function zip(pliki) {
-    var czesci = [], katalog = [], poz = 0;
-    pliki.forEach(function (p) {
-      var nazwa = new TextEncoder().encode(p.nazwa), dane = new TextEncoder().encode(p.tresc), crc = crc32(dane);
-      var lok = new DataView(new ArrayBuffer(30));
-      [[0, 0x04034b50, 4], [4, 20, 2], [14, crc, 4], [18, dane.length, 4], [22, dane.length, 4], [26, nazwa.length, 2]]
-        .forEach(function (x) { if (x[2] === 4) lok.setUint32(x[0], x[1], true); else lok.setUint16(x[0], x[1], true); });
-      var kat = new DataView(new ArrayBuffer(46));
-      [[0, WPIS_KATALOGU, 4], [4, 20, 2], [6, 20, 2], [16, crc, 4], [20, dane.length, 4], [24, dane.length, 4], [28, nazwa.length, 2], [42, poz, 4]]
-        .forEach(function (x) { if (x[2] === 4) kat.setUint32(x[0], x[1], true); else kat.setUint16(x[0], x[1], true); });
-      czesci.push(new Uint8Array(lok.buffer), nazwa, dane);
-      katalog.push(new Uint8Array(kat.buffer), nazwa);
-      poz += 30 + nazwa.length + dane.length;
+  /* Pierwszy arkusz jako tekst CSV ze srednikiem */
+  function naCsv(bufor) {
+    return arkusze(bufor).then(function (a) {
+      return a[0].wiersze.map(function (w) { return w.map(komorkaCsv).join(";"); }).join("\r\n");
     });
-    var dlKatalogu = katalog.reduce(function (s, c) { return s + c.length; }, 0);
-    var kon = new DataView(new ArrayBuffer(22));
-    kon.setUint32(0, KONIEC_KATALOGU, true); kon.setUint16(8, pliki.length, true); kon.setUint16(10, pliki.length, true);
-    kon.setUint32(12, dlKatalogu, true); kon.setUint32(16, poz, true);
-    var wszystko = czesci.concat(katalog, [new Uint8Array(kon.buffer)]);
-    var wynik = new Uint8Array(wszystko.reduce(function (s, c) { return s + c.length; }, 0)), o = 0;
-    wszystko.forEach(function (c) { wynik.set(c, o); o += c.length; });
-    return wynik;
   }
 
-  function escXml(t) { return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
-
-  var NS = 'xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"';
-  var REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
-
-  function wierszXml(wartosci, nr) {
-    return '<row r="' + nr + '">' + wartosci.map(function (n) { return '<c t="inlineStr" s="1"><is><t>' + escXml(n) + "</t></is></c>"; }).join("") + "</row>";
-  }
-
-  /* Nazwa arkusza w Excelu: do 31 znakow, bez znakow zabronionych \ / ? * [ ] : */
-  function nazwaArkusza(arkusz) {
-    var n = String(arkusz || "Formularz").replace(/[\\\/?*\[\]:]/g, " ").trim().slice(0, 31);
-    return n || "Arkusz";
-  }
-
-  /* wiersze: opcjonalne wiersze danych pod naglowkiem (tablice tekstow), arkusz: nazwa arkusza */
-  function szablon(naglowki, wiersze, arkusz) {
-    var komorki = [naglowki].concat(wiersze || []).map(function (w, i) { return wierszXml(w, i + 1); }).join("");
-    var pliki = [
-      { nazwa: "[Content_Types].xml", tresc: '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
-        '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/>' +
-        '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' +
-        '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' +
-        '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>' },
-      { nazwa: "_rels/.rels", tresc: '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
-        '<Relationship Id="rId1" Type="' + REL + '/officeDocument" Target="xl/workbook.xml"/></Relationships>' },
-      { nazwa: "xl/workbook.xml", tresc: '<?xml version="1.0" encoding="UTF-8"?><workbook ' + NS + ' xmlns:r="' + REL + '"><sheets><sheet name="' + escXml(nazwaArkusza(arkusz)) + '" sheetId="1" r:id="rId1"/></sheets></workbook>' },
-      { nazwa: "xl/_rels/workbook.xml.rels", tresc: '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
-        '<Relationship Id="rId1" Type="' + REL + '/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="' + REL + '/styles" Target="styles.xml"/></Relationships>' },
-      /* Styl 1 = format tekstowy (numFmtId 49): PESEL i NIP zostaja tekstem */
-      { nazwa: "xl/styles.xml", tresc: '<?xml version="1.0" encoding="UTF-8"?><styleSheet ' + NS + '><fonts count="1"><font><sz val="11"/><name val="Calibri"/></font></fonts>' +
-        '<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders>' +
-        '<cellStyleXfs count="1"><xf/></cellStyleXfs><cellXfs count="2"><xf/><xf numFmtId="49" applyNumberFormat="1"/></cellXfs></styleSheet>' },
-      { nazwa: "xl/worksheets/sheet1.xml", tresc: '<?xml version="1.0" encoding="UTF-8"?><worksheet ' + NS + '><cols><col min="1" max="' + naglowki.length +
-        '" width="24" style="1" customWidth="1"/></cols><sheetData>' + komorki + "</sheetData></worksheet>" }
-    ];
-    return zip(pliki);
-  }
-
-  global.XlsxPlik = { naCsv: naCsv, szablon: szablon, XlsxError: XlsxError, kolumna: kolumna };
+  global.XlsxPlik = { naCsv: naCsv, arkusze: arkusze, XlsxError: XlsxError, kolumna: kolumna };
 })(window);

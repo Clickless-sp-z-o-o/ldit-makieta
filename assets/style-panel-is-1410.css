@@ -1,0 +1,21 @@
+/* ============================================================================
+   Panel instytucji po spotkaniu 14.10.2026: zakladki jak w panelu LDIT
+   i czerwony licznik nieprzeczytanych zgloszen od LDIT (jak w menu LDIT, D-315).
+   ============================================================================ */
+
+.panel16[hidden] { display: none !important; }
+.zakladki-panelu { margin: 0 0 16px; }
+.zakladki-panelu a { cursor: pointer; }
+
+/* Czerwona plakietka nieprzeczytanych zgloszen: na zakladce i przy tytule karty Od LDIT */
+.n-nowe {
+  display: inline-block; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; box-sizing: border-box;
+  background: var(--neg-ink); color: #fff; font-size: 0.75rem; font-weight: 700; line-height: 18px; text-align: center;
+}
+.n-nowe[hidden], #linkTerminy16[hidden] { display: none; }
+.card-head .n-nowe { margin-left: 4px; }
+
+@media (max-width: 700px) {
+  .zakladki-panelu { flex-wrap: nowrap; overflow-x: auto; }
+  .zakladki-panelu a { white-space: nowrap; flex: 0 0 auto; }
+}

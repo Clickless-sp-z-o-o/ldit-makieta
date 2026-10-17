@@ -1,7 +1,8 @@
 /* Ekran 21: plik Excel .xlsx w formularzu (decyzja P-67) i pobieranie pustego formularza.
    Formularz rysuje 16-formularz-zgloszenia.js (wspolny z panelem instytucji); ten plik na ekranie
-   Nowy formularz rozszerza jego wczytywanie pliku: .xlsx zamienia na CSV (js/21-xlsx.js) i podaje
-   temu samemu parserowi co CSV, a formularz zapisuje zrodlo "xlsx" z oryginalnym plikiem do podgladu.
+   Nowy formularz rozszerza jego wczytywanie pliku: arkusze .xlsx (assets/xlsx.js) podaje temu samemu
+   parserowi co CSV, a formularz zapisuje zrodlo "xlsx" z oryginalnym plikiem do podgladu.
+   Pusty formularz Excel buduje js/21-szablon-xlsx.js (uklad Pole | Wartosc, D-327).
    Musi byc zaladowany po 16-formularz-zgloszenia.js. Same deklaracje. */
 
 var NAZWA_SZABLONU_XLSX_21 = "szablon-formularza-klienta.xlsx";
@@ -14,9 +15,9 @@ function naBase6421(bajty) {
   return btoa(tekst);
 }
 
-/* Wynik parsera dla tresci CSV z arkusza: { firma, uczestnicy, ostrzezenia } albo { blad } */
+/* Wynik parsera dla arkuszy pliku (uklad poziomy albo pionowy Pole | Wartosc, D-327): { firma, uczestnicy, ostrzezenia } albo { blad } */
 function formularzZXlsx21(bufor) {
-  return XlsxPlik.naCsv(bufor).then(parsujFormularzCsv);
+  return XlsxPlik.arkusze(bufor).then(parsujFormularzArkuszy);
 }
 
 function obsluzXlsx21(plik) {
@@ -57,7 +58,7 @@ function pobierz21(dane, typ, nazwa) {
   URL.revokeObjectURL(adres);
 }
 
-function pobierzSzablonXlsx21() { pobierz21(XlsxPlik.szablon(NAGLOWKI_SZABLONU_CSV), TYP_XLSX_21, NAZWA_SZABLONU_XLSX_21); }
+function pobierzSzablonXlsx21() { pobierz21(szablonFormularzaXlsx21(), TYP_XLSX_21, NAZWA_SZABLONU_XLSX_21); }
 function pobierzSzablonCsv21() { zfPobierzSzablon(); }
 
 /* Opis przy wyborze pliku: szablon w obu formatach, bez odsylania do zapisu jako CSV */

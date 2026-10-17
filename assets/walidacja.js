@@ -32,6 +32,8 @@
     kwota: function (v) { return (typeof v === "number" || /^-?\d+([.,]\d{1,2})?$/.test(String(v))) && Number(String(v).replace(",", ".")) >= 0 || "kwota nie może być ujemna"; },
     kwotaZnak: function (v) { return !isNaN(Number(String(v).replace(",", "."))) || "niepoprawna kwota"; },
     calkowita: function (v) { return /^\d+$/.test(String(v)) || "liczba całkowita, nie mniejsza niż 0"; },
+    /* Zobowiazania: TAK ('tak') albo NIE ('brak'); stare rodzaje sprzed 14.10 nadal poprawne */
+    zadluzenie: function (v) { return ["tak", "brak", "zus", "us", "zus_us", "inne"].indexOf(String(v)) >= 0 || "odpowiedź TAK albo NIE"; },
     procent: function (v) { var n = Number(v); return (!isNaN(n) && n >= 0 && n <= 100) || "procent od 0 do 100"; },
     nip: function (v) {
       var n = cyfry(v);
@@ -53,7 +55,7 @@
   function z(baza, dodatki) { var o = {}, k; for (k in baza) o[k] = baza[k]; for (k in dodatki) o[k] = dodatki[k]; return o; }
 
   var SCHEMATY = {
-    klienci: z(KONTAKTY, { nazwa: ["wymagane", "tekst"], nip: ["nip"], miasto: ["tekst"], adres_siedziby: ["tekst"],
+    klienci: z(KONTAKTY, { nazwa: ["wymagane", "tekst"], nazwa_skrocona: ["tekst"], zadluzenie: ["zadluzenie"], nip: ["nip"], miasto: ["tekst"], adres_siedziby: ["tekst"],
                liczba_zatrudnionych: ["calkowita"], numer_konta: ["tekst"],
                /* Pelny formularz klienta (D-256) */
                telefon_biura: ["telefon"], email_firmy: ["email"], stanowisko_kontaktowej: ["tekst"],
@@ -78,7 +80,7 @@
     zadania: { tytul: ["wymagane", "tekst"], termin: ["data"] },
     notatki_klienta: { tresc: ["wymagane"] },
     notatki_wniosku: { tresc: ["wymagane"] },
-    formularze_oczekujace: { firma: ["wymagane", "tekst"], nip: ["nip"], email: ["email"], telefon: ["telefon"],
+    formularze_oczekujace: { firma: ["wymagane", "tekst"], nazwa_skrocona: ["tekst"], zadluzenie: ["zadluzenie"], nip: ["nip"], email: ["email"], telefon: ["telefon"],
                              kontakt: ["tekst"], miasto: ["tekst"], osob: ["calkowita"], uwagi: ["tekst"],
                              telefon_biura: ["telefon"], email_firmy: ["email"], liczba_zatrudnionych: ["calkowita"],
                              liczba_innych_umow: ["calkowita"], stawka_podatku: ["procent"] },

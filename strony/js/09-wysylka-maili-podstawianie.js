@@ -1,7 +1,9 @@
-/* Wysylka maili: dane adresata i podstawianie placeholderow w tresci szablonu */
+/* Wysylka maili: dane adresata wniosku (adres, klient, termin, nabor). Katalog zmiennych
+   i podstawianie sa w 09-wysylka-maili-zmienne.js (spotkanie 14.10.2026). Tylko deklaracje. */
 
 /* Adres mailowy adresata (D-178): najpierw e-mail osoby kontaktowej z wniosku,
-   a gdy wniosek go nie ma, e-mail klienta. Wniosek i klient sa laczeni po kluczu klient_id. */
+   a gdy wniosek go nie ma, e-mail klienta. Wniosek i klient sa laczeni po kluczu klient_id.
+   Zawsze firma (wnioskodawca): do uczestnikow szkolen nic nie wysylamy (spotkanie 14.10.2026). */
 function klientWniosku(w) {
   return DB.KLIENCI.filter(function (k) { return k.id === w.klient; })[0] || {};
 }
@@ -22,43 +24,8 @@ function naborWniosku(w) {
   return p ? p.nabor : null;
 }
 
-function mapaPlaceholderow(w) {
-  var kl = klientWniosku(w);
-  var inst = DB.INSTYTUCJE.filter(function (i) { return i.id === w.is; })[0] || {};
-  var szk = DB.SZKOLENIA.filter(function (s) { return s.id === w.szkId; })[0] || {};
-  var termin = terminWniosku(w), nabor = naborWniosku(w);
-  return {
-    "{klient.nazwa}": w.klNazwa,
-    "{klient.nip}": w.nip,
-    "{klient.mail}": adresMaila(w),
-    "{klient.adres}": kl.miasto || undefined,
-    "{projekt.nr}": w.id,
-    "{projekt.pup}": w.pupNazwa,
-    "{projekt.szkolenie}": w.szkolenie,
-    "{projekt.osobZakwalifikowanych}": String(w.osobZakw),
-    "{projekt.cenaJednostkowa}": DB.fmtPLN2(szk.cena || 0),
-    "{projekt.cenaCalkowita}": DB.fmtPLN2(w.calkowita),
-    "{projekt.odbiorcaFV}": kl.osoba || "",
-    "{projekt.procentDofinansowania}": DB.fmtPct(w.procent),
-    "{projekt.listaUczestnikow}": w.uczestnicy.filter(function (u) { return u.status === "zakwalifikowany"; })
-                                    .map(function (u) { return u.imie; }).join(", "),
-    "{instytucja.nazwa}": w.isNazwa,
-    "{instytucja.mail}": inst.mail || "",
-    "{instytucja.mailTerminy}": inst.mail || "",
-    "{szkolenie.tryb}": szk.tryb || "",
-    "{szkolenie.godziny}": String(szk.godz || ""),
-    "{szkolenie.dni}": String(szk.dni || ""),
-    "{termin.od}": termin ? DB.fmtDate(termin.od) : undefined,
-    "{termin.do}": termin ? DB.fmtDate(termin.do) : undefined,
-    "{termin.miejsce}": termin ? termin.miejsce : undefined,
-    "{nabor.do}": nabor ? DB.fmtDate(nabor.do) : undefined,
-    "{uczestnik.mail}": adresMaila(w),
-    "{opiekun.imie}": w.opiekun
-  };
-}
-
-function podstaw(txt, w) {
-  if (!w) return txt;
-  var mapa = mapaPlaceholderow(w);
-  return txt.replace(/\{[a-zA-Z.]+\}/g, function (m) { return mapa[m] != null ? String(mapa[m]) : m; });
+/* Adres "Do" maila: wzorzec szablonu ({klient.mail}, {instytucja.mail} albo stały adres) po podstawieniu */
+function adresDoMaila09(wzor, w) {
+  var adres = podstaw(wzor, w);
+  return brakujaceZmienne09(adres).length ? "" : adres;
 }
