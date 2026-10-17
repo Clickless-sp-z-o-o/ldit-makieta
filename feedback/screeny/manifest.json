@@ -1,0 +1,305 @@
+{
+  "wygenerowano": "2026-10-17",
+  "ekrany": {
+    "dash": {
+      "plik": "screeny/dash.jpg",
+      "adres": "strony/01-dashboard.html",
+      "mobile": "screeny/mobile/dash.jpg"
+    },
+    "statystyki": {
+      "plik": "screeny/statystyki.jpg",
+      "adres": "strony/14-statystyki.html",
+      "mobile": "screeny/mobile/statystyki.jpg"
+    },
+    "wnioski": {
+      "plik": "screeny/wnioski.jpg",
+      "adres": "strony/02-zestawienia.html",
+      "mobile": "screeny/mobile/wnioski.jpg"
+    },
+    "wnioski-historia": {
+      "plik": "screeny/wnioski-historia.jpg",
+      "adres": "strony/02-zestawienia.html",
+      "mobile": "screeny/mobile/wnioski-historia.jpg"
+    },
+    "karta-wniosku": {
+      "plik": "screeny/karta-wniosku.jpg",
+      "adres": "strony/03-wniosek.html?id={WNIOSEK}",
+      "mobile": "screeny/mobile/karta-wniosku.jpg"
+    },
+    "wniosek-usuniecie": {
+      "plik": "screeny/wniosek-usuniecie.jpg",
+      "adres": "strony/03-wniosek.html?id=PR-26-0002",
+      "mobile": "screeny/mobile/wniosek-usuniecie.jpg"
+    },
+    "baza": {
+      "plik": "screeny/baza.jpg",
+      "adres": "strony/04-baza-klientow.html",
+      "mobile": "screeny/mobile/baza.jpg"
+    },
+    "karta-klienta": {
+      "plik": "screeny/karta-klienta.jpg",
+      "adres": "strony/19-klient.html?id={KLIENT}",
+      "mobile": "screeny/mobile/karta-klienta.jpg"
+    },
+    "nabory": {
+      "plik": "screeny/nabory.jpg",
+      "adres": "strony/05-nabory.html",
+      "mobile": "screeny/mobile/nabory.jpg"
+    },
+    "nabory-klienci": {
+      "plik": "screeny/nabory-klienci.jpg",
+      "adres": "strony/05-nabory.html",
+      "mobile": "screeny/mobile/nabory-klienci.jpg"
+    },
+    "zadania": {
+      "plik": "screeny/zadania.jpg",
+      "adres": "strony/18-zadania.html",
+      "mobile": "screeny/mobile/zadania.jpg"
+    },
+    "zadania-nowe": {
+      "plik": "screeny/zadania-nowe.jpg",
+      "adres": "strony/18-zadania.html",
+      "mobile": "screeny/mobile/zadania-nowe.jpg"
+    },
+    "nowy-formularz": {
+      "plik": "screeny/nowy-formularz.jpg",
+      "adres": "strony/21-nowy-formularz.html",
+      "mobile": "screeny/mobile/nowy-formularz.jpg"
+    },
+    "nowy-projekt": {
+      "plik": "screeny/nowy-projekt.jpg",
+      "adres": "strony/21-nowy-formularz.html",
+      "mobile": "screeny/mobile/nowy-projekt.jpg"
+    },
+    "akcept-formularze": {
+      "plik": "screeny/akcept-formularze.jpg",
+      "adres": "strony/20-akceptacje.html",
+      "mobile": "screeny/mobile/akcept-formularze.jpg"
+    },
+    "akcept-zmiany": {
+      "plik": "screeny/akcept-zmiany.jpg",
+      "adres": "strony/20-akceptacje.html",
+      "mobile": "screeny/mobile/akcept-zmiany.jpg"
+    },
+    "inst-przeglad": {
+      "plik": "screeny/inst-przeglad.jpg",
+      "adres": "strony/06-instytucje.html",
+      "mobile": "screeny/mobile/inst-przeglad.jpg"
+    },
+    "inst-dane": {
+      "plik": "screeny/inst-dane.jpg",
+      "adres": "strony/06-instytucje.html?id=IS-01",
+      "mobile": "screeny/mobile/inst-dane.jpg"
+    },
+    "inst-programy": {
+      "plik": "screeny/inst-programy.jpg",
+      "adres": "strony/06-instytucje.html?id=IS-01",
+      "mobile": "screeny/mobile/inst-programy.jpg"
+    },
+    "inst-karta-planu": {
+      "plik": "screeny/inst-karta-planu.jpg",
+      "adres": "strony/06-instytucje.html?id=IS-01",
+      "mobile": "screeny/mobile/inst-karta-planu.jpg"
+    },
+    "inst-osoby": {
+      "plik": "screeny/inst-osoby.jpg",
+      "adres": "strony/06-instytucje.html?id=IS-01",
+      "mobile": "screeny/mobile/inst-osoby.jpg"
+    },
+    "inst-koresp": {
+      "plik": "screeny/inst-koresp.jpg",
+      "adres": "strony/06-instytucje.html?id=IS-01",
+      "mobile": "screeny/mobile/inst-koresp.jpg"
+    },
+    "konf-warunki": {
+      "plik": "screeny/konf-warunki.jpg",
+      "adres": "strony/06-instytucje.html?id=IS-01",
+      "mobile": "screeny/mobile/konf-warunki.jpg"
+    },
+    "konf-certyfikat": {
+      "plik": "screeny/konf-certyfikat.jpg",
+      "adres": "strony/06-instytucje.html?id=IS-01",
+      "mobile": "screeny/mobile/konf-certyfikat.jpg"
+    },
+    "konf-faktura": {
+      "plik": "screeny/konf-faktura.jpg",
+      "adres": "strony/06-instytucje.html?id=IS-01",
+      "mobile": "screeny/mobile/konf-faktura.jpg"
+    },
+    "konf-formularz": {
+      "plik": "screeny/konf-formularz.jpg",
+      "adres": "strony/06-instytucje.html?id=IS-01",
+      "mobile": "screeny/mobile/konf-formularz.jpg"
+    },
+    "kalkulator": {
+      "plik": "screeny/kalkulator.jpg",
+      "adres": "strony/15-konfigurator-prowizji.html",
+      "mobile": "screeny/mobile/kalkulator.jpg"
+    },
+    "maile-szablony": {
+      "plik": "screeny/maile-szablony.jpg",
+      "adres": "strony/09-wysylka-maili.html",
+      "mobile": "screeny/mobile/maile-szablony.jpg"
+    },
+    "maile-edytor": {
+      "plik": "screeny/maile-edytor.jpg",
+      "adres": "strony/09-wysylka-maili.html",
+      "mobile": "screeny/mobile/maile-edytor.jpg"
+    },
+    "maile-wysylka": {
+      "plik": "screeny/maile-wysylka.jpg",
+      "adres": "strony/09-wysylka-maili.html",
+      "mobile": "screeny/mobile/maile-wysylka.jpg"
+    },
+    "maile-seria": {
+      "plik": "screeny/maile-seria.jpg",
+      "adres": "strony/09-wysylka-maili.html",
+      "mobile": "screeny/mobile/maile-seria.jpg"
+    },
+    "maile-automaty": {
+      "plik": "screeny/maile-automaty.jpg",
+      "adres": "strony/09-wysylka-maili.html",
+      "mobile": "screeny/mobile/maile-automaty.jpg"
+    },
+    "admin-prowizje": {
+      "plik": "screeny/admin-prowizje.jpg",
+      "adres": "strony/08-administracja.html",
+      "mobile": "screeny/mobile/admin-prowizje.jpg"
+    },
+    "admin-faktury": {
+      "plik": "screeny/admin-faktury.jpg",
+      "adres": "strony/08-administracja.html",
+      "mobile": "screeny/mobile/admin-faktury.jpg"
+    },
+    "admin-statystyki": {
+      "plik": "screeny/admin-statystyki.jpg",
+      "adres": "strony/08-administracja.html",
+      "mobile": "screeny/mobile/admin-statystyki.jpg"
+    },
+    "admin-wewnetrzne": {
+      "plik": "screeny/admin-wewnetrzne.jpg",
+      "adres": "strony/08-administracja.html",
+      "mobile": "screeny/mobile/admin-wewnetrzne.jpg"
+    },
+    "zgloszenia": {
+      "plik": "screeny/zgloszenia.jpg",
+      "adres": "strony/10-zgloszenia.html",
+      "mobile": "screeny/mobile/zgloszenia.jpg"
+    },
+    "konta-uzytkownicy": {
+      "plik": "screeny/konta-uzytkownicy.jpg",
+      "adres": "strony/11-konta-uprawnienia.html",
+      "mobile": "screeny/mobile/konta-uzytkownicy.jpg"
+    },
+    "konta-role": {
+      "plik": "screeny/konta-role.jpg",
+      "adres": "strony/11-konta-uprawnienia.html",
+      "mobile": "screeny/mobile/konta-role.jpg"
+    },
+    "konta-macierz": {
+      "plik": "screeny/konta-macierz.jpg",
+      "adres": "strony/11-konta-uprawnienia.html",
+      "mobile": "screeny/mobile/konta-macierz.jpg"
+    },
+    "konta-przydzial": {
+      "plik": "screeny/konta-przydzial.jpg",
+      "adres": "strony/11-konta-uprawnienia.html",
+      "mobile": "screeny/mobile/konta-przydzial.jpg"
+    },
+    "konta-podglad": {
+      "plik": "screeny/konta-podglad.jpg",
+      "adres": "strony/11-konta-uprawnienia.html",
+      "mobile": "screeny/mobile/konta-podglad.jpg"
+    },
+    "konta-slowniki": {
+      "plik": "screeny/konta-slowniki.jpg",
+      "adres": "strony/11-konta-uprawnienia.html",
+      "mobile": "screeny/mobile/konta-slowniki.jpg"
+    },
+    "rejestr-zmiany": {
+      "plik": "screeny/rejestr-zmiany.jpg",
+      "adres": "strony/12-rejestr-aktywnosci.html",
+      "mobile": "screeny/mobile/rejestr-zmiany.jpg"
+    },
+    "rejestr-zdarzenia": {
+      "plik": "screeny/rejestr-zdarzenia.jpg",
+      "adres": "strony/12-rejestr-aktywnosci.html",
+      "mobile": "screeny/mobile/rejestr-zdarzenia.jpg"
+    },
+    "rejestr-logowania": {
+      "plik": "screeny/rejestr-logowania.jpg",
+      "adres": "strony/12-rejestr-aktywnosci.html",
+      "mobile": "screeny/mobile/rejestr-logowania.jpg"
+    },
+    "rejestr-sesje": {
+      "plik": "screeny/rejestr-sesje.jpg",
+      "adres": "strony/12-rejestr-aktywnosci.html",
+      "mobile": "screeny/mobile/rejestr-sesje.jpg"
+    },
+    "terminy-miesiac": {
+      "plik": "screeny/terminy-miesiac.jpg",
+      "adres": "strony/13-terminy.html",
+      "mobile": "screeny/mobile/terminy-miesiac.jpg"
+    },
+    "terminy-tydzien": {
+      "plik": "screeny/terminy-tydzien.jpg",
+      "adres": "strony/13-terminy.html",
+      "mobile": "screeny/mobile/terminy-tydzien.jpg"
+    },
+    "terminy-lista": {
+      "plik": "screeny/terminy-lista.jpg",
+      "adres": "strony/13-terminy.html",
+      "mobile": "screeny/mobile/terminy-lista.jpg"
+    },
+    "is-dashboard": {
+      "plik": "screeny/is-dashboard.jpg",
+      "adres": "strony/01-dashboard.html",
+      "mobile": "screeny/mobile/is-dashboard.jpg"
+    },
+    "is-panel": {
+      "plik": "screeny/is-panel.jpg",
+      "adres": "strony/16-panel-is.html",
+      "mobile": "screeny/mobile/is-panel.jpg"
+    },
+    "is-zlozone": {
+      "plik": "screeny/is-zlozone.jpg",
+      "adres": "strony/16-panel-is.html",
+      "mobile": "screeny/mobile/is-zlozone.jpg"
+    },
+    "is-uczestnicy": {
+      "plik": "screeny/is-uczestnicy.jpg",
+      "adres": "strony/16-panel-is.html",
+      "mobile": "screeny/mobile/is-uczestnicy.jpg"
+    },
+    "is-terminy": {
+      "plik": "screeny/is-terminy.jpg",
+      "adres": "strony/16-panel-is.html",
+      "mobile": "screeny/mobile/is-terminy.jpg"
+    },
+    "is-konto": {
+      "plik": "screeny/is-konto.jpg",
+      "adres": "strony/16-panel-is.html",
+      "mobile": "screeny/mobile/is-konto.jpg"
+    },
+    "is-katalog": {
+      "plik": "screeny/is-katalog.jpg",
+      "adres": "strony/16-panel-is.html",
+      "mobile": "screeny/mobile/is-katalog.jpg"
+    },
+    "is-zgloszenia": {
+      "plik": "screeny/is-zgloszenia.jpg",
+      "adres": "strony/16-panel-is.html",
+      "mobile": "screeny/mobile/is-zgloszenia.jpg"
+    },
+    "logowanie": {
+      "plik": "screeny/logowanie.jpg",
+      "adres": "login.html",
+      "mobile": "screeny/mobile/logowanie.jpg"
+    },
+    "menu": {
+      "plik": "screeny/menu.jpg",
+      "adres": "index.html",
+      "mobile": "screeny/mobile/menu.jpg"
+    }
+  }
+}

@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LDIT: kto co widzi</title>
+<style>
+:root { --granat: #222344; --granat-2: #2f3160; --zloto: #cdad7d; --zloto-tlo: #f6f0e6; --tlo: #f4f5f9; --karta: #fff;
+  --tekst: #1f2133; --szary: #6b6f87; --linia: #e3e5ee; --tak: #18a558; --nie: #e84040; --czesciowo: #b7791f; }
+* { box-sizing: border-box; }
+body { margin: 0; font: 14px/1.45 Inter, "Segoe UI", system-ui, sans-serif; background: var(--tlo); color: var(--tekst); }
+button, input, textarea { font: inherit; color: inherit; }
+header { position: sticky; top: 0; z-index: 10; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; padding: 12px 24px; background: var(--granat); color: #fff; }
+header h1 { margin: 0; font-size: 18px; } header h1 b { color: var(--zloto); }
+header p { margin: 0; flex: 1; min-width: 260px; color: #c9cbe0; font-size: 12px; }
+.btn { border: 1px solid var(--linia); background: var(--karta); color: var(--tekst); border-radius: 8px; padding: 7px 12px; cursor: pointer; }
+.btn:hover { border-color: var(--granat); }
+.btn.glowny { background: var(--zloto); border-color: var(--zloto); color: var(--granat); font-weight: 600; }
+.zapisano { font-size: 12px; color: var(--zloto); min-width: 140px; }
+main { display: grid; grid-template-columns: 340px 1fr; gap: 18px; padding: 18px 24px; max-width: 1500px; }
+.karta { background: var(--karta); border: 1px solid var(--linia); border-radius: 12px; padding: 14px 16px; }
+h2 { font-size: 15px; margin: 0 0 10px; }
+.role { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.role button { border: 1px solid var(--linia); background: #fff; border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+.role button.on { background: var(--granat); border-color: var(--granat); color: #fff; }
+.role button .zm { color: var(--zloto); font-weight: 700; }
+.opis { color: var(--szary); font-size: 13px; margin: 0 0 8px; }
+.zakres { background: var(--zloto-tlo); border-radius: 8px; padding: 8px 10px; font-size: 13px; margin-bottom: 10px; }
+label.f { display: flex; gap: 8px; align-items: flex-start; padding: 5px 0; border-top: 1px solid var(--linia); }
+label.f code { color: var(--szary); font-size: 11px; display: block; }
+label.f.zmieniona span { background: var(--zloto-tlo); }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: 7px 8px; border-top: 1px solid var(--linia); vertical-align: top; }
+th { font-size: 12px; color: var(--szary); font-weight: 600; }
+.tak { color: var(--tak); font-weight: 600; } .nie { color: var(--nie); font-weight: 600; } .czesciowo { color: var(--czesciowo); font-weight: 600; }
+.uwaga { font-size: 12px; color: var(--szary); }
+.siatka { display: grid; gap: 18px; }
+td textarea { width: 100%; min-width: 180px; min-height: 34px; border: 1px solid var(--linia); border-radius: 6px; padding: 4px 6px; resize: vertical; font-size: 12px; }
+td textarea:focus, .ogolna:focus { outline: 2px solid var(--zloto); }
+.ogolna { width: 100%; min-height: 80px; border: 1px solid var(--linia); border-radius: 8px; padding: 8px; }
+.macierz td, .macierz th { text-align: center; } .macierz td:first-child, .macierz th:first-child { text-align: left; }
+.pasek-roli { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+@media (max-width: 960px) { main { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <h1><b>LDIT</b> kto co widzi</h1>
+  <p id="naglowekOpis"></p>
+  <span class="zapisano" id="zapisano" aria-live="polite"></span>
+  <button class="btn" id="wczytaj" type="button">Wczytaj JSON</button>
+  <button class="btn glowny" id="eksport" type="button">Eksportuj JSON</button>
+  <input type="file" id="plik" accept="application/json,.json" hidden>
+</header>
+<main>
+  <section class="karta">
+    <h2>Rola</h2><div class="role" id="role"></div>
+    <p class="opis" id="opisRoli"></p><div class="zakres" id="zakres"></div>
+    <h2>Funkcje roli</h2>
+    <p class="uwaga">Zaznacz lub odznacz, żeby zobaczyć skutek. Zmiany zapisują się w tej przeglądarce i trafiają do eksportu JSON jako propozycja zmiany roli (aplikacji nie zmieniają).</p>
+    <div id="funkcje"></div>
+    <div class="pasek-roli"><button class="btn" type="button" id="przywrocRole">Przywróć domyślne tej roli</button><button class="btn" type="button" id="przywrocWszystko">Wyczyść wszystkie zmiany</button></div>
+  </section>
+  <div class="siatka">
+    <section class="karta"><h2>Ekrany aplikacji (menu panelu)</h2>
+      <table><thead><tr><th>Ekran</th><th>Widzi</th><th>Uwagi i decyzje</th></tr></thead><tbody id="ekranyPanelu"></tbody></table></section>
+    <section class="karta"><h2>Ekrany panelu administracyjnego (/backend)</h2>
+      <table><thead><tr><th>Ekran</th><th>Podgląd</th><th>Dodawanie i edycja</th><th>Uwagi i decyzje</th></tr></thead><tbody id="ekranyBackend"></tbody></table>
+      <p class="uwaga">Panel administracyjny wymaga funkcji „Panel administracyjny”; bez niej wejście przekierowuje do aplikacji (wyjątki: profil oraz formularze klienta, szkolenia i zgłoszenia, do których prowadzi aplikacja).</p></section>
+    <section class="karta"><h2>Pola i dane chronione</h2>
+      <table><thead><tr><th>Pole lub dane</th><th>Widzi</th><th>Gdy brak uprawnienia</th><th>Uwagi i decyzje</th></tr></thead><tbody id="pola"></tbody></table>
+      <p class="uwaga">Ukrywanie egzekwuje serwer (lista, eksport, zapis, rejestr), nie tylko ekran.</p></section>
+    <section class="karta"><h2>Macierz ról (z Twoimi zmianami)</h2><table class="macierz"><thead id="macierzGlowa"></thead><tbody id="macierz"></tbody></table></section>
+    <section class="karta"><h2>Uwagi ogólne</h2><textarea class="ogolna" id="uwagaOgolna" placeholder="Decyzje i pytania do zespołu, np. czy handlowiec ma widzieć kwoty..."></textarea></section>
+  </div>
+</main>
+<script>
+"use strict";
+const D = {"wygenerowano":"2026-10-17","funkcje":[{"id":"ldit.view","nazwa":"Podgląd modułów LDIT"},{"id":"ldit.administracja.panel","nazwa":"Panel administracyjny (konta, role, ustawienia)"},{"id":"ldit.instytucje.manage","nazwa":"Zarządzanie instytucjami szkoleniowymi"},{"id":"ldit.klienci.manage","nazwa":"Zarządzanie bazą klientów"},{"id":"ldit.wnioski.manage","nazwa":"Zarządzanie wnioskami"},{"id":"ldit.wnioski.usuwanie","nazwa":"Usuwanie wniosków (akceptacja próśb o usunięcie)"},{"id":"ldit.szkolenia.manage","nazwa":"Katalog szkoleń i cenniki instytucji"},{"id":"ldit.prowizje.konfiguracja","nazwa":"Warunki prowizyjne instytucji"},{"id":"ldit.terminy.manage","nazwa":"Terminy szkoleń"},{"id":"ldit.klienci.pesel","nazwa":"PESEL uczestników"},{"id":"ldit.import","nazwa":"Import danych z Excela (administrator)"},{"id":"ldit.urzedy.manage","nazwa":"Słownik urzędów pracy (administrator)"},{"id":"ldit.progi.manage","nazwa":"Progi dofinansowania KFS (administrator)"},{"id":"ldit.lata.manage","nazwa":"Lata zestawień i podsumowania historyczne (administrator)"},{"id":"ldit.nabory.manage","nazwa":"Nabory z urzędów pracy (administrator)"},{"id":"ldit.faktury.manage","nazwa":"Faktury i ich powiązania z wnioskami (administrator)"},{"id":"ldit.zgloszenia.manage","nazwa":"Zgłoszenia (incydenty) i czarna lista"},{"id":"ldit.formularze.manage","nazwa":"Formularze zgłoszeniowe klientów"},{"id":"ldit.finanse.kwoty_wniosku","nazwa":"Kwoty wniosku: koszt, przyznano, wkład"},{"id":"ldit.zakres.wszystkie_instytucje","nazwa":"Praca na wszystkich instytucjach (zespół LDIT)"},{"id":"ldit.zakres.cala_instytucja","nazwa":"Praca na wszystkich klientach własnej instytucji (bez niej: tylko przypisani)"},{"id":"ldit.notatki.manage","nazwa":"Notatki do klientów i wniosków"},{"id":"ldit.zadania.manage","nazwa":"Zadania pracowników"},{"id":"ldit.formularze.akceptacja","nazwa":"Akceptacja formularzy zgłoszeniowych"}],"role":[{"id":"admin","nazwa":"Administrator LDIT","opis":"Pełny dostęp (ldit.*): wszystkie instytucje, stawki prowizji, panel administracyjny, import i słowniki.","funkcje":["ldit.view","ldit.administracja.panel","ldit.instytucje.manage","ldit.klienci.manage","ldit.wnioski.manage","ldit.wnioski.usuwanie","ldit.szkolenia.manage","ldit.prowizje.konfiguracja","ldit.terminy.manage","ldit.klienci.pesel","ldit.import","ldit.urzedy.manage","ldit.progi.manage","ldit.lata.manage","ldit.nabory.manage","ldit.faktury.manage","ldit.zgloszenia.manage","ldit.formularze.manage","ldit.finanse.kwoty_wniosku","ldit.zakres.wszystkie_instytucje","ldit.zakres.cala_instytucja","ldit.notatki.manage","ldit.zadania.manage","ldit.formularze.akceptacja"]},{"id":"pracownik","nazwa":"Pracownik LDIT","opis":"Zespół LDIT: wszystkie instytucje, bez stawek prowizji, panelu administracyjnego, importu i usuwania wniosków.","funkcje":["ldit.view","ldit.klienci.manage","ldit.wnioski.manage","ldit.zgloszenia.manage","ldit.formularze.manage","ldit.finanse.kwoty_wniosku","ldit.zakres.wszystkie_instytucje","ldit.notatki.manage","ldit.zadania.manage","ldit.szkolenia.manage","ldit.terminy.manage","ldit.klienci.pesel"]},{"id":"admin-is","nazwa":"Administrator IS","opis":"Konto instytucji: cała własna instytucja, z kwotami wniosków.","funkcje":["ldit.view","ldit.klienci.manage","ldit.wnioski.manage","ldit.formularze.manage","ldit.terminy.manage","ldit.klienci.pesel","ldit.finanse.kwoty_wniosku","ldit.zakres.cala_instytucja"]},{"id":"pracownik-is","nazwa":"Pracownik IS (handlowiec)","opis":"Konto instytucji: tylko klienci przypisani do konta (D-210), bez kwot.","funkcje":["ldit.view","ldit.klienci.manage","ldit.wnioski.manage","ldit.formularze.manage","ldit.terminy.manage","ldit.klienci.pesel"]}],"ekranyPanelu":[{"id":"dash","nazwa":"Dashboard","adres":"/panel/dashboard","funkcja":"ldit.view","tylkoInstytucja":false},{"id":"dofin","nazwa":"Dofinansowania","adres":"panel","funkcja":"ldit.view","tylkoInstytucja":false},{"id":"baza","nazwa":"Baza danych","adres":"panel","funkcja":"ldit.view","tylkoInstytucja":false},{"id":"nabory","nazwa":"Nabory","adres":"/panel/nabory","funkcja":"ldit.view","tylkoInstytucja":false},{"id":"zadania","nazwa":"Zadania i powiadomienia","adres":"/panel/zadania","funkcja":"ldit.zadania.manage","tylkoInstytucja":false},{"id":"formularz","nazwa":"Nowy formularz","adres":"/panel/formularz","funkcja":"ldit.formularze.manage","tylkoInstytucja":false},{"id":"akcept","nazwa":"Do akceptacji","adres":"/panel/akceptacje","funkcja":"ldit.formularze.akceptacja","tylkoInstytucja":false},{"id":"inst","nazwa":"Instytucje szkoleniowe","adres":"/panel/instytucje","funkcja":"ldit.zakres.wszystkie_instytucje","tylkoInstytucja":false},{"id":"katalog","nazwa":"Katalog szkoleń","adres":"/backend/ldit/szkolenia","funkcja":"ldit.view","tylkoInstytucja":false},{"id":"admin","nazwa":"Administracja","adres":"/panel/administracja","funkcja":"ldit.prowizje.konfiguracja","tylkoInstytucja":false},{"id":"zglo","nazwa":"Zgłoszenia","adres":"/panel/zgloszenia","funkcja":"ldit.zgloszenia.manage","tylkoInstytucja":false},{"id":"import","nazwa":"Import danych","adres":"/panel/import","funkcja":"ldit.import","tylkoInstytucja":false},{"id":"ustaw","nazwa":"Ustawienia","adres":"/backend/users","funkcja":"ldit.administracja.panel","tylkoInstytucja":false},{"id":"panelIS","nazwa":"Moja instytucja","adres":"panel","funkcja":"ldit.view","tylkoInstytucja":true},{"id":"terminy","nazwa":"Terminy szkoleń","adres":"/panel/terminy","funkcja":"ldit.view","tylkoInstytucja":false}],"ekranyBackend":[{"klucz":"instytucje","nazwa":"Instytucje szkoleniowe","kolejnosc":30,"podglad":["ldit.view"],"edycja":["ldit.instytucje.manage"],"wMenu":true,"bezPanelu":false},{"klucz":"klienci","nazwa":"Baza klientów","kolejnosc":31,"podglad":["ldit.view"],"edycja":["ldit.klienci.manage"],"wMenu":true,"bezPanelu":false},{"klucz":"wnioski","nazwa":"Wnioski i zestawienia","kolejnosc":32,"podglad":["ldit.view"],"edycja":["ldit.wnioski.manage"],"wMenu":true,"bezPanelu":false},{"klucz":"zadania","nazwa":"Zadania","kolejnosc":33,"podglad":["ldit.zadania.manage"],"edycja":["ldit.zadania.manage"],"wMenu":true,"bezPanelu":false},{"klucz":"zgloszenia","nazwa":"Zgłoszenia","kolejnosc":34,"podglad":["ldit.zgloszenia.manage"],"edycja":["ldit.zgloszenia.manage"],"wMenu":true,"bezPanelu":false},{"klucz":"formularze","nazwa":"Formularze zgłoszeniowe","kolejnosc":35,"podglad":["ldit.formularze.manage"],"edycja":["ldit.formularze.manage"],"wMenu":true,"bezPanelu":false},{"klucz":"szkolenia","nazwa":"Katalog szkoleń","kolejnosc":36,"podglad":["ldit.view"],"edycja":["ldit.szkolenia.manage"],"wMenu":true,"bezPanelu":true},{"klucz":"warunki-prowizji","nazwa":"Warunki prowizyjne","kolejnosc":37,"podglad":["ldit.prowizje.konfiguracja"],"edycja":["ldit.prowizje.konfiguracja"],"wMenu":true,"bezPanelu":false},{"klucz":"prowizje","nazwa":"Prowizje","kolejnosc":38,"podglad":["ldit.prowizje.konfiguracja"],"edycja":null,"wMenu":true,"bezPanelu":false},{"klucz":"terminy","nazwa":"Terminy szkoleń","kolejnosc":39,"podglad":["ldit.view"],"edycja":["ldit.terminy.manage"],"wMenu":true,"bezPanelu":false},{"klucz":"prowizje-pracownikow","nazwa":"Prowizje pracowników","kolejnosc":40,"podglad":["ldit.prowizje.konfiguracja"],"edycja":null,"wMenu":true,"bezPanelu":false},{"klucz":"urzedy","nazwa":"Urzędy pracy","kolejnosc":41,"podglad":["ldit.urzedy.manage"],"edycja":["ldit.urzedy.manage"],"wMenu":true,"bezPanelu":false},{"klucz":"nabory","nazwa":"Nabory","kolejnosc":42,"podglad":["ldit.nabory.manage"],"edycja":["ldit.nabory.manage"],"wMenu":true,"bezPanelu":false},{"klucz":"progi","nazwa":"Progi dofinansowania","kolejnosc":43,"podglad":["ldit.progi.manage"],"edycja":["ldit.progi.manage"],"wMenu":true,"bezPanelu":false},{"klucz":"faktury","nazwa":"Faktury","kolejnosc":44,"podglad":["ldit.faktury.manage"],"edycja":["ldit.faktury.manage"],"wMenu":true,"bezPanelu":false},{"klucz":"lata","nazwa":"Lata zestawień","kolejnosc":44,"podglad":["ldit.lata.manage"],"edycja":["ldit.lata.manage"],"wMenu":true,"bezPanelu":false},{"klucz":"warunki-pracownikow","nazwa":"Warunki pracowników","kolejnosc":999,"podglad":["ldit.prowizje.konfiguracja"],"edycja":["ldit.prowizje.konfiguracja"],"wMenu":false,"bezPanelu":false}],"pola":[{"klucz":"zakres","funkcja":"ldit.zakres.wszystkie_instytucje","nazwa":"Dane wszystkich instytucji","gdyBrak":"Tylko własna instytucja: każda lista, eksport i zapis zawężone do organizacji konta."},{"klucz":"handlowiec","funkcja":"ldit.zakres.cala_instytucja","nazwa":"Klienci i wnioski całej instytucji (nie tylko przypisani)","gdyBrak":"Handlowiec: tylko klienci przypisani do konta oraz ich wnioski, formularze, osoby, notatki i zadania (D-210, D-354)."},{"klucz":"kwoty","funkcja":"ldit.finanse.kwoty_wniosku","nazwa":"Kwoty wniosku: koszt, przyznano, wkład, ceny uczestników, sumy, kwoty w eksportach i podsumowaniach","gdyBrak":"Kwoty puste na liście, w eksporcie i na pulpicie; zapis kwot pomijany; sortowanie po kwotach zablokowane."},{"klucz":"pesel","funkcja":"ldit.klienci.pesel","nazwa":"PESEL uczestników (szyfrowany, D-336) i wiek liczony z PESEL","gdyBrak":"PESEL ukryty, bez wieku; z funkcją na liście widać go zakrytego (02******123), pełny tylko przy edycji jednej osoby. Nie trafia do eksportów."},{"klucz":"zgloszenia","funkcja":"ldit.zgloszenia.manage","nazwa":"Czarna lista klienta i zgłoszenia (incydenty)","gdyBrak":"Znacznik czarnej listy ukryty, zmiana pomijana; ekran Zgłoszenia niedostępny."},{"klucz":"osoby-ldit","funkcja":"ldit.zakres.wszystkie_instytucje","nazwa":"Osoby LDIT: Przygotował, opiekunowie wniosku i instytucji, wpisy ręczne przebiegu","gdyBrak":"Pola ukryte i pomijane przy zapisie (instytucja nie zna pracowników LDIT, D-248)."},{"klucz":"faktura-wniosku","funkcja":"ldit.zakres.wszystkie_instytucje","nazwa":"Data faktury, dopłata na fakturze KFS, znacznik certyfikatów","gdyBrak":"Pola ukryte, zmiany pomijane."},{"klucz":"faktury","funkcja":"ldit.faktury.manage","nazwa":"Faktury (numer KSeF, kwoty) i powiązania z wnioskami, import faktur","gdyBrak":"Lista faktur niedostępna; na liście wniosków tylko znacznik F."},{"klucz":"usuwanie","funkcja":"ldit.wnioski.usuwanie","nazwa":"Usuwanie wniosków i decyzja o prośbie o usunięcie (D-346)","gdyBrak":"Pracownik LDIT może tylko poprosić o usunięcie z powodem; instytucja nie widzi przycisku."},{"klucz":"notatki","funkcja":"ldit.notatki.manage","nazwa":"Notatki do klientów i wniosków","gdyBrak":"Panel notatek ukryty."},{"klucz":"zadania","funkcja":"ldit.zadania.manage","nazwa":"Zadania (plan dnia), panel zadań na wniosku, przypisanie zadania osobie z zespołu","gdyBrak":"Ekran i panel zadań niedostępne."},{"klucz":"prowizje","funkcja":"ldit.prowizje.konfiguracja","nazwa":"Stawki i nadpisanie prowizji, prowizje instytucji i pracowników, zamykanie okresów (D-07)","gdyBrak":"Ekrany prowizji niedostępne; stawek i nadpisań nie widać nigdzie."},{"klucz":"akceptacja","funkcja":"ldit.formularze.akceptacja","nazwa":"Akceptacja, odrzucenie i zwrot formularzy oraz zmian danych od instytucji","gdyBrak":"Decyzje tylko jako opiekun instytucji (D-330); bez tego wyłącznie wycofanie i ponowne wysłanie."},{"klucz":"import","funkcja":"ldit.import","nazwa":"Import danych z Excela (CSV) dla wszystkich tabel","gdyBrak":"Ekran Import danych niedostępny."},{"klucz":"panel","funkcja":"ldit.administracja.panel","nazwa":"Panel administracyjny: konta, role, ustawienia i słowniki","gdyBrak":"Wejście na /backend przekierowuje do aplikacji (poza profilem i formularzami klienta, szkolenia, zgłoszenia)."},{"klucz":"urzedy","funkcja":"ldit.urzedy.manage","nazwa":"Zmiana słownika urzędów pracy","gdyBrak":"Słownik tylko do odczytu."},{"klucz":"nabory","funkcja":"ldit.nabory.manage","nazwa":"Zmiana naborów i wczytywanie plików naborów","gdyBrak":"Nabory tylko do odczytu."},{"klucz":"progi","funkcja":"ldit.progi.manage","nazwa":"Zmiana progów dofinansowania","gdyBrak":"Progi tylko do odczytu."},{"klucz":"lata","funkcja":"ldit.lata.manage","nazwa":"Lata zestawień i podsumowania historyczne","gdyBrak":"Słownik lat tylko do odczytu."}]};
+const KLUCZ = "ldit-kto-co-widzi";
+const WSZYSTKIE = "ldit.zakres.wszystkie_instytucje", CALA = "ldit.zakres.cala_instytucja", PANEL = "ldit.administracja.panel";
+const el = (id) => document.getElementById(id);
+const esc = (t) => String(t).replace(/[&<>"']/g, (z) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[z]));
+const znak = (ok) => ok ? '<span class="tak">tak</span>' : '<span class="nie">nie</span>';
+
+function pustyStan() { return { rola: D.role[0].id, funkcjeRol: {}, uwagi: {}, uwagaOgolna: "" }; }
+let stan = (() => { try { return Object.assign(pustyStan(), JSON.parse(localStorage.getItem(KLUCZ) || "{}")); } catch (e) { return pustyStan(); } })();
+if (!D.role.some((r) => r.id === stan.rola)) stan.rola = D.role[0].id;
+
+const domyslne = (r) => r.funkcje;
+const funkcjeRoli = (r) => stan.funkcjeRol[r.id] || domyslne(r);
+const czyZmieniona = (r) => Boolean(stan.funkcjeRol[r.id]);
+const biezaca = () => D.role.find((r) => r.id === stan.rola);
+const ma = (f) => funkcjeRoli(biezaca()).includes(f);
+const maWszystkie = (lista) => lista.every(ma);
+
+let zegar = null;
+function zapisz() {
+  try { localStorage.setItem(KLUCZ, JSON.stringify(stan)); } catch (e) { /* tryb prywatny: zostaje eksport JSON */ }
+  el("zapisano").textContent = "Zapisano w przeglądarce";
+  clearTimeout(zegar); zegar = setTimeout(() => { el("zapisano").textContent = ""; }, 1800);
+}
+
+function opisZakresu() {
+  if (ma(WSZYSTKIE)) return "Zakres danych: <b>wszystkie instytucje</b> (zespół LDIT).";
+  if (ma(CALA)) return "Zakres danych: <b>cała własna instytucja</b>.";
+  return "Zakres danych: <b>tylko klienci przypisani do konta</b> (handlowiec, D-210) i ich wnioski, formularze, notatki i zadania.";
+}
+
+function rysujRole() {
+  el("role").innerHTML = D.role.map((r) => '<button type="button" data-rola="' + r.id + '" class="' + (r.id === stan.rola ? "on" : "") + '">'
+    + esc(r.nazwa) + (czyZmieniona(r) ? ' <span class="zm" title="zmieniona">*</span>' : "") + "</button>").join("");
+  el("opisRoli").textContent = biezaca().opis;
+  el("zakres").innerHTML = opisZakresu();
+}
+
+function rysujFunkcje() {
+  const r = biezaca();
+  el("funkcje").innerHTML = D.funkcje.map((f) => {
+    const zmieniona = ma(f.id) !== domyslne(r).includes(f.id);
+    return '<label class="f' + (zmieniona ? " zmieniona" : "") + '"><input type="checkbox" data-funkcja="' + f.id + '"' + (ma(f.id) ? " checked" : "") + ">"
+      + "<span>" + esc(f.nazwa) + "<code>" + esc(f.id) + "</code></span></label>";
+  }).join("");
+}
+
+const uwagaPole = (klucz) => '<textarea data-uwaga="' + esc(klucz) + '" aria-label="Uwagi">' + esc(stan.uwagi[klucz] || "") + "</textarea>";
+
+function rysujEkrany() {
+  const instytucja = !ma(WSZYSTKIE);
+  el("ekranyPanelu").innerHTML = D.ekranyPanelu.map((e) => {
+    const widzi = ma(e.funkcja) && (!e.tylkoInstytucja || instytucja);
+    const dopisek = e.tylkoInstytucja ? ' <span class="uwaga">(tylko konta instytucji)</span>' : "";
+    return "<tr><td>" + esc(e.nazwa) + dopisek + '<div class="uwaga">' + esc(e.adres) + "</div></td><td>" + znak(widzi) + "</td><td>" + uwagaPole("panel:" + e.id) + "</td></tr>";
+  }).join("");
+  const panel = ma(PANEL);
+  el("ekranyBackend").innerHTML = D.ekranyBackend.filter((e) => e.wMenu).map((e) => {
+    const wejscie = panel || e.bezPanelu;
+    const podglad = wejscie && maWszystkie(e.podglad);
+    const edycja = e.edycja ? podglad && maWszystkie(e.edycja) : null;
+    return "<tr><td>" + esc(e.nazwa) + (e.bezPanelu ? ' <span class="uwaga">(dostępny z aplikacji)</span>' : "") + "</td><td>" + znak(podglad) + "</td><td>"
+      + (edycja === null ? '<span class="uwaga">brak</span>' : znak(edycja)) + "</td><td>" + uwagaPole("backend:" + e.klucz) + "</td></tr>";
+  }).join("");
+}
+
+function rysujPola() {
+  el("pola").innerHTML = D.pola.map((p, i) => {
+    const ok = ma(p.funkcja) || (p.funkcja === CALA && ma(WSZYSTKIE));
+    const opiekun = p.funkcja === "ldit.formularze.akceptacja" && !ok && ma("ldit.formularze.manage");
+    return "<tr><td>" + esc(p.nazwa) + '<div class="uwaga"><code>' + esc(p.funkcja) + "</code></div></td><td>"
+      + (opiekun ? '<span class="czesciowo">jako opiekun</span>' : znak(ok)) + '</td><td class="uwaga">' + (ok ? "" : esc(p.gdyBrak)) + "</td><td>" + uwagaPole("pole:" + p.klucz) + "</td></tr>";
+  }).join("");
+}
+
+function rysujMacierz() {
+  el("macierzGlowa").innerHTML = "<tr><th>Funkcja</th>" + D.role.map((r) => "<th>" + esc(r.nazwa) + (czyZmieniona(r) ? " *" : "") + "</th>").join("") + "</tr>";
+  el("macierz").innerHTML = D.funkcje.map((f) => "<tr><td>" + esc(f.nazwa) + "</td>" + D.role.map((r) => {
+    const teraz = funkcjeRoli(r).includes(f.id), bylo = domyslne(r).includes(f.id);
+    const tekst = teraz ? '<span class="tak">tak</span>' : '<span class="uwaga">nie</span>';
+    return "<td" + (teraz !== bylo ? ' style="background:var(--zloto-tlo)" title="zmienione względem aplikacji"' : "") + ">" + tekst + "</td>";
+  }).join("") + "</tr>").join("");
+}
+
+function rysuj() { rysujRole(); rysujFunkcje(); rysujEkrany(); rysujPola(); rysujMacierz(); el("uwagaOgolna").value = stan.uwagaOgolna; }
+
+function eksportuj() {
+  const role = D.role.map((r) => {
+    const teraz = funkcjeRoli(r);
+    return { id: r.id, nazwa: r.nazwa, funkcje: teraz, dodane: teraz.filter((f) => !r.funkcje.includes(f)), usuniete: r.funkcje.filter((f) => !teraz.includes(f)) };
+  });
+  const uwagi = Object.entries(stan.uwagi).filter(([, t]) => t.trim()).map(([klucz, tekst]) => ({ klucz, tekst }));
+  const wynik = { dokument: "ldit-kto-co-widzi", wygenerowanoZKodu: D.wygenerowano, zapisano: new Date().toISOString(), role, uwagi, uwagaOgolna: stan.uwagaOgolna };
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(wynik, null, 2)], { type: "application/json" }));
+  a.download = "ldit-kto-co-widzi-" + new Date().toISOString().slice(0, 10) + ".json"; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+/* Wczytanie eksportu: tylko znane role i funkcje; nieznane pozycje pomijane. */
+function wczytaj(tekst) {
+  const d = JSON.parse(tekst);
+  if (!d || d.dokument !== "ldit-kto-co-widzi") throw new Error("To nie jest plik konfiguratora kto co widzi.");
+  const znane = new Set(D.funkcje.map((f) => f.id));
+  const nowy = pustyStan(); nowy.rola = stan.rola;
+  (Array.isArray(d.role) ? d.role : []).forEach((r) => {
+    const rola = D.role.find((x) => x.id === r.id);
+    if (!rola || !Array.isArray(r.funkcje)) return;
+    const funkcje = r.funkcje.filter((f) => znane.has(f));
+    const takieSame = funkcje.length === rola.funkcje.length && funkcje.every((f) => rola.funkcje.includes(f));
+    if (!takieSame) nowy.funkcjeRol[r.id] = funkcje;
+  });
+  (Array.isArray(d.uwagi) ? d.uwagi : []).forEach((u) => { if (u && typeof u.klucz === "string" && typeof u.tekst === "string") nowy.uwagi[u.klucz] = u.tekst; });
+  nowy.uwagaOgolna = typeof d.uwagaOgolna === "string" ? d.uwagaOgolna : "";
+  stan = nowy; zapisz(); rysuj();
+}
+
+document.addEventListener("click", (ev) => {
+  const b = ev.target.closest("[data-rola]");
+  if (b) { stan.rola = b.dataset.rola; zapisz(); rysuj(); }
+});
+document.addEventListener("change", (ev) => {
+  const f = ev.target.dataset && ev.target.dataset.funkcja;
+  if (!f) return;
+  const r = biezaca(), lista = new Set(funkcjeRoli(r));
+  ev.target.checked ? lista.add(f) : lista.delete(f);
+  const nowa = D.funkcje.map((x) => x.id).filter((x) => lista.has(x));
+  const takieSame = nowa.length === r.funkcje.length && nowa.every((x) => r.funkcje.includes(x));
+  if (takieSame) delete stan.funkcjeRol[r.id]; else stan.funkcjeRol[r.id] = nowa;
+  zapisz(); rysuj();
+});
+document.addEventListener("input", (ev) => {
+  const t = ev.target;
+  if (t.dataset && t.dataset.uwaga) { stan.uwagi[t.dataset.uwaga] = t.value; zapisz(); }
+  else if (t.id === "uwagaOgolna") { stan.uwagaOgolna = t.value; zapisz(); }
+});
+el("przywrocRole").addEventListener("click", () => { delete stan.funkcjeRol[stan.rola]; zapisz(); rysuj(); });
+el("przywrocWszystko").addEventListener("click", () => { if (confirm("Usunąć wszystkie zmiany ról i uwagi zapisane w tej przeglądarce?")) { stan = pustyStan(); zapisz(); rysuj(); } });
+el("eksport").addEventListener("click", eksportuj);
+el("wczytaj").addEventListener("click", () => el("plik").click());
+el("plik").addEventListener("change", (ev) => {
+  const plik = ev.target.files[0]; if (!plik) return;
+  plik.text().then(wczytaj).catch((e) => alert("Nie udało się wczytać pliku: " + e.message));
+  ev.target.value = "";
+});
+el("naglowekOpis").textContent = "Uprawnienia ról w aplikacji wygenerowane z kodu " + D.wygenerowano + ". Zmiany tutaj to propozycje (zapis w przeglądarce i eksport JSON); w aplikacji role zmienia administrator w Ustawieniach.";
+rysuj();
+</script>
+</body>
+</html>
