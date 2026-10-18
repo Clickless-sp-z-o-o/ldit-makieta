@@ -14,12 +14,12 @@
 <body>
 <div class="page">
 
-  <div class="page-head">
+  <div data-przewodnik="maile-naglowek" class="page-head">
     <div class="ph-text">
       <h1 class="page-title">Wysyłka maili<span class="tip-mark" data-tip="Modul komunikacji z klientami i instytucjami: biblioteka szablonow, kreator wysylki oraz automatyzacje i alerty. Cala korespondencja wychodzi z domeny LDIT. Kazda wysylka wymaga potwierdzenia na osobnym ekranie (D-106) i trafia do logu wysylek w rejestrze aktywnosci (D-122).">i</span></h1>
       <p class="page-desc">Szablony maili, wysyłka i automatyczne wiadomości.</p>
     </div>
-    <div class="ph-actions">
+    <div data-przewodnik="maile-akcje" class="ph-actions">
       <button class="btn atrapa" data-tip="W aplikacji docelowej">Historia wysyłek</button>
       <button class="btn primary" onclick="idzDoWysylki()">Nowa wysyłka</button>
     </div>
@@ -36,7 +36,7 @@
   </div>
 
   <div class="card">
-    <div class="tabs">
+    <div data-przewodnik="maile-zakladki" class="tabs">
       <div class="tab on" data-t="t1">Biblioteka szablonów</div>
       <div class="tab" data-t="t2">Wysyłka</div>
       <div class="tab" data-t="t3">Automatyzacje i alerty</div>
@@ -286,6 +286,8 @@
 <script src="../assets/podglad-roli.js"></script>
 <script src="../assets/interfejs.js"></script>
 <script src="../assets/tips.js"></script>
+<script src="../assets/przewodnik-logika.js"></script>
+<script src="../assets/przewodnik-ramka.js"></script>
 <script src="../assets/boot.js" data-modul="komun"></script>
 <script src="js/09-wysylka-maili-tresci.js"></script>
 <script src="js/09-wysylka-maili-szablony.js"></script>

@@ -112,6 +112,7 @@ function pokazPowiadomieniaIS(liczba) {
   if (!przycisk) {
     przycisk = document.createElement("button");
     przycisk.id = "powiadomieniaIS"; przycisk.type = "button"; przycisk.className = "akceptacje";
+    przycisk.setAttribute("data-przewodnik", "pasek-dzwonek");
     przycisk.innerHTML = (window.Ikony ? Ikony.svg("dzwonek") : "&#128276;&#xFE0E;") + "<span class=\"n\"></span>";
     przycisk.addEventListener("click", function () { document.getElementById("view").src = "strony/16-panel-is.html#powiadomienia"; });
     var akceptacje = document.getElementById("akceptacje");

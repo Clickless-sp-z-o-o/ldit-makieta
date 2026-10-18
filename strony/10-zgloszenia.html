@@ -26,7 +26,7 @@
 <body>
 <div class="page">
 
-  <div class="page-head">
+  <div data-przewodnik="zglo-naglowek" class="page-head">
     <div class="ph-text">
       <h1 class="page-title">Zgłoszenia
         <span class="tip-mark" data-tip="Wewnetrzna baza incydentow krytycznych (oszustwo, zanizanie prowizji, obejscie LDIT). Tylko admin i pracownicy LDIT (D-107). Autor domyslnie zalogowany, edytowalny (D-121). To nie sa notatki przy kliencie.">i</span>
@@ -47,13 +47,13 @@
   </div>
 
 
-  <div class="grid g4" style="margin-bottom:18px" id="kpi"></div>
+  <div data-przewodnik="zglo-kafelki" class="grid g4" style="margin-bottom:18px" id="kpi"></div>
 
   <div class="grid g-2-1">
     <div>
 
       <div class="card">
-        <div class="toolbar">
+        <div data-przewodnik="zglo-filtry" class="toolbar">
           <input class="inp search" id="szukaj" placeholder="Szukaj w powodzie, opisie, podmiocie...">
           <select class="inp" id="fWaga" data-wielo>
             <option value="">Waga: wszystkie</option>
@@ -73,7 +73,7 @@
       <div id="lista"></div>
 
       <!-- FORMULARZ -->
-      <div class="card" id="formularz">
+      <div data-przewodnik="zglo-formularz" class="card" id="formularz">
         <div class="card-head">
           <h3>Nowe zgłoszenie</h3>
           <span class="sub">wpis ręczny, autor domyślnie zalogowany, data automatyczna</span>
@@ -247,6 +247,8 @@
 <script src="../assets/podglad-roli.js"></script>
 <script src="../assets/interfejs.js"></script>
 <script src="../assets/tips.js"></script>
+<script src="../assets/przewodnik-logika.js"></script>
+<script src="../assets/przewodnik-ramka.js"></script>
 <script src="../assets/boot.js" data-modul="zglo"></script>
 <script src="js/10-zgloszenia-dane.js"></script>
 <script src="js/10-zgloszenia-lista.js"></script>

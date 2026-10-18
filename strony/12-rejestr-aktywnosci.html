@@ -21,7 +21,7 @@
 <body>
 <div class="page">
 
-  <div class="page-head">
+  <div data-przewodnik="rejestr-naglowek" class="page-head">
     <div class="ph-text">
       <h1 class="page-title">Rejestr aktywności
         <span class="tip-mark" data-tip="Wglad administratora: kto co zrobil i kiedy. Trzy strumienie: zmiany danych (wartosc przed i po), istotne zdarzenia (D-189, w tym wysylki) i log logowan. Rejestr jest tylko do dopisywania. D-116, D-122.">i</span>
@@ -40,7 +40,7 @@
 
 
   <div class="card">
-    <div class="tabs">
+    <div data-przewodnik="rejestr-zakladki" class="tabs">
       <div class="tab on" data-t="t1">Rejestr zmian danych</div>
       <div class="tab" data-t="t3">Istotne zdarzenia</div>
       <div class="tab" data-t="t2">Log logowań</div>
@@ -50,10 +50,10 @@
     <!-- ============ ZAKLADKA 1: ZMIANY DANYCH ============ -->
     <div class="tab-pane on" id="t1">
       <div class="card-body">
-        <div class="grid g4" id="kpi"></div>
+        <div data-przewodnik="rejestr-kafelki" class="grid g4" id="kpi"></div>
       </div>
 
-      <div class="toolbar">
+      <div data-przewodnik="rejestr-filtry" class="toolbar">
         <input class="inp search" id="qA" placeholder="Szukaj po obiekcie: PR-26-0141, KL-0238, IS-02...">
         <select class="inp" id="fKto" data-wielo><option value="">Wszyscy użytkownicy</option></select>
         <select class="inp" id="fTyp" data-wielo><option value="">Wszystkie typy operacji</option></select>
@@ -269,6 +269,8 @@
 <script src="../assets/podglad-roli.js"></script>
 <script src="../assets/interfejs.js"></script>
 <script src="../assets/tips.js"></script>
+<script src="../assets/przewodnik-logika.js"></script>
+<script src="../assets/przewodnik-ramka.js"></script>
 <script src="../assets/boot.js" data-modul="ustaw"></script>
 <script src="js/12-rejestr-aktywnosci-zmiany.js"></script>
 <script src="js/12-rejestr-aktywnosci-logowania.js"></script>

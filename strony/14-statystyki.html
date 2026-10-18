@@ -26,7 +26,7 @@
 <body>
 <div class="page">
 
-  <div class="page-head">
+  <div data-przewodnik="stat-naglowek" class="page-head">
     <div class="ph-text">
       <h1 class="page-title">Dashboard: skuteczność i lejki
         <span class="tip-mark" data-tip="Statystyki lejka dostarczonych osob per instytucja, skutecznosc zespolu, ile wnioskow przeszlo. Marzowosc widzi tylko administrator. Statystyki dostepne tez per instytucja i zbiorczo w Administracji. D-141.">i</span>
@@ -39,13 +39,13 @@
     </div>
   </div>
 
-  <nav class="mod-tabs">
+  <nav data-przewodnik="dash-zakladki" class="mod-tabs">
     <a href="01-dashboard.html">Przegląd</a>
     <a href="14-statystyki.html" class="on">Skuteczność i lejki</a>
   </nav>
 
 
-  <div class="toolbar" style="border:1px solid var(--line);border-radius:var(--radius-lg);margin-bottom:18px;background:var(--surface)">
+  <div data-przewodnik="stat-instytucja" class="toolbar" style="border:1px solid var(--line);border-radius:var(--radius-lg);margin-bottom:18px;background:var(--surface)">
     <span class="small muted" style="font-weight:650">Instytucja:</span>
     <select class="inp" id="fIS" data-wielo><option value="">Wszystkie instytucje</option></select>
     <span class="sp"></span>
@@ -63,9 +63,9 @@
   <!-- ================= DLA LDIT ================= -->
   <h2 style="font-size:15px;font-weight:700;margin:0 0 12px">Widok firmy pozyskującej dofinansowania</h2>
 
-  <div class="grid g4" style="margin-bottom:18px" id="kpi"></div>
+  <div data-przewodnik="stat-kafelki" class="grid g4" style="margin-bottom:18px" id="kpi"></div>
 
-  <div class="grid g-2-1">
+  <div data-przewodnik="stat-wykresy" class="grid g-2-1">
     <div>
       <div class="card">
         <div class="card-head">
@@ -216,6 +216,8 @@
 <script src="../assets/podglad-roli.js"></script>
 <script src="../assets/interfejs.js"></script>
 <script src="../assets/tips.js"></script>
+<script src="../assets/przewodnik-logika.js"></script>
+<script src="../assets/przewodnik-ramka.js"></script>
 <script src="../assets/boot.js" data-modul="dash"></script>
 <script src="js/14-statystyki-rdzen.js"></script>
 <script src="js/14-statystyki-historia.js"></script>

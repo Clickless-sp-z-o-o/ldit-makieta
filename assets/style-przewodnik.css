@@ -1,0 +1,91 @@
+/* ============================================================================
+   Przewodnik w powloce makiety: przyciski Pokaz i Przewodnik w pasku, wysuwany panel,
+   wycieczka z podswietleniem. Te same reguly co w aplikacji
+   (aplikacja/src/modules/ldit/panel/przewodnik/przewodnik.css), na zmiennych makiety.
+   Arkusz tylko powloki (index.html), poza tools/panel-css.mjs: aplikacja ma wlasny.
+   ============================================================================ */
+
+.pomoc-przyciski { display: flex; align-items: center; gap: 6px; }
+.btn.pomoc { gap: 6px; }
+.btn.pomoc .ikona { width: 16px; height: 16px; }
+.btn.pomoc[aria-expanded="true"] { background: var(--accent-soft); border-color: var(--accent-border); }
+.btn.pomoc:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+/* Panel Przewodnik: wysuwany z prawej, nad ekranem i paskiem */
+.przewodnik-tlo { position: fixed; inset: 0; z-index: 90; background: rgba(21, 22, 43, .35); }
+.przewodnik-panel {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 91; width: min(440px, 100vw);
+  display: flex; flex-direction: column; background: var(--surface);
+  border-left: 1px solid var(--line); box-shadow: var(--shadow-lg);
+  animation: przewodnik-wjazd var(--szybko, 140ms) ease-out;
+}
+.przewodnik-panel:focus { outline: none; }
+.przewodnik-glowa { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.przewodnik-glowa h2 { margin: 0; font-size: 1rem; font-weight: 650; }
+.przewodnik-glowa .btn { font-size: 1.125rem; }
+.przewodnik-panel .tabs { padding: 0 14px; }
+.przewodnik-tresc { flex: 1 1 auto; overflow: auto; padding: 16px 18px; line-height: 1.5; }
+.przewodnik-tresc h3 { margin: 0 0 6px; font-size: 0.9375rem; font-weight: 650; }
+.przewodnik-tresc h4 { margin: 16px 0 6px; font-size: 0.8125rem; font-weight: 650; color: var(--ink-2); }
+.przewodnik-tresc p { margin: 0 0 8px; }
+.przewodnik-tresc ol,
+.przewodnik-tresc ul { margin: 0 0 8px; padding-left: 20px; }
+.przewodnik-tresc li { margin-bottom: 4px; }
+.przewodnik-stopka {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+  padding: 12px 18px; border-top: 1px solid var(--line); background: var(--surface-2);
+}
+
+/* Na tym ekranie: blok "Pokaz na ekranie" */
+.przewodnik-pokaz {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 12px 0;
+  padding: 10px 12px; border: 1px solid var(--accent-border); border-radius: var(--radius); background: var(--accent-soft);
+}
+.przewodnik-pokaz > div { display: flex; flex-direction: column; gap: 2px; }
+.przewodnik-pokaz .btn { flex: 0 0 auto; }
+
+/* Spis tresci: wyszukiwarka, tematy, ekrany */
+.przewodnik-spis > .inp { width: 100%; box-sizing: border-box; margin-bottom: 12px; }
+.przewodnik-temat { border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 8px; background: var(--surface); }
+.przewodnik-temat > summary { cursor: pointer; padding: 9px 12px; font-weight: 600; }
+.przewodnik-temat > summary:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
+.przewodnik-temat[open] > summary { border-bottom: 1px solid var(--line); }
+.przewodnik-temat > ol,
+.przewodnik-temat > ul,
+.przewodnik-temat > dl { margin: 10px 12px 10px; }
+.przewodnik-temat > ol,
+.przewodnik-temat > ul { padding-left: 30px; }
+.przewodnik-temat dt { font-weight: 600; margin-top: 8px; }
+.przewodnik-temat dd { margin: 2px 0 0; color: var(--ink-2); }
+.przewodnik-ekrany,
+.przewodnik-wyniki ul { list-style: none; padding: 0; margin: 0; }
+.przewodnik-ekrany li,
+.przewodnik-wyniki li { display: flex; flex-direction: column; gap: 2px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.przewodnik-ekrany a,
+.przewodnik-wyniki a { color: var(--accent); font-weight: 600; }
+
+/* Wycieczka: przyciemnienie z wycieciem na element i okienko z opisem kroku */
+.wycieczka { position: fixed; inset: 0; z-index: 95; }
+.wycieczka-podswietlenie {
+  position: fixed; border-radius: var(--radius); pointer-events: none;
+  box-shadow: 0 0 0 3px var(--gold), 0 0 0 9999px rgba(21, 22, 43, .55);
+  transition: left var(--szybko, 140ms) ease, top var(--szybko, 140ms) ease, width var(--szybko, 140ms) ease, height var(--szybko, 140ms) ease;
+}
+.wycieczka-okienko {
+  position: fixed; width: min(360px, calc(100vw - 16px)); box-sizing: border-box; padding: 14px 16px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg, 12px); box-shadow: var(--shadow-lg);
+}
+.wycieczka-okienko h2 { margin: 4px 0 6px; font-size: 0.9375rem; font-weight: 650; }
+.wycieczka-okienko p { margin: 0 0 12px; line-height: 1.5; }
+
+@keyframes przewodnik-wjazd { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .przewodnik-panel { animation: none; }
+  .wycieczka-podswietlenie { transition: none; }
+}
+
+/* Telefon: same ikony przyciskow w pasku */
+@media (max-width: 767px) {
+  .btn.pomoc .pomoc-napis { display: none; }
+}

@@ -18,7 +18,7 @@
 <body>
 <div class="page">
 
-  <div class="page-head">
+  <div data-przewodnik="nabory-naglowek" class="page-head">
     <div class="ph-text">
       <h1 class="page-title">Nabory<span class="tip-mark" data-tip="Lista naborow z urzedow pracy: aktualnie ogloszonych, prognozowanych i zakonczonych, w jednym miejscu (D-109). Sluzy do planowania kontaktu z klientami, ktorych urzad wlasnie otwiera nabor. Uwaga: system jest tylko odbiorca prognoz z zewnetrznej aplikacji LDIT, sam nie liczy terminow naborow.">i</span></h1>
       <p class="page-desc">Nabory ogłoszone i prognozowane w urzędach pracy, najpilniejsze na górze.</p>
@@ -29,7 +29,7 @@
     </div>
   </div>
 
-  <div class="grid g4" style="margin-bottom:18px" id="kpi"></div>
+  <div data-przewodnik="nabory-kafelki" class="grid g4" style="margin-bottom:18px" id="kpi"></div>
 
   <div class="card">
     <div class="card-head">
@@ -45,7 +45,7 @@
       </div>
     </div>
 
-    <div class="toolbar">
+    <div data-przewodnik="nabory-filtry" class="toolbar">
       <input class="inp search" id="q" placeholder="Szukaj: urząd, województwo...">
       <select class="inp" id="fStat" data-wielo>
         <option value="">Wszystkie stany</option>
@@ -67,7 +67,7 @@
 
     <p class="note" id="zrzutInfo" role="status" hidden></p>
 
-    <div class="tbl-wrap">
+    <div data-przewodnik="nabory-tabela" class="tbl-wrap">
       <table class="tbl">
         <thead>
           <tr>
@@ -99,7 +99,7 @@
 
   <div class="card" id="wczytajNabory"></div>
 
-  <div class="grid g2">
+  <div data-przewodnik="nabory-podsumowanie" class="grid g2">
     <div class="card">
       <div class="card-head">
         <h3>Prognozy na kolejne miesiące<span class="tip-mark" data-tip="Liczba urzedow z przewidywanym naborem w danym miesiacu. Dane pochodza z zewnetrznej aplikacji prognozujacej LDIT, system ich nie wylicza (D-109).">i</span></h3>
@@ -138,7 +138,7 @@
     </div>
   </div>
 
-  <div class="card">
+  <div data-przewodnik="nabory-urzedy" class="card">
     <div class="card-head">
       <h3>Rejestr urzędów pracy</h3>
       <span class="tip-mark" data-tip="Słownik urzędów, każdy urząd raz, z najbliższym naborem ogłoszonym i prognozą (widok v_urzedy_nabory, D-272). Klik w urząd z klientami otwiera tych klientów w Bazie danych.">i</span>
@@ -214,6 +214,8 @@
 <script src="../assets/podglad-roli.js"></script>
 <script src="../assets/interfejs.js"></script>
 <script src="../assets/tips.js"></script>
+<script src="../assets/przewodnik-logika.js"></script>
+<script src="../assets/przewodnik-ramka.js"></script>
 <script src="../assets/boot.js" data-modul="nabory"></script>
 <script src="js/05-nabory-dane.js"></script>
 <script src="js/05-nabory-tabela.js"></script>

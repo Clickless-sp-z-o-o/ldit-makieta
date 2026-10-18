@@ -39,7 +39,7 @@ function htmlPodmenuDofin(lata, instytucje, otwarte) {
       (nieprzypisane ? "" : '<div class="nav-sub2' + (otwarty ? " open" : "") + '" data-rok="' + esc(l.rok) + '">' +
         htmlInstytucjiRoku(l.rok, instytucje) + '</div>');
   }).join("");
-  return '<div class="nav-sub" id="sub-dofin">' + html + '</div>';
+  return '<div class="nav-sub" id="sub-dofin" data-przewodnik="dofin-lata">' + html + '</div>';
 }
 
 /* Rok jest lista rozwijana: klik zwija albo rozwija jego instytucje i niczego nie otwiera.

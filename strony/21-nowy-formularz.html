@@ -15,7 +15,7 @@
 <body>
 <div class="page">
 
-  <div class="page-head">
+  <div data-przewodnik="formularz-naglowek" class="page-head">
     <div class="naglowek-karty">
       <button class="btn sm" onclick="Nawigacja.wstecz('01-dashboard.html')" data-tip="Poprzedni ekran.">&larr; Wstecz</button>
       <h1 class="page-title">Nowy formularz</h1>
@@ -30,7 +30,7 @@
   </div>
   <p class="page-desc">Wprowadź formularz klienta ręcznie albo z pliku, albo załóż projekt dla klienta z bazy.</p>
 
-  <div class="tabs" id="zakladki21" role="tablist">
+  <div data-przewodnik="formularz-zakladki" class="tabs" id="zakladki21" role="tablist">
     <div class="tab on" data-tryb="formularz">Formularz klienta</div>
     <div class="tab" data-tryb="projekt" id="zakladkaProjekt21">Nowy projekt</div>
   </div>
@@ -42,7 +42,7 @@
     </div>
 
     <div class="nf-uklad">
-      <div class="card" id="kartaFormularza21">
+      <div data-przewodnik="formularz-dane" class="card" id="kartaFormularza21">
         <div class="card-head"><h3>Dane formularza</h3></div>
         <div class="card-body">
           <div class="note mb0" id="komunikat21" role="status" hidden style="margin-bottom:12px"></div>
@@ -50,7 +50,7 @@
         </div>
       </div>
 
-      <div class="card">
+      <div data-przewodnik="formularz-wyslane" class="card">
         <div class="card-head"><h3>Moje wysłane formularze</h3><span class="sub" id="liczWyslane"></span></div>
         <div class="card-body tight">
           <table class="tbl">
@@ -111,6 +111,8 @@
 <script src="../assets/podglad-roli.js"></script>
 <script src="../assets/interfejs.js"></script>
 <script src="../assets/tips.js"></script>
+<script src="../assets/przewodnik-logika.js"></script>
+<script src="../assets/przewodnik-ramka.js"></script>
 <script src="../assets/boot.js" data-modul="formularz"></script>
 <script src="js/16-formularz-csv.js"></script>
 <script src="js/16-formularz-pola.js"></script>

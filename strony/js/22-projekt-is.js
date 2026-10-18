@@ -17,7 +17,7 @@ function pokazProjekt22(id) {
   if (!w) { brak22("Nie ma takiego projektu w danych Twojej instytucji."); return; }
   el22("tytul22").textContent = "Projekt " + (w.nr || w.id) + ": " + w.klNazwa;
   document.title = "Projekt " + (w.nr || w.id) + " · System KFS";
-  el22("tresc22").innerHTML = '<div class="grid g-2-1"><div>' + sekcjaDanych22(w) + sekcjaUczestnikow22(w) + "</div><div>" +
+  el22("tresc22").innerHTML = '<div class="grid g-2-1"><div data-przewodnik="projekt-dane">' + sekcjaDanych22(w) + sekcjaUczestnikow22(w) + '</div><div data-przewodnik="projekt-boczne">' +
     sekcjaSzkolen22(w) + sekcjaDokumentow22(w) + sekcjaPrzebiegu22(w) + "</div></div>";
 }
 

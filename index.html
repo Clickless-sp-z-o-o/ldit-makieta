@@ -10,12 +10,13 @@
 <link rel="stylesheet" href="assets/style-interfejs.css">
 <link rel="stylesheet" href="assets/style-motyw.css">
 <link rel="stylesheet" href="assets/style-motyw-powloka.css">
+<link rel="stylesheet" href="assets/style-przewodnik.css">
 </head>
 <body>
 
 <div class="app">
 
-  <aside class="sidebar">
+  <aside class="sidebar" data-przewodnik="menu">
     <div class="sidebar-brand">
       <img class="logo-ldit" src="assets/ldit-logo.png" alt="LDIT">
       <div>
@@ -34,11 +35,11 @@
 
   <div class="main">
     <div class="topbar">
-      <button class="btn sm menu-tel" id="menuTel" type="button" aria-expanded="false" aria-controls="nav"><span data-ikona="menu"></span>Menu</button>
-      <button class="btn sm wstecz" id="wstecz" disabled aria-label="Wstecz" data-tip="Poprzedni ekran, z tym samym filtrem i rokiem."><span data-ikona="wstecz"></span>Wstecz</button>
+      <button class="btn sm menu-tel" id="menuTel" type="button" data-przewodnik="pasek-menu-telefon" aria-expanded="false" aria-controls="nav"><span data-ikona="menu"></span>Menu</button>
+      <button class="btn sm wstecz" id="wstecz" data-przewodnik="pasek-wstecz" disabled aria-label="Wstecz" data-tip="Poprzedni ekran, z tym samym filtrem i rokiem."><span data-ikona="wstecz"></span>Wstecz</button>
       <div class="crumb" id="crumb"><b>Dashboard</b></div>
 
-      <div class="global-search">
+      <div class="global-search" data-przewodnik="pasek-szukaj">
         <span class="si" data-ikona="szukaj"></span>
         <input type="text" placeholder="Szukaj: NIP, nazwa klienta, urząd pracy..." id="gsearch">
       </div>
@@ -46,9 +47,9 @@
       <div class="topbar-right">
         <button class="btn sm przelacznik-uwag" id="przelacznikUwag" type="button" aria-pressed="false"
                 data-tip="Pokazuje ramki z uzasadnieniami i numery decyzji z dokumentacji. Domyślnie ukryte, żeby ekrany wyglądały jak w aplikacji.">Uwagi projektowe</button>
-        <button class="akceptacje" id="akceptacje" hidden
+        <button class="akceptacje" id="akceptacje" data-przewodnik="pasek-skrzynka" hidden
                 data-tip="Formularze zgloszeniowe i zmiany danych od instytucji czekajace na akceptacje LDIT. Klik otwiera ekran Do akceptacji. D-105, D-140, D-223, D-224."><span data-ikona="skrzynka"></span><span class="n" id="akceptacjeN"></span></button>
-        <div class="uzytkownik">
+        <div class="uzytkownik" data-przewodnik="pasek-konto">
           <div class="uzytkownik-dane">
             <div class="uzytkownik-imie" id="imie">&nbsp;</div>
             <div class="uzytkownik-rola" id="rola">&nbsp;</div>
@@ -104,6 +105,11 @@
 <script src="assets/powloka-ekran.js"></script>
 <script src="assets/powloka-menu.js"></script>
 <script src="assets/powloka-zwijanie.js"></script>
+<script src="assets/przewodnik-tresci.js"></script>
+<script src="assets/przewodnik-logika.js"></script>
+<script src="assets/przewodnik-wycieczka.js"></script>
+<script src="assets/przewodnik-panel.js"></script>
+<script src="assets/przewodnik.js"></script>
 
 <script type="text/kfs-strona">
 /* ================================================================

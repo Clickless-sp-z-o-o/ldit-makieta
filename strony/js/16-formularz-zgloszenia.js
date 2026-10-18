@@ -210,7 +210,7 @@ function zfHtml(o) {
     zfArkusz("Zgłoszenie", [zfBlokInstytucji(o)].concat(e ? [] : [zfWybor("zfZrodlo", "Sposób wprowadzenia", zrodla, "reczny", true), zfBlokPliku()])) +
     zfSekcjeHtml(o) + zfTabelaUczestnikow() +
     '<div style="margin-top:8px"><button type="button" class="btn sm" onclick="zfDodajUczestnika()">+ Dodaj uczestnika</button></div>' +
-    '<div class="btn-row" style="margin-top:12px"><button class="btn primary sm" onclick="zfWyslij()">' + przycisk + '</button>' +
+    '<div class="btn-row" style="margin-top:12px" data-przewodnik="formularz-wyslij"><button class="btn primary sm" onclick="zfWyslij()">' + przycisk + '</button>' +
     (o.bezAnulowania ? "" : '<button class="btn sm" onclick="zfZamknij()">Anuluj</button>') +
     '</div><div class="small" id="zfKomunikat" role="status" style="margin-top:6px"></div></div>';
 }
