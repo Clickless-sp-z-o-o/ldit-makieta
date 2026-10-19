@@ -199,6 +199,8 @@ function zfBlokPliku() {
     '<div class="small" id="zfPlikInfo" role="status" style="margin-top:4px"></div></div>', { idWiersza: "zfPlikBlok", ukryty: true });
 }
 
+/* Przycisk wyslania lub zapisu i Anuluj w pasku akcji przyklejonym do dolu panelu albo okna (.pasek-akcji,
+   feedback makiety 19.10.2026): widoczne przy kazdej dlugosci formularza */
 function zfHtml(o) {
   var zrodla = [["reczny", "ręcznie w systemie"], ["csv", "plik CSV lub XLS z szablonu"], ["pdf", "plik PDF o stałej strukturze"]];
   /* Edycja wyslanego formularza (D-314): bez wyboru zrodla i pliku, ktore zostaja z wyslania */
@@ -210,9 +212,9 @@ function zfHtml(o) {
     zfArkusz("Zgłoszenie", [zfBlokInstytucji(o)].concat(e ? [] : [zfWybor("zfZrodlo", "Sposób wprowadzenia", zrodla, "reczny", true), zfBlokPliku()])) +
     zfSekcjeHtml(o) + zfTabelaUczestnikow() +
     '<div style="margin-top:8px"><button type="button" class="btn sm" onclick="zfDodajUczestnika()">+ Dodaj uczestnika</button></div>' +
-    '<div class="btn-row" style="margin-top:12px" data-przewodnik="formularz-wyslij"><button class="btn primary sm" onclick="zfWyslij()">' + przycisk + '</button>' +
+    '<div class="pasek-akcji"><div class="btn-row" data-przewodnik="formularz-wyslij"><button class="btn primary sm" onclick="zfWyslij()">' + przycisk + '</button>' +
     (o.bezAnulowania ? "" : '<button class="btn sm" onclick="zfZamknij()">Anuluj</button>') +
-    '</div><div class="small" id="zfKomunikat" role="status" style="margin-top:6px"></div></div>';
+    '</div><div class="small" id="zfKomunikat" role="status" style="margin-top:6px"></div></div></div>';
 }
 
 /* opcje: { kontener, instytucjaId (+ instytucjaNazwa) albo instytucje [[id, nazwa]], szkolenia [[nazwa, nazwa]],
@@ -223,6 +225,7 @@ function zfPokaz(opcje) {
   var kontener = zfEl(opcje.kontener);
   kontener.innerHTML = zfHtml(opcje);
   kontener.style.display = "";
+  kontener.scrollTop = 0;
   if (zfEl("zfZrodlo")) zfEl("zfZrodlo").addEventListener("change", zfZmienZrodlo);
   zfEl("zf_zadluzenie").addEventListener("change", zfPrzelaczUgode);
   /* Nazwa skrocona idzie za pelna nazwa, dopoki nie zostala skrocona recznie (spotkanie 14.10) */

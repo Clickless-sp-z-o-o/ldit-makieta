@@ -10,7 +10,7 @@ var TESTY = [
   { n: 7, zr: "arkusz", opis: "Wariant 12/10%: obrót 60 000 zł", ocz: "6 000,00 zł", preset: "A2", f: [["Faktura", 60000]] },
   { n: 8, zr: "arkusz", opis: "Roczny YTD: 240k + 250k + 15k przez próg 500k", ocz: "2 500,00 zł z ostatniej", preset: "Y1", f: [["Faktura 1", 240000], ["Faktura 2", 250000], ["Faktura przez próg", 15000]] },
   { n: 9, zr: "warsztat", opis: "Model B, próg 500k przy stawce 17,5%", ocz: "2 875,00 zł z ostatniej", preset: "B", f: [["Narastająco", 490000], ["Faktura przez próg", 15000]] },
-  { n: 10, zr: "warsztat", opis: "Model C, Fit Akademia, obrót 102 000 zł", ocz: "18 280,00 zł", preset: "C", f: [["Faktura", 102000]] },
+  { n: 10, zr: "warsztat", opis: "Model C, obrót 102 000 zł", ocz: "18 280,00 zł", preset: "C", f: [["Faktura", 102000]] },
   { n: 11, zr: "warsztat", opis: "Model C, obrót 250 000 zł przez trzy progi", ocz: "37 000,00 zł", preset: "C", f: [["Faktura", 250000]] },
   { n: 12, zr: "warsztat", opis: "Model D, stała 20%", ocz: "20% liniowo", preset: "D", f: [["Faktura", 80000]] }
 ];

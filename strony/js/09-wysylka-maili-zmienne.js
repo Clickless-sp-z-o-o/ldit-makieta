@@ -54,6 +54,10 @@ var ZMIENNE_09 = [
     var n = (c.w.szkoleniaWniosku || []).map(function (s) { return s.nazwa; });
     return n.length ? n.filter(function (x, i) { return n.indexOf(x) === i; }).join(", ") : undefined;
   }],
+  /* Daty z pozycji wniosku, jak kolumna Termin szkolenia na liscie wnioskow (feedback makiety 19.10.2026) */
+  ["termin.szkolenia", "Termin szkolenia (od - do)", 1, function (c) {
+    return c.w.szkolenieOd ? DB.fmtZakresDat(c.w.szkolenieOd, c.w.szkolenieDo) : c.termin ? DB.fmtZakresDat(c.termin.od, c.termin.do) : undefined;
+  }],
   ["termin.od", "Termin szkolenia od", 1, function (c) { return data09(c.w.szkolenieOd || (c.termin && c.termin.od)); }],
   ["termin.do", "Termin szkolenia do", 1, function (c) { return data09(c.w.szkolenieDo || (c.termin && c.termin.do)); }],
   ["termin.miejsce", "Miejsce szkolenia", 1, function (c) { return c.termin ? c.termin.miejsce : undefined; }],

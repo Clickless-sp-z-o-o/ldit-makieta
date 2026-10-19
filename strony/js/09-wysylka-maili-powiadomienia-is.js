@@ -1,7 +1,7 @@
 /* Wysylka maili, zakladka 3: automatyczne maile do instytucji a przelacznik per instytucja
    "Wysylaj automatyczne powiadomienia do instytucji" (instytucje.powiadomienia_auto, spotkanie 14.10.2026).
    Przy wylaczonym przelaczniku automatyzacje nie wysylaja do tej instytucji nic: ani prosby o termin,
-   ani przypomnienia przed szkoleniem. Przyklad: Metal Maniak ma kalendarz na caly rok, terminy wpisuje LDIT.
+   ani przypomnienia przed szkoleniem. Przyklad: Instytucja Szkoleniowa Beta ma terminy z gory, wpisuje je LDIT.
    Przelacznik ustawia sie w konfiguracji instytucji (06-instytucje). Tylko deklaracje. */
 var POMINIETO_POWIADOMIENIA_09 = "pominięto: powiadomienia wyłączone";
 var POMINIETO_PROSBA_09 = "pominięto: prośba o termin wyłączona";

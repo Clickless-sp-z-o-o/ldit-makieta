@@ -15,14 +15,14 @@ function panelCertyfikat07() {
                       Przeciągnij plik albo wybierz z dysku. Wzór jest przypisany do jednej instytucji
                       <span class="ref">D-98</span>.
                     </div>
-                    <input type="file" class="inp" style="height:auto;padding:6px 8px">
+                    <input type="file" class="inp" data-edycja aria-label="Plik wzoru certyfikatu" style="height:auto;padding:6px 8px">
                   </div>
                   <div class="hint">Aktualnie wgrany: <span class="mono" id="certPlik"></span></div>
                 </div>
 
                 <div class="field">
                   <label>Numeracja certyfikatów</label>
-                  <select class="inp">
+                  <select class="inp" data-edycja>
                     <option>Bez numeru</option>
                     <option>Numer kolejny w roku</option>
                     <option>Skrót instytucji / rok / numer</option>

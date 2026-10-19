@@ -1,7 +1,7 @@
 /* Ekran Instytucje: przelacznik "Wysylaj automatyczne powiadomienia do instytucji" (spotkanie 14.10.2026),
    kolumna instytucje.powiadomienia_auto, w widoku DB.INSTYTUCJE[i].powiadomieniaAuto. Przy wylaczonym
    automatyzacje z Wysylki maili nie wysylaja do instytucji nic (prosba o termin, przypomnienie przed
-   szkoleniem). Przyklad: Metal Maniak ma kalendarz na caly rok, terminy wpisuje LDIT. Zmienia tylko rola
+   szkoleniem). Przyklad: Instytucja Szkoleniowa Beta ma terminy z gory, wpisuje je LDIT. Zmienia tylko rola
    z edycja modulu Instytucje (straznik), kazda zmiana trafia do rejestru aktywnosci. Tylko deklaracje. */
 
 var OPIS_POWIADOMIEN_06 = "Prośba o ustalenie terminu po decyzji pozytywnej i przypomnienie przed szkoleniem. " +

@@ -5,9 +5,9 @@
    czy kolumne nigdzie nie przenosi. Kolejnosc wierszy: 02-zestawienia-kolejnosc.js. Same deklaracje. */
 
 var BRAK_02 = '<span class="muted">-</span>';
-/* Kolumny tabeli: Szczegoly i Historia, Nr, Klient, Instytucja, Wykonawca, Kontakt, E-mail, Urzad, Osob,
-   Wartosc, Status, Przyznano, Koszt calk., Osob z dof., Rozl., Dokumenty, Przygotowal, Opiekunowie */
-var LICZBA_KOLUMN_02 = 18;
+/* Kolumny tabeli: Szczegoly i Historia, Nr, Klient, Instytucja, Wykonawca, Termin szkolenia, Kontakt, E-mail,
+   Urzad, Osob, Wartosc, Status, Przyznano, Koszt calk., Osob z dof., Rozl., Dokumenty, Przygotowal, Opiekunowie */
+var LICZBA_KOLUMN_02 = 19;
 
 /* Pierwszy kontakt wniosku, a gdy wniosek go nie ma, kontakt klienta */
 function kontaktWniosku(w) {
@@ -46,6 +46,10 @@ function znacznikiDokumentow(w) {
       '<input type="checkbox" disabled' + (d[2] ? " checked" : "") + '>' + d[1] + '</label>';
   }).join("") + '</span>';
 }
+
+/* Termin szkolenia wniosku (feedback makiety 19.10.2026): od najwczesniejszego startu do najpozniejszego
+   konca terminow szkolen wniosku (DB: szkolenieOd, szkolenieDo). Jeden dzien jedna data, brak terminow kreska. */
+function terminSzkolenia02(w) { return DB.fmtZakresDat(w.szkolenieOd, w.szkolenieDo); }
 
 /* Tekst do wyszukiwania po wszystkich polach listy (D-262): firma (nazwa skrocona i pelna), NIP, osoba, telefon (tez same
    cyfry), e-mail, wykonawca, instytucja, urzad, przygotowal, opiekunowie i numer wniosku */
@@ -102,6 +106,7 @@ function wierszWniosku(w) {
   var edycja = Auth.edytujeModul("dofin");
   var kolejnosc = edycja && STAN_02.trybKolejnosci;
   var opiekunowie = nazwyOpiekunow(w);
+  var termin = terminSzkolenia02(w);
   return '<tr class="' + Statusy.klasaWiersza(w) + '" data-id="' + esc(w.id) + '"' + (kolejnosc ? ' draggable="true"' : "") + '>' +
     komorkaSzczegolow02(w, kolejnosc) +
     '<td class="strong nowrap">' + esc(w.nr) + '</td>' +
@@ -109,6 +114,7 @@ function wierszWniosku(w) {
       '<span class="pod mono">' + esc(w.nip) + '</span></td>' +
     '<td class="kol-is"' + ukryjIS + '><div class="tnij" title="' + esc(w.isNazwa) + '">' + esc(w.isNazwa) + '</div></td>' +
     '<td><div class="tnij" title="' + esc(w.wykonawca) + '">' + (w.wykonawca ? esc(w.wykonawca) : BRAK_02) + '</div></td>' +
+    '<td class="nowrap kol-termin">' + (termin ? esc(termin) : BRAK_02) + '</td>' +
     '<td><div class="tnij" title="' + esc(kontakt.osoba) + '">' + (kontakt.osoba ? esc(kontakt.osoba) : BRAK_02) + '</div>' +
       '<span class="pod nowrap">' + (kontakt.tel ? esc(kontakt.tel) : "") + '</span></td>' +
     '<td><div class="tnij" title="' + esc(kontakt.mail) + '">' + (kontakt.mail ? esc(kontakt.mail) : BRAK_02) + '</div></td>' +

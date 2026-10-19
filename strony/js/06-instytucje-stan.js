@@ -20,6 +20,8 @@ function odmiana06(n, slowo) {
 var MODEL_TERMINOW = { kalendarz: "kalendarz instytucji", z_gory: "z góry (bez kalendarza)" };
 
 function moznaEdytowac() { return Auth.edytujeModul("inst"); }
+/* Plany szkolen i cenniki: administrator i pracownik LDIT (katalog.zarzadzanie, D-365), ta sama regula co przy zapisie */
+function moznaEdytowacKatalog() { return StraznikKatalog.zarzadzaKatalogiem(); }
 function jestInstytucja() { var s = Auth.sesja(); return !!s && s.instytucja_id != null; }
 
 function klienciIS(id) { return DB.KLIENCI.filter(function (k) { return k.is === id; }); }

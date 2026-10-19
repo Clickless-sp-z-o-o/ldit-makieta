@@ -9,7 +9,7 @@ function kwotyWniosku_E() { return Auth.moze("finanse.kwoty_wniosku"); }
 
 function kolumnyWnioskow_E() {
   var k = [{ k: "nr", n: "Numer" }, { k: "klient", n: "Klient" }, { k: "nip", n: "NIP" }, { k: "is", n: "Instytucja" }, { k: "urzad", n: "Urząd pracy" },
-    { k: "szkolenia", n: "Szkolenia" }, { k: "osob", n: "Osób" }, { k: "status", n: "Status" }, { k: "etap", n: "Etap" },
+    { k: "szkolenia", n: "Szkolenia" }, { k: "szkolenieOd", n: "Termin szkolenia od" }, { k: "szkolenieDo", n: "Termin szkolenia do" }, { k: "osob", n: "Osób" }, { k: "status", n: "Status" }, { k: "etap", n: "Etap" },
     { k: "przygotowal", n: "Przygotował" }, { k: "wykonawca", n: "Wykonawca" }, { k: "data", n: "Data wniosku" }];
   return kwotyWniosku_E() ? k.concat([{ k: "wartosc", n: "Wartość wnioskowana" }, { k: "przyznano", n: "Przyznano" },
     { k: "wklad", n: "Wkład własny" }, { k: "koszt", n: "Koszt całkowity z dopłatą" }]) : k;
@@ -18,6 +18,7 @@ function kolumnyWnioskow_E() {
 function wierszWniosku_E(w) {
   return { nr: w.nr, klient: w.klNazwa, nip: w.nip, is: w.isNazwa, urzad: w.pupNazwa, osob: w.osob, etap: w.etap,
     szkolenia: (w.szkoleniaWniosku || []).map(function (s) { return s.nazwa; }).join(", "),
+    szkolenieOd: DB.fmtDate(w.szkolenieOd), szkolenieDo: w.szkolenieOd ? DB.fmtDate(w.szkolenieDo || w.szkolenieOd) : "",
     status: [w.statusSkl, w.statusDec, w.rozliczenie].filter(Boolean).join(", "), przygotowal: w.przygotowal, wykonawca: w.wykonawca,
     data: DB.fmtDate(w.dataWniosku), wartosc: w.kwotaWnioskowana, przyznano: w.przyznano, wklad: w.wklad, koszt: w.kosztZDoplata };
 }

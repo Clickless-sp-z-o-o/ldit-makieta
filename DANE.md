@@ -225,9 +225,9 @@ Lista kont jest na ekranie logowania, klikasz i formularz się wypełnia.
 | Konto | Rola | Co widzi |
 |---|---|---|
 | bartek@ldit.pl | Administrator | wszystko, w tym prowizje i rejestry |
-| martyna@ldit.pl | Pracownik LDIT | 3 instytucje z 20, bez prowizji i faktur |
-| biuro@odczarujpowerbi.pl | Instytucja szkoleniowa | wyłącznie własnych klientów |
-| mirka@dronfortech.pl | Pracownik IS | dane kontaktowe, bez kwot i numerów PESEL |
+| martyna@ldit.pl | Pracownik LDIT | jedna instytucja z dwóch (Alfa), bez prowizji i faktur |
+| admin@alfa.ldit.test | Instytucja szkoleniowa (Administrator IS) | wyłącznie własnych klientów |
+| handlowiec@beta.ldit.test | Pracownik IS | dane kontaktowe, bez kwot i numerów PESEL |
 | kontakt@stalmetspzoospk.pl | Klient końcowy | wyłącznie własny wniosek |
 
 ---

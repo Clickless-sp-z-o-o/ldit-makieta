@@ -77,7 +77,7 @@ function renderKartaPlanu() {
   var karta = el("planKarta");
   var s = STAN_06.edytowanyPlan ? Store.find("katalog_szkolen", STAN_06.edytowanyPlan) : null;
   if (!s || s.instytucja_id !== STAN_06.wybrana) { karta.style.display = "none"; karta.innerHTML = ""; return; }
-  var edycja = moznaEdytowac();
+  var edycja = moznaEdytowacKatalog();
   el("powrotPlanu").innerHTML = "&larr; Programy: " + esc((aktualnaIS() || {}).nazwa || "");
   karta.style.display = "";
   karta.innerHTML = '<div class="card-head"><h3>Karta planu: ' + esc(s.nazwa) + '</h3><span class="sub mono">' + esc(s.id) +

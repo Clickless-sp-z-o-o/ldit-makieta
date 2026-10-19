@@ -2,15 +2,15 @@
 /* PRZYKLAD: wpisy archiwalne z 2025 to dane demonstracyjne (w bazie nie ma jeszcze importu
    z arkusza). Sluza wylacznie do pokazania historii podmiotu, nie pojawiaja sie na glownej liscie. */
 var ARCHIWUM = [
-  { id: "ZG-A12", data: "2025-11-03", podmiot: "Dron Fortech", typ: "Instytucja",
+  { id: "ZG-A12", data: "2025-11-03", podmiot: "Instytucja Szkoleniowa Beta", typ: "Instytucja",
     powod: "Kontakt z klientem z pominięciem LDIT",
     opis: "Instytucja skontaktowała się bezpośrednio z klientem w sprawie kolejnego szkolenia.",
     autor: "Bartłomiej Olejnik", waga: "wysoka" },
-  { id: "ZG-A07", data: "2025-06-17", podmiot: "Dron Fortech", typ: "Instytucja",
+  { id: "ZG-A07", data: "2025-06-17", podmiot: "Instytucja Szkoleniowa Beta", typ: "Instytucja",
     powod: "Faktura wystawiona bez zgłoszenia w systemie",
     opis: "Fakturę wykryto dopiero przy zamknięciu miesiąca, prowizja naliczona z opóźnieniem.",
     autor: "Martyna Kowal", waga: "średnia" },
-  { id: "ZG-A09", data: "2025-09-01", podmiot: "Safe Work Institute", typ: "Instytucja",
+  { id: "ZG-A09", data: "2025-09-01", podmiot: "Instytucja Szkoleniowa Alfa", typ: "Instytucja",
     powod: "Obniżenie ceny bez uzgodnienia",
     opis: "Pierwszy taki przypadek, wtedy potraktowany jako pomyłka handlowca.",
     autor: "Bartłomiej Olejnik", waga: "średnia" },

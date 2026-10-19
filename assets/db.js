@@ -289,7 +289,7 @@
     DB.ZADANIA = S.get("zadania");
 
     DB.fmtPLN = F.fmtPLN; DB.fmtPLN2 = F.fmtPLN2; DB.fmtNum = F.fmtNum;
-    DB.fmtPct = F.fmtPct; DB.fmtDate = F.fmtDate; DB.wskaznik = wskaznik;
+    DB.fmtPct = F.fmtPct; DB.fmtDate = F.fmtDate; DB.fmtZakresDat = F.fmtZakresDat; DB.wskaznik = wskaznik;
 
     /* Separacja danych zaklada sie tutaj, zanim strona zobaczy cokolwiek.
        Szczegoly i uzasadnienie: assets/zakres.js */

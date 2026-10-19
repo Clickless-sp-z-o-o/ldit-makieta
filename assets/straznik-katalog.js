@@ -9,8 +9,13 @@
    czeka propozycja: zmiana i usunięcie tego szkolenia, cennik tego szkolenia, nowe
    szkolenie o nazwie z oczekującej propozycji dodania.
 
+   Zespół LDIT (feature katalog.zarzadzanie, D-365) zmienia katalog, cenniki i pliki planów bezpośrednio,
+   bez edycji modułu Instytucje, w zakresie swoich instytucji.
+
    API:  StraznikKatalog.propozycjaPozwala(dane, odmowa)
          StraznikKatalog.zatwierdzeniePozwala(operacja, tabela, dane, id) -> true, gdy zapis to zatwierdzenie
+         StraznikKatalog.zarzadzaKatalogiem() -> true, gdy konto zmienia katalog bezpośrednio
+         StraznikKatalog.zapisKataloguPozwala(operacja, tabela, dane, id) -> true, gdy zapis to katalog, cennik albo plik planu
    ============================================================================ */
 (function (global) {
   "use strict";
@@ -31,6 +36,25 @@
     }
     var pola = Object.keys(JSON.parse(dane.zmiany || "{}"));
     if (!pola.length || pola.some(function (k) { return POLA.indexOf(k) < 0; })) odmowa("pole_chronione", "Tych pól katalogu nie można zgłosić.");
+  }
+
+  /* Bezposrednia zmiana katalogu: edycja modulu Instytucje (administrator) albo feature katalog.zarzadzanie
+     (pracownik LDIT, D-365). Ta sama regula w interfejsie ekranu Instytucje i przy zapisie. */
+  function zarzadzaKatalogiem() {
+    var Auth = global.Auth;
+    return Auth.edytujeModul("inst") || Auth.moze("katalog.zarzadzanie");
+  }
+
+  /* Plik planu ma szkolenie_id (D-278); przy zmianie i usunieciu bierzemy wiersz z bazy */
+  function plikPlanu(operacja, dane, id) {
+    var w = operacja === "insert" ? (dane || {}) : (S.one("SELECT szkolenie_id FROM pliki WHERE id = ?", [id]) || {});
+    return !!w.szkolenie_id;
+  }
+
+  function zapisKataloguPozwala(operacja, tabela, dane, id) {
+    if (!zarzadzaKatalogiem()) return false;
+    if (tabela === "katalog_szkolen" || tabela === "ceny_szkolen") return true;
+    return tabela === "pliki" && plikPlanu(operacja, dane, id);
   }
 
   function oczekujace(sql, parametry) {
@@ -61,5 +85,6 @@
     return oczekujace("rekord_id = ? AND operacja = ?", [id, operacja === "remove" ? "usuniecie" : "zmiana"]).length > 0;
   }
 
-  global.StraznikKatalog = { propozycjaPozwala: propozycjaPozwala, zatwierdzeniePozwala: zatwierdzeniePozwala };
+  global.StraznikKatalog = { propozycjaPozwala: propozycjaPozwala, zatwierdzeniePozwala: zatwierdzeniePozwala,
+                            zarzadzaKatalogiem: zarzadzaKatalogiem, zapisKataloguPozwala: zapisKataloguPozwala };
 })(window);

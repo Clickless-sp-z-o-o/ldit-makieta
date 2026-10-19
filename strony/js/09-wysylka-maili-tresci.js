@@ -56,7 +56,7 @@ var TRESCI = {
 "  oraz warunków stosowania tych zwolnień (Dz. U. z 2020 r. poz. 1983). Szkolenie\n" +
 "  finansowane w {projekt.procentDofinansowania} z Krajowego Funduszu Szkoleniowego.\n" +
 "- Uczestnicy: {projekt.listaUczestnikow}\n" +
-"- Termin: {termin.od} do {termin.do}\n\n" +
+"- Termin: {termin.szkolenia}\n\n" +
 "Pozdrawiam\n{ldit.podpis}\nLDIT",
     uwaga:
       'Klauzula w dokumencie klienta zakłada jeden procent finansowania. Wskaźnik zależy jednak od wielkości firmy ' +

@@ -8,7 +8,7 @@ function panelFaktura07() {
               <div class="card-head">
                 <h3>Szablon maila „dane do faktury”<span class="tip-mark" data-tip="Sekcja definiuje gotowy szablon maila z danymi firmy do wystawienia faktury: nazwa klienta, adres, NIP, odbiorca FV, szkolenie, liczba osób, ceny i termin płatności. Pola są uzupełniane automatycznie z karty klienta i projektu. Akcja jest uruchamiana na żądanie z karty projektu (D-104), a mail wymaga zatwierdzenia przed wysłaniem. Sekcja istnieje, żeby ujednolicić treść i uniknąć ręcznego przepisywania danych firmy.">i</span></h3>
                 <span class="sub">akcja na żądanie z karty projektu <span class="ref">D-104</span></span>
-                <div class="ch-actions"><button class="btn sm">Edytuj szablon</button></div>
+                <div class="ch-actions"><button class="btn sm" data-edycja>Edytuj szablon</button></div>
               </div>
               <div class="card-body">
                 <div class="mail-preview" id="mailFakt"></div>
@@ -52,13 +52,13 @@ function panelFaktura07() {
 
             <div class="field mt16">
               <label>Domyślny odbiorca maila</label>
-              <select class="inp" id="odbiorcaFakt"></select>
+              <select class="inp" id="odbiorcaFakt" data-edycja></select>
               <div class="hint">Osoba od faktur z karty instytucji. Zmiana nie wpływa na już wysłane maile.</div>
             </div>
 
             <div class="field">
               <label>Domyślny termin płatności</label>
-              <select class="inp">
+              <select class="inp" data-edycja>
                 <option>14 dni od wystawienia</option>
                 <option>21 dni od wystawienia</option>
                 <option>30 dni od wystawienia</option>

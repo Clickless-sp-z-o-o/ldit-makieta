@@ -447,7 +447,8 @@ window.PrzewodnikTresci = {
    "niewidacKlienta",
    "eksport",
    "szukanie",
-   "wstecz"
+   "wstecz",
+   "bezczynnosc"
   ],
   "instytucja": [
    "haslo",
@@ -458,7 +459,8 @@ window.PrzewodnikTresci = {
    "zmianaDanych",
    "eksport",
    "szukanie",
-   "wstecz"
+   "wstecz",
+   "bezczynnosc"
   ]
  },
  "strony": [
@@ -603,11 +605,11 @@ window.PrzewodnikTresci = {
   "ldit.panel.przewodnik.ekran.dofin.instytucja.niewidac": "Nie ma tu osób z LDIT (kto przygotował wniosek, opiekunowie) ani innych instytucji. Konto handlowca widzi tylko projekty swoich klientów, bez kwot.",
   "ldit.panel.przewodnik.ekran.dofin.instytucja.opis": "Projekty Twojej instytucji z wybranego roku: status, urząd, uczestnicy i rozliczenie, wiersz w kolorze statusu.",
   "ldit.panel.przewodnik.ekran.dofin.instytucja.tytul": "Dofinansowania",
-  "ldit.panel.przewodnik.ekran.dofin.instytucja.wskazowki": "Legenda pod filtrami objaśnia kolory: czekamy, pozytywna, negatywna, rezygnacja, rozliczony.\nWyczyść filtry zostawia wybrany rok.",
+  "ldit.panel.przewodnik.ekran.dofin.instytucja.wskazowki": "Legenda pod filtrami objaśnia kolory: czekamy, pozytywna, negatywna, rezygnacja, rozliczony.\nWyczyść filtry zostawia wybrany rok.\nKolumna Termin szkolenia pokazuje pierwszy i ostatni dzień szkoleń projektu z terminów na karcie projektu (Szkolenia i terminy); jest pusta, gdy żadne szkolenie nie ma terminu.",
   "ldit.panel.przewodnik.ekran.dofin.zespol.kroki": "Wybierz rok w menu (Dofinansowania z rokiem) albo z listy nad tabelą; rok można rozwinąć do jednej instytucji.\nWpisz frazę i kliknij Wyszukaj albo naciśnij Enter; zawęź listę filtrami Instytucja, Urząd, Status, Przygotował.\nStatus zmienisz w kolumnie Status; zmiana zapisuje się od razu razem z rozliczeniem i etapem.\nSzczegóły otwierają kartę projektu, a Historia pokazuje zmiany nad tabelą.\n+ Nowy projekt zakłada projekt dla istniejącego klienta.\nEksport zapisuje widok listy do CSV albo Excela.",
   "ldit.panel.przewodnik.ekran.dofin.zespol.opis": "Lista projektów (wniosków) z wybranego roku, jak dawny Excel: wiersz w kolorze statusu, filtry, zmiana statusu z listy.",
   "ldit.panel.przewodnik.ekran.dofin.zespol.tytul": "Dofinansowania",
-  "ldit.panel.przewodnik.ekran.dofin.zespol.wskazowki": "Wyczyść filtry zostawia wybrany rok.\nUstaw kolejność pozwala ułożyć wiersze ręcznie, a Usunięte z listy przywraca schowane wiersze.\nLegenda pod filtrami objaśnia kolory: czekamy, pozytywna, negatywna, rezygnacja, rozliczony.",
+  "ldit.panel.przewodnik.ekran.dofin.zespol.wskazowki": "Wyczyść filtry zostawia wybrany rok.\nUstaw kolejność pozwala ułożyć wiersze ręcznie, a Usunięte z listy przywraca schowane wiersze.\nLegenda pod filtrami objaśnia kolory: czekamy, pozytywna, negatywna, rezygnacja, rozliczony.\nKolumna Termin szkolenia pokazuje pierwszy i ostatni dzień szkoleń projektu z terminów na karcie projektu (Szkolenia i terminy); jest pusta, gdy żadne szkolenie nie ma terminu.",
   "ldit.panel.przewodnik.ekran.formularz.instytucja.kroki": "W zakładce Formularz klienta wpisz nazwę firmy i NIP (to wystarczy do zapisu).\nUzupełnij dane firmy, osoby do kontaktu, zatrudnienie, szkolenie i uczestników.\nKliknij Wyślij do akceptacji LDIT.\nNa liście Moje wysłane formularze sprawdzisz status; zwrócony formularz popraw i wyślij ponownie.\nWycofaj do uzupełnienia zabiera wysłany formularz z powrotem do poprawki.",
   "ldit.panel.przewodnik.ekran.formularz.instytucja.niewidac": "Ceny i kwoty w formularzu widzi administrator instytucji. Formularz akceptuje zespół LDIT.",
   "ldit.panel.przewodnik.ekran.formularz.instytucja.opis": "Tu przekazujesz klienta do LDIT: wypełniasz formularz zgłoszeniowy i wysyłasz go do akceptacji.",
@@ -724,6 +726,8 @@ window.PrzewodnikTresci = {
   "ldit.panel.przewodnik.ekran.zglo.zespol.tytul": "Zgłoszenia",
   "ldit.panel.przewodnik.ekran.zglo.zespol.wskazowki": "Autorem wpisu jest domyślnie zalogowana osoba.\nPo prawej są czarna lista klientów i podmioty powracające.",
   "ldit.panel.przewodnik.ekrany.tytul": "Ekrany dostępne dla Twojego konta",
+  "ldit.panel.przewodnik.faq.bezczynnosc.odpowiedz": "Po 5 minutach bez ruchu myszy, klawiatury i przewijania system wylogowuje automatycznie, żeby nikt nie skorzystał z pozostawionego komputera. Minutę wcześniej pojawia się okno z odliczaniem: kliknij Zostań zalogowany, żeby pracować dalej. Wylogowanie obejmuje wszystkie otwarte karty. Po ponownym zalogowaniu wracasz na ten sam ekran, a niezapisane zmiany trzeba wpisać jeszcze raz.",
+  "ldit.panel.przewodnik.faq.bezczynnosc.pytanie": "Dlaczego zostałem wylogowany?",
   "ldit.panel.przewodnik.faq.eksport.odpowiedz": "Na listach jest przycisk Eksport z wyborem CSV albo Excel. Plik zawiera to, co widzisz na liście po filtrach, i tylko pola, do których masz uprawnienia.",
   "ldit.panel.przewodnik.faq.eksport.pytanie": "Jak pobrać dane do Excela?",
   "ldit.panel.przewodnik.faq.formularzBraki.odpowiedz": "Akceptacja jest zablokowana, dopóki w formularzu brakuje wymaganych danych. Formularz można zwrócić do uzupełnienia; po poprawce wraca do akceptacji.",

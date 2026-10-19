@@ -88,7 +88,9 @@
   function modulPozwala(tabela, operacja, dane, id) {
     var moduly = tabela === "pliki" ? global.StraznikWlasnosc.modulyPliku(operacja, dane, id) : MODUL_TABELI[tabela];
     if (!moduly) odmowa("nieznana_tabela", "Zapis do tabeli " + tabela + " nie jest dozwolony z interfejsu.");
-    var ok = moduly.some(function (m) { return global.Auth.edytujeModul(m); });
+    /* Katalog szkolen, cenniki i pliki planow: takze feature katalog.zarzadzanie (pracownik LDIT, D-365) */
+    var ok = moduly.some(function (m) { return global.Auth.edytujeModul(m); }) ||
+      (global.StraznikKatalog && global.StraznikKatalog.zapisKataloguPozwala(operacja, tabela, dane, id));
     if (!ok) odmowa("brak_uprawnien", "Twoja rola nie ma prawa edycji w tym module.");
   }
 

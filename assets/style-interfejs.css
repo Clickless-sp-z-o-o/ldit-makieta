@@ -99,3 +99,19 @@ tr.row-set td .pod, tr.row-set td .mono { color: #2b4372; }
 /* Avatar w gornym pasku otwiera Moje konto (D-321) */
 button.avatar { border: 0; padding: 0; cursor: pointer; font-family: inherit; }
 button.avatar:hover { background: var(--brand-900); }
+
+/* ------------------------------ panele edycji i pasek akcji ------------------------------ */
+/* Feedback makiety 19.10.2026 (Lucja Wierzbicka, docs/33): na ekranach-listach (.page.lista, strona na wysokosc
+   okna) formularz edycji nad tabela nie miescil sie w karcie i nie dawal sie przewinac kolkiem, a Zapisz i Anuluj
+   pojawialy sie dopiero po zwinieciu sekcji. Panel edycji (.panel-edycji) przewija sie sam (kolko, dotyk), tabela
+   pod nim oddaje mu miejsce, a pasek akcji (.pasek-akcji) jest przyklejony do dolu panelu albo okna. */
+.pasek-akcji {
+  position: sticky; bottom: 0; z-index: 3; background: var(--surface); border-top: 1px solid var(--line);
+  padding: 10px 0 8px; margin-top: 12px;
+}
+.pasek-akcji .btn-row { margin: 0; }
+.page.lista > .card > .panel-edycji,
+.page.lista > .panel-edycji {
+  flex: 0 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+}
+.page.lista > .card > .panel-edycji ~ .lista-tabela { flex-basis: 0; }

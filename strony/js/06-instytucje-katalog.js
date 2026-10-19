@@ -8,7 +8,7 @@ function liczbaPlikow(idSzkolenia) {
   return Store.one("SELECT COUNT(*) AS n FROM pliki WHERE szkolenie_id = ?", [idSzkolenia]).n;
 }
 function przyciskiPlanu(s) {
-  var usun = moznaEdytowac() ? '<button class="btn xs" title="Usuń plan" onclick="usunPlan(\'' + escJs(s.id) + '\')">&times;</button>' : "";
+  var usun = moznaEdytowacKatalog() ? '<button class="btn xs" title="Usuń plan" onclick="usunPlan(\'' + escJs(s.id) + '\')">&times;</button>' : "";
   return '<div class="btn-row" style="justify-content:flex-end">' +
     '<button class="btn xs" onclick="otworzKartePlanu(\'' + escJs(s.id) + '\')">&#9998; Karta planu</button>' + usun + '</div>';
 }
@@ -31,7 +31,7 @@ function renderKatalog(i) {
     .forEach(function (r) { plany[r.id] = r.plan_szkolenia; });
   el("katSub").textContent = szk.length + " programów instytucji " + i.nazwa + ".";
   el("notkaKatalogIS").style.display = jestInstytucja() ? "" : "none";
-  pokazTylkoGdyEdycja("btnDodajPlan");
+  el("btnDodajPlan").style.display = moznaEdytowacKatalog() ? "" : "none";
   el("katalog").innerHTML = szk.length ? szk.map(function (s) {
     var real = wnioski.filter(function (w) { return w.szkId === s.id; }).length;
     return wierszPlanu(s, real, plany[s.id]);

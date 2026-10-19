@@ -81,6 +81,7 @@ function renderSzczegol() {
   renderKatalog(i);
   renderOsoby(i);
   renderMaile(i);
-  /* Warunki, certyfikat, faktura i formularz: tylko administrator (D-07), kod w 07-konfigurator-is-*.js */
-  if (widziKonfiguracje06()) pokazKonfiguracje07(i.id);
+  /* Certyfikat, dane do faktury i formularz dla zespolu LDIT, warunki prowizyjne tylko administrator (D-07, D-366);
+     kod w 07-konfigurator-is-*.js */
+  pokazKonfiguracje07(i.id);
 }

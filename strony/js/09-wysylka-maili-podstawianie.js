@@ -12,11 +12,15 @@ function adresMaila(w) {
   return (zWniosku && zWniosku.mail) || klientWniosku(w).mail || "";
 }
 
-/* Termin szkolenia wniosku: ten na szkolenie glowne, a gdy go nie ma, najblizszy termin instytucji */
+/* Termin z kalendarza dla wniosku: termin przypisany uczestnikom wniosku, a gdy go nie ma, najblizszy termin
+   szkolenia glownego w tej instytucji. Nigdy termin innego szkolenia: w mailu "dane do faktury" trafilby
+   na fakture (feedback makiety 19.10.2026). Daty samego wniosku (pozycje) ma zmienna termin.szkolenia. */
 function terminWniosku(w) {
   var terminy = DB.TERMINY.filter(function (x) { return x.is === w.is; })
     .sort(function (a, b) { return a.od < b.od ? -1 : 1; });
-  return terminy.filter(function (x) { return x.szk === w.szkId; })[0] || terminy[0] || null;
+  var uczestnikow = (w.uczestnicy || []).map(function (u) { return u.termin; }).filter(Boolean);
+  return terminy.filter(function (x) { return uczestnikow.indexOf(x.id) >= 0; })[0] ||
+    terminy.filter(function (x) { return x.szk === w.szkId; })[0] || null;
 }
 /* Nabor ogloszony urzedu wniosku: jeden na urzad, z widoku v_urzedy_nabory (D-272) */
 function naborWniosku(w) {

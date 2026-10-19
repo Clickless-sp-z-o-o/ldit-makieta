@@ -23,16 +23,17 @@ function uczestnicyFormHTML(kl) {
     '<button class="btn sm" type="button" style="margin-top:8px" onclick="dodajWierszUczestnika04()">+ Dodaj uczestnika</button>';
 }
 
+/* Bez zagniezdzonej karty: panel #klientForm (.panel-edycji) sam sie przewija, a pasek akcji z Zapisz i Anuluj
+   jest przyklejony do jego dolu (feedback makiety 19.10.2026, style-interfejs.css) */
 function klientFormHTML(kl, tytul) {
-  return '<div class="card mb0"><div class="card-body">' +
+  return '<div class="kf-formularz">' +
     '<div class="small strong" style="margin-bottom:10px">' + esc(tytul) + '</div>' +
     (kl ? "" : '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding-bottom:10px">' + poleInstytucjiHtml() + '</div>') +
     KlientFormularz.klientHtml(PREFIKS_FORM_KLIENTA, kl) + uczestnicyFormHTML(kl) +
-    '<div class="small" id="klientBledy" style="color:var(--neg,#b91c1c);margin-top:8px"></div>' +
-    '<div class="btn-row" style="margin-top:12px">' +
+    '<div class="pasek-akcji"><div class="btn-row">' +
       '<button class="btn primary sm" onclick="zapiszKlient()">Zapisz</button>' +
       '<button class="btn sm" onclick="zamknijKlientForm()">Anuluj</button>' +
-    '</div></div></div>';
+    '</div><div class="small" id="klientBledy" role="alert" style="color:var(--neg,#b91c1c);margin-top:6px"></div></div></div>';
 }
 
 /* Kazdy dopisywany uczestnik ma wlasny prefiks pol: nu0, nu1, ... */
@@ -56,7 +57,7 @@ function otworzKlientForm(kl, tytul) {
   STAN_FORM_04.uczestnicy = 0;
   el.innerHTML = klientFormHTML(kl, tytul);
   el.style.display = "block";
-  el.scrollIntoView({ behavior: "smooth", block: "center" });
+  el.scrollTop = 0;
 }
 function zamknijKlientForm() {
   var el = document.getElementById("klientForm");

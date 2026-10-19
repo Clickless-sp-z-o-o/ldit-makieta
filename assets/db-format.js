@@ -17,5 +17,13 @@
     return m ? m[3] + "." + m[2] + "." + m[1] + m[4].replace("T", " ").slice(0, 6) : String(d);
   };
 
-  global.DBFormat = { fmtPLN: fmtPLN, fmtPLN2: fmtPLN2, fmtNum: fmtNum, fmtPct: fmtPct, fmtDate: fmtDate };
+  /* Zakres dat "od - do" (feedback makiety 19.10.2026: termin szkolenia na liscie wnioskow i w mailach).
+     Jeden dzien to jedna data, brak poczatku to pusty tekst, brak konca to sam poczatek. */
+  var fmtZakresDat = function (od, dok) {
+    if (!od) return "";
+    var a = fmtDate(od), b = fmtDate(dok || od);
+    return a === b ? a : a + " - " + b;
+  };
+
+  global.DBFormat = { fmtPLN: fmtPLN, fmtPLN2: fmtPLN2, fmtNum: fmtNum, fmtPct: fmtPct, fmtDate: fmtDate, fmtZakresDat: fmtZakresDat };
 })(window);

@@ -1,17 +1,18 @@
 /* Ekran Instytucje: trzy widoki jednej strony (uwagi z 08.10.2026).
      przeglad  kafelki instytucji w ich kolorach
      konfig    konfiguracja jednej instytucji, wszystkie zakladki w jednym miejscu
-               (Konto, Programy, Osoby, Korespondencja i, tylko dla administratora,
-               Warunki prowizyjne, Wzor certyfikatu, Dane do faktury, Formularz, D-07)
+               (Konto, Programy, Osoby, Korespondencja, Wzor certyfikatu, Dane do faktury,
+               Formularz i, tylko dla administratora, Warunki prowizyjne, D-07; pracownik LDIT
+               widzi certyfikat i formularz w podgladzie, a dane do faktury edytuje, D-366)
      plan      karta planu szkolenia otwierana z zakladki Programy
    Stan widoku jest w adresie (?id=IS-01&zakladka=p-prow&plan=SZ-101), wiec Wstecz
    i linki z innych ekranow trafiaja w to samo miejsce. Tylko deklaracje. */
 
 var WIDOKI_06 = { przeglad: "widokPrzeglad", konfig: "widokKonfig", plan: "widokPlan" };
 var ZAKLADKA_STARTOWA_06 = "p-dane";
-var ZAKLADKI_ADMINA_06 = ["p-prow", "p-cert", "p-fakt", "p-form"];
+var ZAKLADKI_ADMINA_06 = ["p-prow"];
 
-/* Zakladki z warunkami i konfiguracja wspolpracy widzi tylko konto z modulem Administracja (D-07) */
+/* Zakladke z warunkami prowizyjnymi widzi tylko konto z modulem Administracja (D-07) */
 function widziKonfiguracje06() { return Auth.widziModul("admin"); }
 
 function dozwolonaZakladka06(pid) {
