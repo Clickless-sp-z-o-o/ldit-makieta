@@ -130,7 +130,7 @@
     var strona = doc.querySelector(".page");
     if (strona && !strona.getAttribute("role")) strona.setAttribute("role", "main");
     var h1 = doc.querySelector(".page h1, .page-head h1");
-    if (h1 && global.top === global.self) doc.title = h1.textContent.trim() + " · System KFS";
+    if (h1 && global.top === global.self) doc.title = h1.textContent.trim() + " · Wnioski KFS LDiT";
   }
 
   function start() {

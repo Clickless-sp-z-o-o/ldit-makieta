@@ -16,7 +16,7 @@ function pokazProjekt22(id) {
   var w = DB.WNIOSKI_WSZYSTKIE.filter(function (x) { return x.id === id; })[0];
   if (!w) { brak22("Nie ma takiego projektu w danych Twojej instytucji."); return; }
   el22("tytul22").textContent = "Projekt " + (w.nr || w.id) + ": " + w.klNazwa;
-  document.title = "Projekt " + (w.nr || w.id) + " · System KFS";
+  document.title = "Projekt " + (w.nr || w.id) + " · Wnioski KFS LDiT";
   el22("tresc22").innerHTML = '<div class="grid g-2-1"><div data-przewodnik="projekt-dane">' + sekcjaDanych22(w) + sekcjaUczestnikow22(w) + '</div><div data-przewodnik="projekt-boczne">' +
     sekcjaSzkolen22(w) + sekcjaDokumentow22(w) + sekcjaPrzebiegu22(w) + "</div></div>";
 }
