@@ -44,10 +44,16 @@ var KOLUMNY_FIRMY_CSV = {
   konto_praca_gov: "konto_praca_gov",
   wielkosc: "wielkosc", "wielkosc przedsiebiorstwa": "wielkosc", "urzad pracy": "pup_nazwa", szkolenie: "szkolenie", uwagi: "uwagi"
 };
+/* Zatrudnienie od - do i Stanowisko (D-368, kolumna zawod); "Zawód" ze starego szablonu to ta sama kolumna */
 var KOLUMNY_UCZESTNIKA_CSV = {
   "imie i nazwisko": "imie_nazwisko", uczestnik: "imie_nazwisko", "rodzaj zatrudnienia": "rodzaj_zatrudnienia",
-  zatrudnienie: "rodzaj_zatrudnienia", wyksztalcenie: "wyksztalcenie", zawod: "zawod", pesel: "pesel"
+  zatrudnienie: "rodzaj_zatrudnienia", "zatrudnienie od": "zatrudnienie_od", "zatrudnienie do": "zatrudnienie_do",
+  stanowisko: "zawod", zawod: "zawod", wyksztalcenie: "wyksztalcenie", pesel: "pesel"
 };
+var KOLUMNY_DAT_UCZESTNIKA_CSV = ["zatrudnienie_od", "zatrudnienie_do"];
+/* Excel zapisuje date jako liczbe dni od 30.12.1899 */
+var POCZATEK_DAT_EXCELA_CSV = Date.UTC(1899, 11, 30);
+var MS_DOBY_CSV = 86400000;
 var KODY_ZATRUDNIENIA_CSV = [
   ["prac", "umowa_o_prace"], ["uop", "umowa_o_prace"], ["zlec", "umowa_zlecenie"], ["dzie", "umowa_o_dzielo"],
   ["wlasc", "wlasciciel"], ["wlasn", "wlasciciel"], ["jdg", "wlasciciel"]
@@ -68,7 +74,7 @@ var NAGLOWKI_SZABLONU_CSV = [
   "Czy zostało zawarte porozumienie bądź ugoda? (TAK/NIE, tylko przy TAK powyżej)",
   "Czy posiada konto organizacji na praca.gov.pl? (TAK/NIE, konto musi być zweryfikowane)",
   "Wielkość", "Urząd pracy", "Szkolenie", "Uwagi",
-  "Imię i nazwisko", "Rodzaj zatrudnienia", "Wykształcenie", "Zawód", "PESEL"
+  "Imię i nazwisko", "Rodzaj zatrudnienia", "Zatrudnienie od", "Zatrudnienie do (puste: czas nieokreślony)", "Stanowisko", "Wykształcenie", "PESEL"
 ];
 
 /* Male litery bez polskich znakow, pojedyncze spacje */
@@ -111,6 +117,22 @@ function rodzajZatrudnieniaCsv(tekst) {
     if (n.indexOf(KODY_ZATRUDNIENIA_CSV[i][0]) >= 0) return KODY_ZATRUDNIENIA_CSV[i][1];
   }
   return "inna";
+}
+
+/* Data z komorki: 2024-02-01, 01.02.2024 (albo 1.2.2024) albo liczba dni z Excela; inna wartosc zostaje tekstem,
+   a walidacja formularza odrzuca ja z komunikatem (Akceptacje.zglosFormularz) */
+function dataCsv(tekst) {
+  var t = String(tekst || "").trim();
+  var pl = t.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+  if (pl) return pl[3] + "-" + ("0" + pl[2]).slice(-2) + "-" + ("0" + pl[1]).slice(-2);
+  if (/^\d{5}$/.test(t)) return new Date(POCZATEK_DAT_EXCELA_CSV + parseInt(t, 10) * MS_DOBY_CSV).toISOString().slice(0, 10);
+  return t;
+}
+
+/* Komorka uczestnika: rodzaj zatrudnienia na kod, daty zatrudnienia na RRRR-MM-DD */
+function wartoscUczestnikaCsv(kolumna, tekst) {
+  if (kolumna === "rodzaj_zatrudnienia") return rodzajZatrudnieniaCsv(tekst);
+  return KOLUMNY_DAT_UCZESTNIKA_CSV.indexOf(kolumna) >= 0 ? dataCsv(tekst) : tekst;
 }
 
 /* ------------------------------ wartosci pol formularza klienta ------------------------------ */
@@ -278,7 +300,7 @@ function parsujWierszeFormularza(wiersze, format) {
       var v = (w[i] || "").trim();
       if (!k || !v) return;
       if (k[0] === "firma") dodajKomorkeFirmyCsv(wynik, k[1], v);
-      else uczestnik[k[1]] = k[1] === "rodzaj_zatrudnienia" ? rodzajZatrudnieniaCsv(v) : v;
+      else uczestnik[k[1]] = wartoscUczestnikaCsv(k[1], v);
     });
     if (uczestnik.imie_nazwisko) wynik.uczestnicy.push(uczestnik);
   });

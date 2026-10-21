@@ -19,7 +19,11 @@ function wybor16(id, etykieta, opcje, wybrana) {
 function siatka16(pola) { return '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px">' + pola.join("") + '</div>'; }
 
 /* Formularze panelu otwieraja sie w bloku na cala szerokosc strony, nad siatka (uwaga 08.10) */
-function pokazBlokFormularza16() { el16("zgloszenieForm").scrollIntoView({ block: "start" }); }
+/* Kazdy formularz panelu (zgloszenie, zmiana danych, katalog) jest panelem dla Wstecz: Wstecz zamyka go jak Anuluj */
+function pokazBlokFormularza16() {
+  el16("zgloszenieForm").scrollIntoView({ block: "start" });
+  Nawigacja.panelOtwarty(zamknijZgloszenie16);
+}
 
 /* Dane instytucji zmienia tylko konto calej instytucji (Administrator IS), nie pracownik ani handlowiec */
 function mozeZmieniacInstytucje16() {
@@ -99,7 +103,11 @@ function wyslij16(akcja) {
     el16("komunikat16").style.color = "var(--neg-ink)";
   }
 }
-function zamknijZgloszenie16() { el16("zgloszenieForm").style.display = "none"; el16("zgloszenieForm").innerHTML = ""; }
+function zamknijZgloszenie16() {
+  el16("zgloszenieForm").style.display = "none";
+  el16("zgloszenieForm").innerHTML = "";
+  Nawigacja.panelZamkniety();
+}
 
 /* Zwrot i wycofanie do uzupelnienia (D-269, D-331): napis z Akceptacje.etykietaStatusu */
 function tagStatusu16(status, powod) {

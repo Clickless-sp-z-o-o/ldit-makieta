@@ -17,7 +17,7 @@ function otworzKartePlanu(id) {
   STAN_06.edytowanyPlan = id;
   pokazWidok06("plan");
   renderSzczegol();
-  zapiszStan06();
+  zapiszStan06(true);
 }
 function zamknijKartePlanu() {
   STAN_06.edytowanyPlan = null;

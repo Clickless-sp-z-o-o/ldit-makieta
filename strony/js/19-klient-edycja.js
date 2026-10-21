@@ -32,14 +32,19 @@ function obsluzAkcjeDanych19(e) {
   else if (a.dataset.akcja === "czarna-regula") KlientLogika.przywrocRegule(kl.id);
 }
 
-/* ---------- Formularz edycji wszystkich danych klienta ---------- */
-function otworzEdycje19() {
+/* ---------- Formularz edycji wszystkich danych klienta ----------
+   Otwarty przyciskiem Edytuj jest panelem dla Wstecz (zamyka sie jak Anuluj), otwarty z adresu (?edytuj=) nie. */
+function otworzEdycje19(zAdresu) {
   el19("edycjaPola").innerHTML = KlientFormularz.klientHtml(PREFIKS_KLIENTA, Store.find("klienci", STAN_19.kl.id));
   el19("edycjaBledy").textContent = "";
   el19("cardEdycja").style.display = "block";
   el19("cardEdycja").scrollIntoView({ behavior: "smooth", block: "start" });
+  if (zAdresu !== true) Nawigacja.panelOtwarty(zamknijEdycje19);
 }
-function zamknijEdycje19() { el19("cardEdycja").style.display = "none"; }
+function zamknijEdycje19() {
+  el19("cardEdycja").style.display = "none";
+  Nawigacja.panelZamkniety();
+}
 
 function zapiszEdycje19() {
   var wynik = KlientLogika.zapiszDaneKlienta(STAN_19.kl.id, KlientFormularz.zbierzKlienta(PREFIKS_KLIENTA));
@@ -87,7 +92,7 @@ function usunUrzad19(e) {
 
 function podepnijEdycje19() {
   el19("btnEdytuj").style.display = mozeEdytowac19() ? "" : "none";
-  el19("btnEdytuj").addEventListener("click", otworzEdycje19);
+  el19("btnEdytuj").addEventListener("click", function () { otworzEdycje19(false); });
   el19("btnZapiszKlienta").addEventListener("click", zapiszEdycje19);
   el19("btnAnulujKlienta").addEventListener("click", zamknijEdycje19);
   el19("sekcjeDanych").addEventListener("click", obsluzAkcjeDanych19);
@@ -95,5 +100,5 @@ function podepnijEdycje19() {
   el19("btnZlozWniosek").addEventListener("click", zlozWniosek19);
   el19("btnDodajUrzad").addEventListener("click", dodajUrzad19);
   el19("urzedyDodatkowe").addEventListener("click", usunUrzad19);
-  if (new URLSearchParams(location.search).get("edytuj") && mozeEdytowac19()) otworzEdycje19();
+  if (new URLSearchParams(location.search).get("edytuj") && mozeEdytowac19()) otworzEdycje19(true);
 }

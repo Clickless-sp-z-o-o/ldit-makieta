@@ -2,7 +2,8 @@
    Plik zawiera wylacznie deklaracje. Dane sa czytane dopiero w inicjuj04() i przebuduj04(). */
 
 var MS_NA_DOBE = 86400000;
-var STAN_04 = { DZIS: null, NAB: {}, K: [], WN_BY_KL: {}, expanded: {}, edytowanyKlient: null };
+/* wyrozniony: klient po powrocie z karty albo z edycji, wyrozniony tez po przerysowaniu listy */
+var STAN_04 = { DZIS: null, NAB: {}, K: [], WN_BY_KL: {}, expanded: {}, edytowanyKlient: null, wyrozniony: null };
 
 /* Jeden nabor per urzad wybiera widok v_urzedy_nabory (D-272): trwajacy albo oczekujacy
    nabor ogloszony, potem prognoza, na koncu ostatni zakonczony (DB.PUPY[].stan). */
@@ -49,13 +50,15 @@ function budujK() {
 
 /* ---------- Filtr statusu: klienci i ich rozwiniete wnioski ----------
    Wybor wielokrotny, lacznie (lub). Domyslnie "przed": klienci bez wniosku albo
-   z wnioskiem Niezlozony / NW. Brak wyboru = wszyscy klienci i wszystkie wnioski. */
+   z wnioskiem Niezlozony / NW (D-216). Brak wyboru = wszyscy klienci i wszystkie wnioski.
+   "Z wnioskiem aktywnym" to skrot zaznaczajacy Czekamy i Pozytywna (D-367, feedback Martyny
+   19.10.2026); Pozytywna w tym filtrze nie obejmuje rozliczonych, te maja osobna opcje. */
 function wybraneStatusy04() { return Wielowybor.wartosci(document.getElementById("fStatusWn")); }
 
 function wniosekPasuje(w, f) {
   if (f === "przed") return Statusy.przedZlozeniem(w);
-  if (f === "aktywne") return w.rozliczenie !== "Rozliczone";
   if (f === "Rozliczone") return w.rozliczenie === "Rozliczone";
+  if (f === "Pozytywna") return Statusy.wartosc(w) === "Pozytywna" && w.rozliczenie !== "Rozliczone";
   return Statusy.wartosc(w) === f;
 }
 function wnioskiWFiltrze(list) {

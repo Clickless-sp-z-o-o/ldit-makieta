@@ -80,8 +80,9 @@ function przyciskiAkcji04(kl) {
 
 /* Kolumna Klient: nazwa skrocona (nazwaLista), pelna nazwa w dymku (spotkanie 14.10.2026) */
 function wierszKlienta(r) {
-  var cls = r.status === "trwa" ? "row-pos row-nabor"
-          : (r.status === "zakończony" || r.status === "Bez informacji") ? "dim" : "";
+  var cls = (r.status === "trwa" ? "row-pos row-nabor"
+          : (r.status === "zakończony" || r.status === "Bez informacji") ? "dim" : "") +
+          (r.kl.id === STAN_04.wyrozniony ? " wiersz-powrotu" : "");
   var row = '<tr class="' + cls + '" data-kl="' + esc(r.kl.id) + '">' +
     '<td class="exp-cell">' + przyciskRozwijania(r) + '</td>' +
     '<td class="strong">' + esc(r.kl.nr) + '</td>' +

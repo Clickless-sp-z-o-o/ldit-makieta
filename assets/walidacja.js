@@ -69,7 +69,7 @@
     /* Szkolenie uczestnika i cennik (D-277, D-279) */
     uczestnik_szkolenia: { cena: ["kwota"], powod_niezakwalifikowania: ["tekst"], komentarz: ["tekst"] },
     ceny_szkolen: { cena: ["wymagane", "kwota"] },
-    uczestnicy_klienta: { imie_nazwisko: ["wymagane", "tekst"], pesel: ["pesel"], zatrudnienie_do: ["data"],
+    uczestnicy_klienta: { imie_nazwisko: ["wymagane", "tekst"], pesel: ["pesel"], zatrudnienie_od: ["data"], zatrudnienie_do: ["data"],
                           wyksztalcenie: ["tekst"], zawod: ["tekst"] },
     terminy: { data_od: ["data"], data_do: ["data"], zapisani: ["calkowita"], limit_miejsc: ["calkowita"] },
     katalog_szkolen: { nazwa: ["wymagane", "tekst"], liczba_godzin: ["calkowita"], liczba_dni: ["calkowita"] },
@@ -93,6 +93,20 @@
 
   function pusta(v) { return v === null || v === undefined || String(v).trim() === ""; }
 
+  /* Para dat od - do w jednym wierszu: koniec nie moze byc przed poczatkiem */
+  var ZAKRESY_DAT = {
+    terminy: ["data_od", "data_do", "koniec terminu przed jego początkiem"],
+    nabory: ["data_od", "data_do", "koniec naboru przed jego początkiem"],
+    uczestnicy_klienta: ["zatrudnienie_od", "zatrudnienie_do", "koniec zatrudnienia przed jego początkiem"]
+  };
+
+  function bladZakresu(tabela, dane, obecny) {
+    var z = ZAKRESY_DAT[tabela];
+    if (!z || !(z[0] in dane || z[1] in dane)) return null;
+    var od = z[0] in dane ? dane[z[0]] : (obecny || {})[z[0]], doD = z[1] in dane ? dane[z[1]] : (obecny || {})[z[1]];
+    return !pusta(od) && !pusta(doD) && doD < od ? { pole: z[1], komunikat: z[2] } : null;
+  }
+
   function bledy(tabela, dane, obecny) {
     var schemat = SCHEMATY[tabela], out = [];
     if (!schemat || !dane) return out;
@@ -108,11 +122,8 @@
         if (wynik !== true) { out.push({ pole: pole, komunikat: wynik }); return; }
       }
     });
-    var zmianaDat = Object.prototype.hasOwnProperty.call(dane, "data_od") || Object.prototype.hasOwnProperty.call(dane, "data_do");
-    var od = "data_od" in dane ? dane.data_od : (obecny || {}).data_od, doD = "data_do" in dane ? dane.data_do : (obecny || {}).data_do;
-    if ((tabela === "terminy" || tabela === "nabory") && zmianaDat && !pusta(od) && !pusta(doD) && doD < od) {
-      out.push({ pole: "data_do", komunikat: tabela === "nabory" ? "koniec naboru przed jego początkiem" : "koniec terminu przed jego początkiem" });
-    }
+    var zakres = bladZakresu(tabela, dane, obecny);
+    if (zakres) out.push(zakres);
     return out;
   }
 

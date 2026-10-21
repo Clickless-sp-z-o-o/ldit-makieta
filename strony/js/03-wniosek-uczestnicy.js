@@ -9,8 +9,8 @@
 function opisDanychUczestnika(uk) {
   if (!uk) return '<span class="small muted">przepisany ręcznie, spoza listy klienta</span>';
   var rodzaj = KlientLogika.etykieta(KlientLogika.RODZAJE_ZATRUDNIENIA, uk.zatrudnienie) || "brak rodzaju zatrudnienia";
-  var termin = uk.zatrudnienieDo ? ", do " + DB.fmtDate(uk.zatrudnienieDo) : ", czas nieokreślony";
-  var reszta = [uk.wyksztalcenie, uk.zawod, uk.wiek != null ? uk.wiek + " lat" : null].filter(Boolean).map(esc).join(", ");
+  var termin = ", " + DB.fmtZatrudnienie(uk.zatrudnienieOd, uk.zatrudnienieDo);
+  var reszta = [uk.zawod, uk.wyksztalcenie, uk.wiek != null ? uk.wiek + " lat" : null].filter(Boolean).map(esc).join(", ");
   return '<div class="small">' + esc(rodzaj + termin) + '</div><div class="small muted">' + (reszta || "brak danych") + '</div>';
 }
 

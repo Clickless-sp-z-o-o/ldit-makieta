@@ -74,12 +74,16 @@ function zaznaczEkran(ekran) {
 
 /* Kazdy ekran w ramce trafia na stos. Ten sam plik (np. zmiana filtra zapisana
    w adresie) podmienia ostatni wpis zamiast dokladac nowy, a ekran otwarty
-   przyciskiem Wstecz tez tylko podmienia wpis. */
+   przyciskiem Wstecz tez tylko podmienia wpis. Wyjatek: nowy krok w obrebie ekranu
+   (ekran.nowyKrok, np. karta instytucji, Nawigacja.zapiszWAdresie) to osobny wpis,
+   a powrot do adresu sprzed kroku (np. "Wszystkie instytucje") zdejmuje ten krok. */
 function zapamietajEkran(historia, ekran, poCofnieciu) {
-  var wpis = ekran.plik + (ekran.zapytanie || "");
+  var wpis = ekran.plik + (ekran.zapytanie || "") + (ekran.kotwica || "");
   var ostatni = historia[historia.length - 1];
-  if (poCofnieciu || (ostatni && Nawigacja.plikZAdresu(ostatni) === ekran.plik)) historia[historia.length - 1] = wpis;
-  else historia.push(wpis);
+  var tenSamPlik = ostatni && Nawigacja.plikZAdresu(ostatni) === ekran.plik;
+  if (tenSamPlik && !poCofnieciu && historia.length > 1 && historia[historia.length - 2] === wpis) historia.pop();
+  else if (poCofnieciu || (tenSamPlik && !ekran.nowyKrok)) historia[historia.length - 1] = wpis;
+  else if (!(tenSamPlik && ostatni === wpis)) historia.push(wpis);
   if (historia.length > LIMIT_HISTORII) historia.shift();
 }
 

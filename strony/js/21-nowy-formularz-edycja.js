@@ -22,10 +22,10 @@ function pokazNowyFormularz21() {
   if (moze) { zfPokaz(opcjeFormularza21()); uzupelnijBlokSzablonu21(); }
 }
 
-function opcjeEdycji21(f, ocena) {
+function opcjeEdycji21(f, ocena, zAdresu) {
   var instytucja = DB.INSTYTUCJE.filter(function (i) { return i.id === f.instytucja_id; })[0];
   return {
-    kontener: "zfKontener21", instytucjaId: f.instytucja_id, instytucjaNazwa: instytucja ? instytucja.nazwa : f.instytucja_id,
+    kontener: "zfKontener21", instytucjaId: f.instytucja_id, instytucjaNazwa: instytucja ? instytucja.nazwa : f.instytucja_id, zAdresu: zAdresu,
     szkolenia: szkoleniaInstytucji21(f.instytucja_id), edycja: { id: f.id, zwrot: ocena.zwrot },
     poZapisie: function (wiersz) {
       komunikatEdycji21(wiersz.status === "oczekuje" && ocena.zwrot ? "<b>Formularz " + esc(f.id) + " wysłany ponownie do akceptacji LDIT.</b>"
@@ -36,7 +36,8 @@ function opcjeEdycji21(f, ocena) {
   };
 }
 
-function edytujFormularz21(id) {
+/* zAdresu: edycja otwarta linkiem z powiadomienia instytucji (?edytuj=), Wstecz wraca do powiadomien */
+function edytujFormularz21(id, zAdresu) {
   var f = Store.find("formularze_oczekujace", id);
   var ocena = Akceptacje.edycjaFormularza(f);
   if (!ocena.mozna) { komunikatEdycji21(esc(ocena.powod), true); return; }
@@ -44,7 +45,7 @@ function edytujFormularz21(id) {
   el21("kartaFormularza21").hidden = false;
   przelaczTryb21("formularz");
   el21("komunikat21").hidden = true;
-  zfPokaz(opcjeEdycji21(f, ocena));
+  zfPokaz(opcjeEdycji21(f, ocena, zAdresu));
   el21("kartaFormularza21").scrollIntoView({ block: "start" });
 }
 

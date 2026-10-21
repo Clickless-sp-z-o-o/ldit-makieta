@@ -52,21 +52,28 @@ function zbierzNowychUczestnikow() {
     .filter(function (u) { return u.imie_nazwisko.trim() !== ""; });
 }
 
-function otworzKlientForm(kl, tytul) {
+/* Formularz otwarty z listy jest panelem dla Wstecz: Wstecz go zamyka i zostawia Baze z filtrami i wierszem
+   (feedback Martyny 19.10.2026). Otwarty z adresu (?edytuj= z karty wniosku) nie jest: Wstecz wraca na karte. */
+function otworzKlientForm(kl, tytul, zAdresu) {
   var el = document.getElementById("klientForm");
   STAN_FORM_04.uczestnicy = 0;
   el.innerHTML = klientFormHTML(kl, tytul);
   el.style.display = "block";
   el.scrollTop = 0;
+  if (!zAdresu) Nawigacja.panelOtwarty(zamknijKlientForm);
 }
+/* Po zamknieciu edycji (Zapisz, Anuluj albo Wstecz) wiersz klienta jest wyrozniony i widoczny */
 function zamknijKlientForm() {
   var el = document.getElementById("klientForm");
+  var edytowany = STAN_04.edytowanyKlient;
   el.style.display = "none"; el.innerHTML = ""; STAN_04.edytowanyKlient = null;
+  Nawigacja.panelZamkniety();
+  if (edytowany) pokazRozwinietego(edytowany);
 }
-function edytujKlient(id) {
+function edytujKlient(id, zAdresu) {
   STAN_04.edytowanyKlient = id;
   var kl = DB.KLIENCI.filter(function (x) { return x.id === id; })[0];
-  otworzKlientForm(kl ? Store.find("klienci", id) : null, "Edycja klienta: " + (kl ? kl.nazwa : id));
+  otworzKlientForm(kl ? Store.find("klienci", id) : null, "Edycja klienta: " + (kl ? kl.nazwa : id), zAdresu);
 }
 
 function zapiszKlient() {

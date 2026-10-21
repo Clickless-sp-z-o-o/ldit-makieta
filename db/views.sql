@@ -295,7 +295,7 @@ d AS (
     CAST(substr(pesel, 5, 2) AS INTEGER) AS dzien_ur
   FROM p
 )
-SELECT d.id, d.klient_id, d.imie_nazwisko, d.pesel, d.rodzaj_zatrudnienia, d.zatrudnienie_do,
+SELECT d.id, d.klient_id, d.imie_nazwisko, d.pesel, d.rodzaj_zatrudnienia, d.zatrudnienie_od, d.zatrudnienie_do,
   d.wyksztalcenie, d.zawod, d.utworzono,
   CASE WHEN d.rok_ur IS NULL THEN NULL ELSE
     CAST(strftime('%Y', 'now') AS INTEGER) - d.rok_ur

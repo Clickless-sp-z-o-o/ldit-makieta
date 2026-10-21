@@ -17,11 +17,11 @@ function wierszUczestnika19(u) {
   return '<tr data-uk="' + esc(u.id) + '">' +
     '<td class="strong">' + esc(u.imie) + (ostrz ? '<div class="small" style="color:var(--neg,#b91c1c)">&#9888; ' + esc(ostrz) + '</div>' : "") + '</td>' +
     '<td>' + esc(KlientLogika.etykieta(KlientLogika.RODZAJE_ZATRUDNIENIA, u.zatrudnienie) || "") + '</td>' +
-    '<td class="nowrap">' + (u.zatrudnienieDo ? esc(DB.fmtDate(u.zatrudnienieDo)) : '<span class="muted">czas nieokreślony</span>') + '</td>' +
+    '<td class="nowrap">' + esc(DB.fmtZatrudnienie(u.zatrudnienieOd, u.zatrudnienieDo)) + '</td>' +
+    '<td>' + (esc(u.zawod) || brak) + '</td>' +
     '<td>' + (esc(u.wyksztalcenie) || brak) + '</td>' +
     '<td class="mono">' + (u.pesel ? esc(u.pesel) : '<span class="muted">ukryty</span>') + '</td>' +
     '<td class="num">' + (u.wiek != null ? esc(u.wiek) : brak) + '</td>' +
-    '<td>' + (esc(u.zawod) || brak) + '</td>' +
     '<td class="right nowrap">' + (mozeEdytowac19()
       ? '<button class="btn xs" data-akcja="edytuj">Edytuj</button> <button class="btn xs" data-akcja="usun">Usuń</button>' : "") + '</td></tr>';
 }
@@ -43,11 +43,13 @@ function otworzFormUczestnika(u) {
     '<div class="btn-row" style="margin-top:12px"><button class="btn primary sm" data-akcja="zapisz">Zapisz</button>' +
     '<button class="btn sm" data-akcja="anuluj">Anuluj</button></div>';
   form.style.display = "block";
+  Nawigacja.panelOtwarty(zamknijFormUczestnika);
 }
 function zamknijFormUczestnika() {
   STAN_UCZESTNIKA.edytowany = null;
   el19("uczestnikForm").style.display = "none";
   el19("uczestnikForm").innerHTML = "";
+  Nawigacja.panelZamkniety();
 }
 
 /* Zmiana imienia, nazwiska albo PESEL osoby z wnioskami pyta o zgode (decyzja P-76 c, js/19-klient-osoba.js) */

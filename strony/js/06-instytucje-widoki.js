@@ -28,13 +28,15 @@ function pokazWidok06(nazwa) {
   window.scrollTo(0, 0);
 }
 
-function zapiszStan06() {
+/* nowyKrok: otwarcie karty instytucji albo planu to krok w historii powloki, wiec Wstecz wraca
+   do przegladu albo do karty instytucji, a nie do ekranu sprzed Instytucji (feedback makiety 19.10.2026) */
+function zapiszStan06(nowyKrok) {
   if (STAN_06.widok === "przeglad") { Nawigacja.zapiszWAdresie({}); return; }
   Nawigacja.zapiszWAdresie({
     id: STAN_06.wybrana,
     zakladka: STAN_06.zakladka !== ZAKLADKA_STARTOWA_06 ? STAN_06.zakladka : "",
     plan: STAN_06.widok === "plan" ? STAN_06.edytowanyPlan : ""
-  });
+  }, nowyKrok === true);
 }
 
 function wybierzZakladke06(pid) {
@@ -50,7 +52,7 @@ function otworzKonfiguracje06(id, zakladka) {
   pokazWidok06("konfig");
   renderSzczegol();
   aktywujTab(STAN_06.zakladka);
-  zapiszStan06();
+  zapiszStan06(true);
 }
 
 function wrocDoPrzegladu06() {

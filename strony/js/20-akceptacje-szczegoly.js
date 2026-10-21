@@ -28,15 +28,20 @@ function peselFormularza20(pesel) {
   return Auth.moze("klient.pesel") ? '<span class="mono">' + esc(pesel) + "</span>" : '<span class="muted">ukryty</span>';
 }
 
+/* Uczestnik formularza z informacja o zatrudnieniu: rodzaj, zatrudnienie od - do i stanowisko (kolumna zawod, D-368,
+   feedback Martyny 19.10.2026). Brak rodzaju i dat widac od razu ("brak"), bo decyduja o kwalifikacji do KFS. */
 function tabelaUczestnikow20(lista) {
   var tytul = '<div class="zf-sekcja">Uczestnicy (' + lista.length + ') <span class="zf-sekcja-opis">jedna osoba w wierszu</span></div>';
   if (!lista.length) return '<div class="zf-arkusz">' + tytul + '<div class="small muted" style="padding:8px 10px">Formularz nie zawiera uczestników.</div></div>';
+  var brak = '<span class="muted">brak</span>';
   return '<div class="zf-arkusz">' + tytul + '<div class="zf-tab-ramka"><table class="zf-tab"><thead><tr><th class="num">Lp.</th><th>Imię i nazwisko</th><th>Rodzaj zatrudnienia</th>' +
-    '<th>Wykształcenie</th><th>Zawód</th><th>PESEL</th></tr></thead><tbody>' +
+    '<th>Zatrudnienie od - do</th><th>Stanowisko</th><th>Wykształcenie</th><th>PESEL</th></tr></thead><tbody>' +
     lista.map(function (u, i) {
       return "<tr><td class='num muted'>" + (i + 1) + "</td><td class='strong'>" + esc(u.imie_nazwisko) + "</td><td>" +
-        esc(RODZAJE_ZATRUDNIENIA_20[u.rodzaj_zatrudnienia] || u.rodzaj_zatrudnienia || "") +
-        "</td><td>" + esc(u.wyksztalcenie) + "</td><td>" + esc(u.zawod) + "</td><td>" + peselFormularza20(u.pesel) + "</td></tr>";
+        (esc(RODZAJE_ZATRUDNIENIA_20[u.rodzaj_zatrudnienia] || u.rodzaj_zatrudnienia || "") || brak) +
+        "</td><td class='nowrap'>" + (u.zatrudnienie_od || u.zatrudnienie_do ? esc(DB.fmtZatrudnienie(u.zatrudnienie_od, u.zatrudnienie_do)) : brak) +
+        "</td><td>" + (esc(u.zawod) || brak) +
+        "</td><td>" + esc(u.wyksztalcenie) + "</td><td>" + peselFormularza20(u.pesel) + "</td></tr>";
     }).join("") + "</tbody></table></div></div>";
 }
 

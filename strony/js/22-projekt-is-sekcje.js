@@ -59,11 +59,14 @@ function pesel22(u) {
   return Auth.moze("klient.pesel") ? BRAK_22 : '<span class="muted">ukryty</span>';
 }
 
+/* Niezakwalifikowany uczestnik w kolorze statusu negatywnego, jak w zakladce Uczestnicy panelu (D-370) */
 function sekcjaUczestnikow22(w) {
   var wiersze = w.uczestnicy.map(function (u) {
-    return "<tr><td class=\"strong\">" + esc(u.imie) + "</td><td>" + pesel22(u) + "</td><td>" + esc(u.szkNazwa || "") + "</td>" +
-      '<td class="nowrap small">' + terminTekst22(u.termin) + "</td><td>" + esc(u.status || "") +
-      (u.powod ? '<div class="small muted">' + esc(u.powod) + "</div>" : "") + "</td></tr>";
+    var niezakw = u.status === "niezakwalifikowany";
+    return "<tr" + (niezakw ? ' class="row-neg"' : "") + "><td class=\"strong\">" + esc(u.imie) + "</td><td>" + pesel22(u) + "</td><td>" +
+      esc(u.szkNazwa || "") + "</td>" + '<td class="nowrap small">' + terminTekst22(u.termin) + "</td><td>" +
+      (niezakw ? '<span class="tag neg dot">niezakwalifikowany</span>' : '<span class="tag pos dot">zakwalifikowany</span>') +
+      (u.powod ? '<div class="small">' + esc(u.powod) + "</div>" : "") + "</td></tr>";
   });
   return karta22("Uczestnicy", w.uczestnicy.length + " os.", tabela22(["Osoba", "PESEL", "Szkolenie", "Termin", "Kwalifikacja"], wiersze, "Projekt nie ma uczestników."));
 }

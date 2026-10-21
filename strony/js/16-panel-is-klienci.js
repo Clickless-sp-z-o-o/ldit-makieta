@@ -76,6 +76,7 @@ function renderKlienci16() {
   el16("tytulListy16").textContent = zlozoneWidok ? "Złożone wnioski" : "Moi klienci i ich projekty";
   el16("nZlozone").textContent = zlozone16().length;
   el16("chipy16").hidden = zlozoneWidok;
+  el16("legenda16").hidden = true;
   el16("subTab").textContent = lista.length + " z " + W.length + (zlozoneWidok ? " złożonych wniosków" : " projektów instytucji");
   el16("wiersze").innerHTML = lista.length ? wiersze16(lista, zlozoneWidok ? wierszZlozonego16 : wierszWniosku16) :
     '<tr><td colspan="8"><div class="empty"><div class="ei">&#9788;</div>' +

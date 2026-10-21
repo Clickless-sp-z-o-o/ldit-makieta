@@ -353,9 +353,11 @@ CREATE TABLE uczestnicy_klienta (
   pesel               TEXT,     -- dane wrazliwe, feature klient.pesel
   rodzaj_zatrudnienia TEXT CHECK (rodzaj_zatrudnienia IN
                       ('umowa_o_prace','umowa_zlecenie','umowa_o_dzielo','wlasciciel','inna')),
-  zatrudnienie_do     DATE,     -- termin zatrudnienia, NULL = czas nieokreslony
+  -- Zatrudnienie od - do (D-368): poczatek i koniec umowy, puste "do" = czas nieokreslony
+  zatrudnienie_od     DATE,
+  zatrudnienie_do     DATE,
   wyksztalcenie       TEXT,
-  zawod               TEXT,
+  zawod               TEXT,     -- na ekranie "Stanowisko" (D-368), nazwa kolumny jak w aplikacji
   utworzono           DATE,     -- poczatek biegu retencji danych osobowych (D-186)
   FOREIGN KEY (klient_id, instytucja_id) REFERENCES klienci (id, instytucja_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
@@ -791,6 +793,8 @@ CREATE TABLE formularze_oczekujace (
   zadluzenie                TEXT CHECK (zadluzenie IN ('brak','tak','zus','us','zus_us','inne')),
   zadluzenie_ugoda          INTEGER CHECK (zadluzenie_ugoda IN (0,1)),
   konto_praca_gov           INTEGER CHECK (konto_praca_gov IN (0,1)),
+  -- Osoby formularza: imie_nazwisko, pesel, rodzaj_zatrudnienia, zatrudnienie_od, zatrudnienie_do,
+  -- wyksztalcenie, zawod (te same pola co uczestnicy_klienta, D-368)
   uczestnicy_json      TEXT NOT NULL DEFAULT '[]' CHECK (json_valid(uczestnicy_json) AND json_type(uczestnicy_json) = 'array'),
   zglosil_id    TEXT REFERENCES uzytkownicy (id) ON DELETE SET NULL,
   rozpatrzyl_id TEXT REFERENCES uzytkownicy (id) ON DELETE SET NULL,

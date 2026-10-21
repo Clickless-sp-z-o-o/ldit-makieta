@@ -53,12 +53,12 @@
         <option value="prognozowany">Prognoza</option>
         <option value="zakończony">Nabór zakończony</option>
       </select>
-      <select class="inp" id="fStatusWn" data-wielo data-tip="Filtr po statusie wniosków klienta, można zaznaczyć kilka. Domyślnie klienci przed złożeniem wniosku: bez wniosku albo z wnioskiem Niezłożony lub NW. Wyczyść wybór, żeby zobaczyć wszystkich klientów.">
+      <select class="inp" id="fStatusWn" data-wielo data-tip="Filtr po statusie wniosków klienta, można zaznaczyć kilka. Domyślnie klienci przed złożeniem wniosku: bez wniosku albo z wnioskiem Niezłożony lub NW. Z wnioskiem aktywnym zaznacza statusy Czekamy i Pozytywna (bez rozliczonych), można dozaznaczyć inne. Wyczyść wybór, żeby zobaczyć wszystkich klientów.">
         <option value="">Wszyscy klienci</option>
         <option value="przed" selected>Przed złożeniem wniosku</option>
-        <option value="aktywne">Z wnioskiem aktywnym (bez rozliczonych)</option>
+        <option value="aktywne" data-zestaw="Czekamy,Pozytywna">Z wnioskiem aktywnym (bez rozliczonych)</option>
         <option value="Czekamy">Wniosek: czekamy na decyzję</option>
-        <option value="Pozytywna">Wniosek: pozytywna</option>
+        <option value="Pozytywna">Wniosek: pozytywna (bez rozliczonych)</option>
         <option value="Negatywna">Wniosek: negatywna</option>
         <option value="Rezygnacja">Wniosek: rezygnacja</option>
         <option value="Rozliczone">Wniosek: rozliczony</option>

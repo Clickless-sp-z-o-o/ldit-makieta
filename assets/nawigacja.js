@@ -139,9 +139,37 @@
     return WZOR_EKRANU.test(tekst) && MODUL_EKRANU[plikZAdresu(tekst)] ? tekst : null;
   }
 
-  /* Wstecz z karty rekordu: w powloce wraca po historii ekranow (powloka-ekran.js),
-     a otwarty bez powloki ekran przechodzi pod adres zapasowy. */
+  /* Panel edycji otwarty na ekranie (np. edycja klienta nad lista Bazy danych). Wstecz, z paska powloki
+     albo z przycisku na ekranie, najpierw zamyka panel i zostawia ekran z jego filtrami, zamiast przechodzic
+     do poprzedniego ekranu (feedback makiety Martyny 19.10.2026). Ekran zglasza otwarcie z funkcja zamykajaca,
+     a po zamknieciu panelZamkniety(); powloka dostaje stan w komunikacie kfs:ekran (pole panel). */
+  var zamykaniePanelu = null;
+
+  function panelOtwarty(zamknij) {
+    zamykaniePanelu = zamknij;
+    zglosEkran();
+  }
+
+  function panelZamkniety() {
+    if (!zamykaniePanelu) return;
+    zamykaniePanelu = null;
+    zglosEkran();
+  }
+
+  /* true, gdy byl otwarty panel i zostal zamkniety */
+  function zamknijPanel() {
+    var zamknij = zamykaniePanelu;
+    if (!zamknij) return false;
+    zamykaniePanelu = null;
+    zamknij();
+    zglosEkran();
+    return true;
+  }
+
+  /* Wstecz z karty rekordu: otwarty panel edycji tylko sie zamyka; w powloce wraca po historii ekranow
+     (powloka-ekran.js), a otwarty bez powloki ekran przechodzi pod adres zapasowy. */
   function wstecz(zapasowy) {
+    if (zamknijPanel()) return;
     if (global.top !== global.self) {
       global.parent.postMessage({ typ: "kfs:wstecz", zapasowy: bezpiecznyEkran(zapasowy) }, celKomunikatu());
       return;
@@ -197,9 +225,11 @@
     return wartosci;
   }
 
-  function zapiszWAdresie(wartosci) {
+  /* nowyKrok: zmiana widoku w obrebie ekranu (np. karta instytucji albo planu na ekranie Instytucje), ktora
+     powloka zapisuje w historii jako osobny krok dla Wstecz. Bez niego (zmiana filtra) wpis jest podmieniany. */
+  function zapiszWAdresie(wartosci, nowyKrok) {
     global.history.replaceState(null, "", plikZAdresu(global.location.pathname) + zbudujZapytanie(wartosci));
-    zglosEkran();
+    zglosEkran(nowyKrok);
   }
 
   /* Licznik w pasku gornym: formularze i zmiany danych czekajace na decyzje LDIT (D-223, D-224),
@@ -231,12 +261,16 @@
 
   /* Powloka nasluchuje tylko komunikatow z wlasnej ramki. Tresc nie niesie rekordow,
      ale zapytanie moze zawierac wpisana fraze (q), stad zawezony cel w trybie serwera. */
-  function zglosEkran() {
+  function zglosEkran(nowyKrok) {
     if (global.top === global.self) return;
     global.parent.postMessage({
       typ: "kfs:ekran",
       plik: plikZAdresu(global.location.pathname),
       zapytanie: global.location.search,
+      /* Zakladka w kotwicy adresu (panel instytucji: #uczestnicy), zeby Wstecz wracal na te sama zakladke */
+      kotwica: global.location.hash,
+      nowyKrok: nowyKrok === true,
+      panel: !!zamykaniePanelu,
       tytul: document.title,
       doAkceptacji: licznikDlaPowloki(global.Auth, global.DB),
       noweZgloszenia: liczbaNowychZgloszen(global.Auth, global.DB),
@@ -245,6 +279,13 @@
       /* Menu Dofinansowan (lata z licznikami) odswieza sie z danych ekranu, nie z kopii powloki */
       lata: global.Auth.widziModul("dofin") ? global.Lata.zLiczbami(global.DB) : null
     }, celKomunikatu());
+  }
+
+  /* Powloka prosi o zamkniecie panelu, gdy uzytkownik kliknal Wstecz w pasku (komunikat tylko od rodzica) */
+  if (global.addEventListener) {
+    global.addEventListener("message", function (ev) {
+      if (ev.source === global.parent && ev.data && ev.data.typ === "kfs:zamknij-panel") zamknijPanel();
+    });
   }
 
   global.Nawigacja = {
@@ -267,6 +308,9 @@
     zapamietajPrzewiniecie: zapamietajPrzewiniecie,
     odczytajPrzewiniecie: odczytajPrzewiniecie,
     wstecz: wstecz,
+    panelOtwarty: panelOtwarty,
+    panelZamkniety: panelZamkniety,
+    zamknijPanel: zamknijPanel,
     liczbaDoAkceptacji: liczbaDoAkceptacji,
     noweZgloszenia: noweZgloszenia,
     liczbaNowychZgloszen: liczbaNowychZgloszen,

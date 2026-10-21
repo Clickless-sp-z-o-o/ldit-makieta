@@ -8,8 +8,11 @@
 var RODZAJE_ZF = [["umowa_o_prace", "umowa o pracę"], ["umowa_zlecenie", "umowa zlecenie"], ["umowa_o_dzielo", "umowa o dzieło"],
                   ["wlasciciel", "właściciel / JDG"], ["inna", "inna"]];
 var WIELKOSCI_ZF = ["mikro", "mały", "średni", "duży", "inny"];
+/* Zatrudnienie od - do (dwie daty, puste "do" = czas nieokreslony) i etykieta Stanowisko kolumny zawod (D-368) */
 var KOLUMNY_UCZESTNIKA_ZF = [["imie_nazwisko", "Imię i nazwisko"], ["rodzaj_zatrudnienia", "Rodzaj zatrudnienia"],
-                             ["wyksztalcenie", "Wykształcenie"], ["zawod", "Zawód"], ["pesel", "PESEL"]];
+                             ["zatrudnienie_od", "Zatrudnienie od"], ["zatrudnienie_do", "Zatrudnienie do"],
+                             ["zawod", "Stanowisko"], ["wyksztalcenie", "Wykształcenie"], ["pesel", "PESEL"]];
+var KOLUMNY_DAT_UCZESTNIKA_ZF = ["zatrudnienie_od", "zatrudnienie_do"];
 var OPIS_PDF_ZF = "W makiecie PDF nie jest odczytywany automatycznie: plik zostaje załączony do formularza, a dane z niego przepisz w polach poniżej. Docelowo system odczyta PDF o stałej strukturze (D-269).";
 var KOMUNIKAT_XLS_ZF = "W makiecie obsługiwany jest plik CSV zapisany z Excela (Plik, Zapisz jako, CSV). Zapisz arkusz w tym formacie i wczytaj ponownie.";
 
@@ -68,6 +71,10 @@ function zfPoleUczestnika(u, i, kolumna) {
     return '<select' + wspolne + '><option value="">wybierz</option>' + RODZAJE_ZF.map(function (r) {
       return '<option value="' + r[0] + '"' + (u[k] === r[0] ? " selected" : "") + '>' + r[1] + '</option>';
     }).join("") + '</select>';
+  }
+  if (KOLUMNY_DAT_UCZESTNIKA_ZF.indexOf(k) >= 0) {
+    return '<input type="date"' + wspolne + ' value="' + esc(u[k] || "") + '"' +
+      (k === "zatrudnienie_do" ? ' title="Puste pole: umowa na czas nieokreślony"' : "") + '>';
   }
   return '<input' + wspolne + ' value="' + esc(u[k] || "") + '">';
 }
@@ -218,7 +225,9 @@ function zfHtml(o) {
 }
 
 /* opcje: { kontener, instytucjaId (+ instytucjaNazwa) albo instytucje [[id, nazwa]], szkolenia [[nazwa, nazwa]],
-   poWyslaniu(nowy, braki), poZamknieciu() opcjonalnie, bezAnulowania i zostaje opcjonalnie (strona Nowy formularz) } */
+   poWyslaniu(nowy, braki), poZamknieciu() opcjonalnie, bezAnulowania i zostaje opcjonalnie (strona Nowy formularz),
+   zAdresu opcjonalnie (edycja otwarta linkiem z innego ekranu: Wstecz wraca na tamten ekran) }.
+   Formularz z Anuluj jest panelem dla Wstecz: Wstecz go zamyka jak Anuluj (Nawigacja.panelOtwarty). */
 function zfPokaz(opcje) {
   ZF = { opcje: opcje, zrodlo: "reczny", plik: null, uczestnicy: [] };
   zfWczytajStyl();
@@ -232,12 +241,15 @@ function zfPokaz(opcje) {
   zfEl("zf_firma").addEventListener("input", function () { zfNadazSkrocona(zfEl("zf_nazwa_skrocona"), zfEl("zf_firma").value); });
   if (opcje.edycja) zfWypelnijZFormularza(opcje.edycja.id);
   zfRenderUczestnikow();
+  if (opcje.bezAnulowania || opcje.zAdresu) Nawigacja.panelZamkniety();
+  else Nawigacja.panelOtwarty(zfZamknij);
 }
 
 function zfZamknij() {
   var kontener = zfEl(ZF.opcje.kontener);
   kontener.style.display = "none";
   kontener.innerHTML = "";
+  Nawigacja.panelZamkniety();
   if (ZF.opcje.poZamknieciu) ZF.opcje.poZamknieciu();
 }
 

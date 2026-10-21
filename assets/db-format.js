@@ -25,5 +25,14 @@
     return a === b ? a : a + " - " + b;
   };
 
-  global.DBFormat = { fmtPLN: fmtPLN, fmtPLN2: fmtPLN2, fmtNum: fmtNum, fmtPct: fmtPct, fmtDate: fmtDate, fmtZakresDat: fmtZakresDat };
+  /* Zatrudnienie od - do uczestnika (D-368, feedback Martyny 19.10.2026). Puste "do" to umowa na czas
+     nieokreslony: "od 01.02.2024, na czas nieokreślony"; bez obu dat tylko "na czas nieokreślony". */
+  var fmtZatrudnienie = function (od, dok) {
+    if (od && dok) return fmtDate(od) + " - " + fmtDate(dok);
+    if (dok) return "do " + fmtDate(dok);
+    return (od ? "od " + fmtDate(od) + ", " : "") + "na czas nieokreślony";
+  };
+
+  global.DBFormat = { fmtPLN: fmtPLN, fmtPLN2: fmtPLN2, fmtNum: fmtNum, fmtPct: fmtPct, fmtDate: fmtDate, fmtZakresDat: fmtZakresDat,
+                      fmtZatrudnienie: fmtZatrudnienie };
 })(window);

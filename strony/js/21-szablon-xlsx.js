@@ -13,7 +13,10 @@ var ZNAKOW_W_LINII_POLA_21 = 58;
 var WYSOKOSC_LINII_21 = 15;
 var WYSOKOSC_UWAGI_21 = 46;
 var WYMAGANE_POLA_21 = ["Nazwa firmy", "NIP firmy"];
-var KOLUMNY_ARKUSZA_21 = ["A", "B", "C", "D", "E"];
+/* Tabela uczestnikow ma 7 kolumn (z zatrudnieniem od - do i stanowiskiem, D-368), pola firmy dwie pierwsze */
+var KOLUMNY_ARKUSZA_21 = ["A", "B", "C", "D", "E", "F", "G"];
+var SZEROKOSCI_KOLUMN_21 = [62, 48, 16, 22, 24, 22, 16];
+var OSTATNIA_KOLUMNA_21 = KOLUMNY_ARKUSZA_21[KOLUMNY_ARKUSZA_21.length - 1];
 /* [nazwa sekcji, pierwszy indeks pola, indeks za ostatnim] w NAGLOWKI_SZABLONU_CSV. Nazwa sekcji
    nie moze byc nazwa pola (np. "Osoba do kontaktu"), bo import wzialby ja za pole. */
 var SEKCJE_SZABLONU_21 = [
@@ -23,7 +26,8 @@ var SEKCJE_SZABLONU_21 = [
 var SEKCJA_UCZESTNIKOW_21 = "Uczestnicy szkolenia (jedna osoba w wierszu)";
 var UWAGA_SZABLONU_21 = "Wpisz dane firmy w kolumnie Wartość, jedno pole w wierszu. Pola z gwiazdką (*) są wymagane: bez nazwy firmy i NIP " +
   "formularza nie da się zapisać. Zobowiązania i ugoda: wpisz TAK albo NIE. Uczestników wpisz w tabeli pod danymi firmy, " +
-  "jedna osoba w wierszu. Rodzaj zatrudnienia: umowa o pracę, umowa zlecenie, umowa o dzieło albo właściciel.";
+  "jedna osoba w wierszu. Rodzaj zatrudnienia: umowa o pracę, umowa zlecenie, umowa o dzieło albo właściciel. " +
+  "Zatrudnienie od i do: daty w formacie DD.MM.RRRR, puste \"do\" oznacza umowę na czas nieokreślony.";
 
 function wysokoscPola21(tekst) {
   var linie = Math.ceil(tekst.length / ZNAKOW_W_LINII_POLA_21);
@@ -62,11 +66,11 @@ function tabelaUczestnikow21(wiersze, scalenia) {
 /* Jeden arkusz "Formularz": tytul, uwaga, pola firmy Pole | Wartosc, tabela uczestnikow */
 function arkuszFormularza21() {
   var S = XlsxPlik.STYL, wiersze = [], scalenia = [], wysokosci = { 1: WYSOKOSC_UWAGI_21 };
-  scalWiersz21(wiersze, scalenia, { t: "Formularz zgłoszeniowy klienta KFS", s: S.TYTUL }, "E");
-  scalWiersz21(wiersze, scalenia, { t: UWAGA_SZABLONU_21, s: S.UWAGA }, "E");
+  scalWiersz21(wiersze, scalenia, { t: "Formularz zgłoszeniowy klienta KFS", s: S.TYTUL }, OSTATNIA_KOLUMNA_21);
+  scalWiersz21(wiersze, scalenia, { t: UWAGA_SZABLONU_21, s: S.UWAGA }, OSTATNIA_KOLUMNA_21);
   polaFirmy21(wiersze, scalenia, wysokosci);
   tabelaUczestnikow21(wiersze, scalenia);
-  return { nazwa: "Formularz", kolumny: [62, 48, 22, 24, 16], wiersze: wiersze, scalenia: scalenia, zamroz: 3, wysokosci: wysokosci };
+  return { nazwa: "Formularz", kolumny: SZEROKOSCI_KOLUMN_21, wiersze: wiersze, scalenia: scalenia, zamroz: 3, wysokosci: wysokosci };
 }
 
 /* Indeks wiersza naglowka tabeli uczestnikow w arkuszu (pierwsza komorka "Imie i nazwisko") */

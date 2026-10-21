@@ -135,17 +135,20 @@
   });
 
   /* PESEL pokazujemy tylko kontu z feature klient.pesel (dane wrazliwe) */
+  /* Zatrudnienie od - do jako dwie daty, puste "do" to czas nieokreslony; kolumna zawod z etykieta Stanowisko (D-368) */
   function uczestnikHtml(p, u) {
     var rodzaje = [["", "wybierz"]].concat(global.KlientLogika.RODZAJE_ZATRUDNIENIA);
     var peselPole = global.Auth.moze("klient.pesel") ? pole(p, "pesel", "PESEL (wiek liczy się z niego)", u && u.pesel) : "";
     return pole(p, "imie", "Imię i nazwisko", u && u.imie) +
       wybor(p, "rodzaj", "Rodzaj zatrudnienia", rodzaje, u && u.zatrudnienie ? u.zatrudnienie : "") +
-      pole(p, "do", "Termin zatrudnienia (do)", u && u.zatrudnienieDo, "date") +
-      pole(p, "wyksz", "Wykształcenie", u && u.wyksztalcenie) + peselPole + pole(p, "zawod", "Zawód", u && u.zawod);
+      pole(p, "zawod", "Stanowisko", u && u.zawod) +
+      pole(p, "od", "Zatrudnienie od", u && u.zatrudnienieOd, "date") +
+      pole(p, "do", "Zatrudnienie do (puste: czas nieokreślony)", u && u.zatrudnienieDo, "date") +
+      pole(p, "wyksz", "Wykształcenie", u && u.wyksztalcenie) + peselPole;
   }
   function zbierzUczestnika(p) {
     return {
-      imie_nazwisko: dane(p, "imie"), rodzaj_zatrudnienia: dane(p, "rodzaj"), zatrudnienie_do: dane(p, "do"),
+      imie_nazwisko: dane(p, "imie"), rodzaj_zatrudnienia: dane(p, "rodzaj"), zatrudnienie_od: dane(p, "od"), zatrudnienie_do: dane(p, "do"),
       wyksztalcenie: dane(p, "wyksz"), pesel: dane(p, "pesel"), zawod: dane(p, "zawod")
     };
   }

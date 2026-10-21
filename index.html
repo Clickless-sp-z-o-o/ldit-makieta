@@ -149,7 +149,7 @@ var OPIS_ROLI = {
 
 var sesja = Auth.sesja();
 var stan = { aktywny: null, lata: Lata.zLiczbami(DB), otwarteLata: {}, dofinOtwarte: false,
-             historia: [], poCofnieciu: false };
+             historia: [], poCofnieciu: false, panel: false };
 stan.otwarteLata[Lata.domyslny()] = true;
 
 function instytucjeKonta() {
@@ -242,8 +242,16 @@ document.getElementById("akceptacje").addEventListener("click", function () {
   document.getElementById("view").src = "strony/20-akceptacje.html";
 });
 
-/* Wstecz: z paska gornego albo z przycisku na karcie (komunikat kfs:wstecz z adresem zapasowym) */
+/* Wstecz: z paska gornego albo z przycisku na karcie (komunikat kfs:wstecz z adresem zapasowym).
+   Otwarty na ekranie panel edycji (stan.panel z komunikatu kfs:ekran) najpierw sie zamyka, a ekran
+   zostaje z filtrami i wierszem (feedback makiety 19.10.2026, Nawigacja.panelOtwarty). */
 function wstecz(zapasowy) {
+  if (stan.panel) {
+    /* Na file:// origin to "null" i nie da sie go wskazac, w trybie serwera tylko ten sam origin */
+    var odbiorca = location.origin && location.origin !== "null" ? location.origin : "*";
+    document.getElementById("view").contentWindow.postMessage({ typ: "kfs:zamknij-panel" }, odbiorca);
+    return;
+  }
   var cel = cofnijEkran(stan.historia) || zapasowy;
   if (!cel) return;
   stan.poCofnieciu = true;
@@ -255,7 +263,8 @@ function odbierzEkran(ekran) {
   if (ekran.lata && inneLata(ekran.lata, stan.lata)) { stan.lata = ekran.lata; render(); }
   zapamietajEkran(stan.historia, ekran, stan.poCofnieciu);
   stan.poCofnieciu = false;
-  document.getElementById("wstecz").disabled = stan.historia.length < 2;
+  stan.panel = !!ekran.panel;
+  document.getElementById("wstecz").disabled = stan.historia.length < 2 && !stan.panel;
   var zaznaczone = zaznaczEkran(ekran);
   if (zaznaczone) stan.aktywny = zaznaczone.idMenu;
   if (zaznaczone && zaznaczone.rok) { stan.dofinOtwarte = true; stan.otwarteLata[zaznaczone.rok] = true; }

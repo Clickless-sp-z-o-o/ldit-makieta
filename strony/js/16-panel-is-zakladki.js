@@ -55,6 +55,8 @@ function podepnijZakladki16() {
       e.preventDefault();
       var widok = przelaczWidok16(a.getAttribute("data-widok"));
       history.replaceState(null, "", location.pathname + location.search + "#" + widok);
+      /* Powloka zapamietuje zakladke, wiec Wstecz z karty projektu (22) wraca na nia, np. na Uczestnikow */
+      Nawigacja.zglosEkran();
     });
   });
   window.addEventListener("hashchange", function () { przelaczWidok16(zakladkaZAdresu16()); });

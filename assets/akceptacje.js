@@ -63,7 +63,8 @@
   /* ------------------------------ formularze ------------------------------ */
 
   var ROD_ZATRUDNIENIA = ["umowa_o_prace", "umowa_zlecenie", "umowa_o_dzielo", "wlasciciel", "inna"];
-  var POLA_UCZESTNIKA = ["imie_nazwisko", "pesel", "rodzaj_zatrudnienia", "wyksztalcenie", "zawod"];
+  /* Te same pola co uczestnicy_klienta: zatrudnienie od - do i zawod z etykieta Stanowisko (D-368) */
+  var POLA_UCZESTNIKA = ["imie_nazwisko", "pesel", "rodzaj_zatrudnienia", "zatrudnienie_od", "zatrudnienie_do", "wyksztalcenie", "zawod"];
 
   /* Kto wprowadza: handlowiec, instytucja albo pracownik (konto bez przypisanej instytucji, D-275) */
   function ktoWypelnil() {
@@ -71,8 +72,8 @@
     return global.Auth.sesja().instytucja_id ? "instytucja" : "pracownik";
   }
 
-  /* Uczestnik bez imienia i nazwiska albo z blednym PESEL nie wchodzi nawet do kolejki.
-     Braki (np. pusty PESEL) sa dozwolone, bledne dane nie. */
+  /* Uczestnik bez imienia i nazwiska, z blednym PESEL albo blednymi datami zatrudnienia nie wchodzi nawet
+     do kolejki. Braki (np. pusty PESEL) sa dozwolone, bledne dane nie. */
   function czystyUczestnicy(lista) {
     return (lista || []).map(function (u, i) {
       var wiersz = {};
@@ -81,7 +82,7 @@
       if (wiersz.rodzaj_zatrudnienia && ROD_ZATRUDNIENIA.indexOf(wiersz.rodzaj_zatrudnienia) < 0) {
         blad("walidacja", "Uczestnik " + (i + 1) + ": nieznany rodzaj zatrudnienia.");
       }
-      var bledy = global.Walidacja.bledy("uczestnicy_klienta", { imie_nazwisko: wiersz.imie_nazwisko, pesel: wiersz.pesel });
+      var bledy = global.Walidacja.bledy("uczestnicy_klienta", wiersz);
       if (bledy.length) blad("walidacja", "Uczestnik " + (i + 1) + ": " + bledy[0].pole + ": " + bledy[0].komunikat);
       return wiersz;
     });
@@ -173,7 +174,8 @@
       var jest = jacys.some(function (x) { return (u.pesel && x.pesel === u.pesel) || (!u.pesel && x.imie_nazwisko === u.imie_nazwisko); });
       if (jest) return;
       S.insert("uczestnicy_klienta", { klient_id: klientId, imie_nazwisko: u.imie_nazwisko, pesel: u.pesel || null,
-        rodzaj_zatrudnienia: u.rodzaj_zatrudnienia || null, wyksztalcenie: u.wyksztalcenie || null, zawod: u.zawod || null,
+        rodzaj_zatrudnienia: u.rodzaj_zatrudnienia || null, zatrudnienie_od: u.zatrudnienie_od || null,
+        zatrudnienie_do: u.zatrudnienie_do || null, wyksztalcenie: u.wyksztalcenie || null, zawod: u.zawod || null,
         utworzono: kto.czas.slice(0, 10) }, "UK-");
     });
   }

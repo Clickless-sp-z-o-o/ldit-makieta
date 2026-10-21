@@ -247,7 +247,7 @@
     /* Uczestnicy klienta z wiekiem z PESEL (D-236) */
     DB.UCZESTNICY_KLIENTA = S.query("SELECT * FROM v_uczestnicy_klienta ORDER BY imie_nazwisko").map(function (u) {
       return { id: u.id, klient: u.klient_id, imie: u.imie_nazwisko, pesel: u.pesel, wiek: u.wiek,
-               zatrudnienie: u.rodzaj_zatrudnienia, zatrudnienieDo: u.zatrudnienie_do,
+               zatrudnienie: u.rodzaj_zatrudnienia, zatrudnienieOd: u.zatrudnienie_od, zatrudnienieDo: u.zatrudnienie_do,
                wyksztalcenie: u.wyksztalcenie, zawod: u.zawod };
     });
     /* Skutecznosc osob przygotowujacych wnioski (D-242) */
@@ -289,7 +289,7 @@
     DB.ZADANIA = S.get("zadania");
 
     DB.fmtPLN = F.fmtPLN; DB.fmtPLN2 = F.fmtPLN2; DB.fmtNum = F.fmtNum;
-    DB.fmtPct = F.fmtPct; DB.fmtDate = F.fmtDate; DB.fmtZakresDat = F.fmtZakresDat; DB.wskaznik = wskaznik;
+    DB.fmtPct = F.fmtPct; DB.fmtDate = F.fmtDate; DB.fmtZakresDat = F.fmtZakresDat; DB.fmtZatrudnienie = F.fmtZatrudnienie; DB.wskaznik = wskaznik;
 
     /* Separacja danych zaklada sie tutaj, zanim strona zobaczy cokolwiek.
        Szczegoly i uzasadnienie: assets/zakres.js */

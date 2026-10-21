@@ -136,12 +136,14 @@ function klikWiersza04(e) {
   if (tr) otworzWniosek04(tr.dataset.id, tr.dataset.klient);
 }
 
-/* Po powrocie z karty klient jest rozwiniety i widoczny na ekranie */
+/* Po powrocie z karty albo z edycji klient jest wyrozniony i widoczny na ekranie */
 function pokazRozwinietego(idKlienta) {
+  STAN_04.wyrozniony = idKlienta;
   var wiersz = Array.prototype.filter.call(document.querySelectorAll("#body tr[data-kl]"), function (tr) {
     return tr.dataset.kl === idKlienta;
   })[0];
   if (!wiersz) return;   /* klient poza pierwszymi LIMIT_WIERSZY_04 wierszami albo poza filtrem */
+  document.querySelectorAll("#body tr.wiersz-powrotu").forEach(function (tr) { tr.classList.remove("wiersz-powrotu"); });
   wiersz.classList.add("wiersz-powrotu");
   wiersz.scrollIntoView({ block: "center" });
 }
@@ -174,5 +176,5 @@ function inicjuj04() {
   /* Powrot z karty wniosku: klient, z ktorego ja otwarto, jest wyrozniony i widoczny */
   if (z.pokaz) pokazRozwinietego(z.pokaz);
   /* Wejscie z karty klienta, przycisk "Edytuj dane" */
-  if (z.edytuj && DB.KLIENCI.some(function (k) { return k.id === z.edytuj; })) edytujKlient(z.edytuj);
+  if (z.edytuj && DB.KLIENCI.some(function (k) { return k.id === z.edytuj; })) edytujKlient(z.edytuj, true);
 }

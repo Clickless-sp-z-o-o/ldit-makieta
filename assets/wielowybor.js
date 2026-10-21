@@ -12,6 +12,13 @@
 
    W adresie wiele wartosci zapisuje sie po przecinku: inst=IS-01,IS-02.
 
+   Opcja z atrybutem data-zestaw="A,B" to skrot: zaznaczenie jej pola ustawia
+   wybor dokladnie na opcje A i B (inne, np. domyslne, sa odznaczane), a
+   odznaczenie zdejmuje A i B. Sam skrot nie jest wartoscia filtra (Baza danych:
+   "Z wnioskiem aktywnym" = Czekamy i Pozytywna, feedback makiety 19.10.2026).
+   Uzytkownik moze potem dozaznaczyc inne opcje. Stary adres z wartoscia
+   skrotu (wnioski=aktywne) rozwija sie do opcji zestawu.
+
    API:  Wielowybor.zamienWszystkie(korzen)  zamiana select[data-wielo]
          Wielowybor.wartosci(el)            wybrane wartosci (tablica, bez pustej)
          Wielowybor.tekst(el)               wartosc do adresu (po przecinku)
@@ -37,10 +44,28 @@
   function zTekstu(t) { return String(t || "").split(",").map(function (x) { return x.trim(); }).filter(Boolean); }
   function naTekst(a) { return (a || []).join(","); }
 
+  function zestaw(o) { return o.getAttribute("data-zestaw") === null ? null : zTekstu(o.getAttribute("data-zestaw")); }
+
   function wartosci(el) {
     if (!el.multiple) return el.value ? [el.value] : [];
-    return Array.prototype.filter.call(el.options, function (o) { return o.selected && o.value; })
+    return Array.prototype.filter.call(el.options, function (o) { return o.selected && o.value && !zestaw(o); })
       .map(function (o) { return o.value; });
+  }
+
+  /* Wartosci skrotow (data-zestaw) zamienione na opcje zestawu */
+  function rozwinZestawy(el, lista) {
+    var wynik = [];
+    lista.forEach(function (v) {
+      var skrot = Array.prototype.filter.call(el.options, function (o) { return o.value === v && zestaw(o); })[0];
+      (skrot ? zestaw(skrot) : [v]).forEach(function (x) { if (wynik.indexOf(x) < 0) wynik.push(x); });
+    });
+    return wynik;
+  }
+
+  /* Skrot jest zaznaczony, gdy wszystkie opcje jego zestawu sa wybrane */
+  function skrotZaznaczony(el, o) {
+    var wybrane = wartosci(el);
+    return zestaw(o).every(function (v) { return wybrane.indexOf(v) >= 0; });
   }
 
   /* Wartosc pola do adresu: filtr wielokrotny po przecinku, zwykle pole bez zmian */
@@ -49,8 +74,8 @@
   function pasuje(wybrane, v) { return !wybrane.length || wybrane.indexOf(v) >= 0; }
 
   function ustaw(el, lista) {
-    var w = Array.isArray(lista) ? lista : zTekstu(lista);
-    Array.prototype.forEach.call(el.options, function (o) { o.selected = !!o.value && w.indexOf(o.value) >= 0; });
+    var w = rozwinZestawy(el, Array.isArray(lista) ? lista : zTekstu(lista));
+    Array.prototype.forEach.call(el.options, function (o) { o.selected = !!o.value && !zestaw(o) && w.indexOf(o.value) >= 0; });
     odswiezPrzycisk(el);
   }
 
@@ -59,8 +84,13 @@
   function odswiezPrzycisk(el) {
     var btn = el._wieloBtn;
     if (!btn) return;
-    var wybrane = Array.prototype.filter.call(el.options, function (o) { return o.selected && o.value; });
+    var wybrane = Array.prototype.filter.call(el.options, function (o) { return o.selected && o.value && !zestaw(o); });
+    /* Wybor rowny zestawowi skrotu opisuje sie nazwa skrotu */
+    var skrot = Array.prototype.filter.call(el.options, function (o) {
+      return zestaw(o) && zestaw(o).length === wybrane.length && skrotZaznaczony(el, o);
+    })[0];
     btn.textContent = !wybrane.length ? etykietaPusta(el)
+      : skrot ? skrot.textContent
       : wybrane.length === 1 ? wybrane[0].textContent
       : etykietaPusta(el).replace(/^Wszystkie\s*|^Wszyscy\s*/i, "") + ": " + wybrane.length + " wybrane";
     btn.classList.toggle("ma", wybrane.length > 0);
@@ -89,15 +119,29 @@
       });
       panel.appendChild(szukaj);
     }
+    var pola = [];
+    var odswiezPola = function () {
+      pola.forEach(function (p) { p.chk.checked = zestaw(p.o) ? skrotZaznaczony(el, p.o) : p.o.selected; });
+    };
+    var zaznacz = function (o, tak, zostawInne) {
+      if (!zestaw(o)) { o.selected = tak; return; }
+      Array.prototype.forEach.call(el.options, function (x) {
+        var wZestawie = zestaw(o).indexOf(x.value) >= 0;
+        if (wZestawie) x.selected = tak;
+        else if (tak && !zostawInne) x.selected = false;
+      });
+    };
     opcje.forEach(function (o) {
       var lab = document.createElement("label");
       var chk = document.createElement("input");
-      chk.type = "checkbox"; chk.checked = o.selected;
-      chk.addEventListener("change", function () { o.selected = chk.checked; zglosZmiane(el); });
+      chk.type = "checkbox";
+      chk.addEventListener("change", function () { zaznacz(o, chk.checked); odswiezPola(); zglosZmiane(el); });
       lab.appendChild(chk);
       lab.appendChild(document.createTextNode(o.textContent));
       panel.appendChild(lab);
+      pola.push({ o: o, chk: chk, lab: lab });
     });
+    odswiezPola();
     var akcje = document.createElement("div");
     akcje.className = "wielo-akcje";
     akcje.innerHTML = '<button type="button" class="btn xs" data-a="wszystko">Zaznacz widoczne</button>' +
@@ -105,12 +149,11 @@
     akcje.addEventListener("click", function (e) {
       var a = e.target.getAttribute("data-a");
       if (!a) return;
-      panel.querySelectorAll("label").forEach(function (l) {
-        if (a === "wszystko" && l.style.display === "none") return;
-        var chk = l.querySelector("input");
-        chk.checked = a === "wszystko";
-        opcje[Array.prototype.indexOf.call(panel.querySelectorAll("label"), l)].selected = chk.checked;
+      pola.forEach(function (p) {
+        if (a === "wszystko" && p.lab.style.display === "none") return;
+        zaznacz(p.o, a === "wszystko", true);
       });
+      odswiezPola();
       zglosZmiane(el);
     });
     panel.appendChild(akcje);
@@ -149,7 +192,8 @@
   }
 
   function ustawBezZdarzenia(el, lista) {
-    Array.prototype.forEach.call(el.options, function (o) { o.selected = lista.indexOf(o.value) >= 0; });
+    var w = rozwinZestawy(el, lista);
+    Array.prototype.forEach.call(el.options, function (o) { o.selected = !zestaw(o) && w.indexOf(o.value) >= 0; });
   }
 
   /* Ukrycie filtra (np. instytucja wymuszona z menu) ukrywa tez jego przycisk */

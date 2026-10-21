@@ -27,7 +27,8 @@
     "telefon_biura", "email_firmy", "stanowisko_kontaktowej", "nazwa_banku", "etaty", "liczba_innych_umow", "forma_opodatkowania",
     "stawka_podatku", "reprezentant_1", "reprezentant_1_stanowisko", "reprezentant_2", "reprezentant_2_stanowisko",
     "zadluzenie_ugoda", "konto_praca_gov"];
-  var KOLUMNY_UCZESTNIKA = ["imie_nazwisko", "rodzaj_zatrudnienia", "zatrudnienie_do", "wyksztalcenie", "zawod"];
+  /* Zatrudnienie od - do (D-368, dawniej sam termin zatrudnienia) i zawod z etykieta Stanowisko */
+  var KOLUMNY_UCZESTNIKA = ["imie_nazwisko", "rodzaj_zatrudnienia", "zatrudnienie_od", "zatrudnienie_do", "wyksztalcenie", "zawod"];
 
   function etykieta(lista, klucz) {
     var p = lista.filter(function (x) { return x[0] === klucz; })[0];
@@ -185,6 +186,9 @@
     var bledy = [];
     if (pusty(dane.imie_nazwisko)) bledy.push("Imię i nazwisko jest wymagane.");
     if (!pusty(dane.rodzaj_zatrudnienia) && !znany(RODZAJE_ZATRUDNIENIA, dane.rodzaj_zatrudnienia)) bledy.push("Nieznany rodzaj zatrudnienia.");
+    if (!pusty(dane.zatrudnienie_od) && !pusty(dane.zatrudnienie_do) && dane.zatrudnienie_do < dane.zatrudnienie_od) {
+      bledy.push("Zatrudnienie do nie może być wcześniejsze niż zatrudnienie od.");
+    }
     return bledy;
   }
 

@@ -1,8 +1,8 @@
 /* Ekran 21, zakladka Nowy projekt: jedyne miejsce zakladania projektu (wniosku), jedna sciezka (D-264):
-   dane projektu, szkolenia z cenami, uczestnicy z puli klienta z wyborem szkolenia. Trafiaja tu przycisk
+   dane projektu, szkolenia z cenami, uczestnicy z puli klienta z wyborem szkolen (kilka naraz, D-369). Trafiaja tu przycisk
    Nowy projekt z Zestawien, Zloz wniosek z karty klienta i Zaloz projekt z formularza po akceptacji
    (adres z Nawigacja.adresNowegoProjektu). Zapis: ProjektLogika.utworz (02-zestawienia-projekt-logika.js),
-   szkolenia i uczestnicy: 02-zestawienia-projekt-szkolenia.js, podpowiedz z formularza:
+   szkolenia: 02-zestawienia-projekt-szkolenia.js, uczestnicy: 02-zestawienia-projekt-uczestnicy.js, podpowiedz z formularza:
    02-zestawienia-projekt-z-formularza.js. Po zapisie otwiera sie karta nowego wniosku. Same deklaracje. */
 
 function pfPole(etykieta, tip, kontrolka) {
@@ -93,12 +93,8 @@ function pfPodstawFormularz(podp) {
   document.getElementById("pfUrzad").value = d.pupId;
   PROJEKT_NOWY.szkolenia = d.szkolenia.slice();
   pfRenderSzkolenia();
-  d.uczestnicy.forEach(function (u) {
-    var tr = document.querySelector('#pfUczestnicy tr[data-uk="' + u.uczestnikKlientaId + '"]');
-    if (!tr) return;
-    tr.querySelector(".pfUczCk").checked = true;
-    tr.querySelector(".pfUczSzk").value = u.szkolenieId;
-  });
+  d.uczestnicy.forEach(function (u) { pfZaznaczPare(u.uczestnikKlientaId, u.szkolenieId); });
+  pfOdswiezWybor();
   document.getElementById("pfZFormularza").innerHTML = '<div class="note mb0" style="margin-bottom:10px">Projekt z formularza <b>' + esc(d.formularzId) +
     "</b>. Klient, instytucja, urząd, szkolenie i uczestnicy są podstawione z formularza, sprawdź cenę w tym projekcie." +
     (podp.nieznaneSzkolenie ? " Szkolenia „" + esc(podp.nieznaneSzkolenie) + "” nie ma w katalogu instytucji, wybierz je z listy." : "") + "</div>";
