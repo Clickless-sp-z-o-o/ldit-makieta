@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lista kontrolna testów LDIT</title>
+<style>
+:root { --granat: #222344; --granat-2: #2f3160; --zloto: #cdad7d; --zloto-tlo: #f6f0e6; --tlo: #f4f5f9; --karta: #fff;
+  --tekst: #1f2133; --szary: #6b6f87; --linia: #e3e5ee; --ok: #18a558; --uwaga: #c98a12; --zle: #e84040; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { font-family: Inter, "Segoe UI", system-ui, sans-serif; font-size: 14px; color: var(--tekst); background: var(--tlo); }
+button, textarea, input { font: inherit; color: inherit; }
+.app { display: grid; grid-template-columns: 300px 1fr; height: 100vh; }
+.menu { background: var(--granat); color: #e8e9f3; overflow-y: auto; padding: 16px 0 24px; }
+.logo { padding: 0 20px 14px; border-bottom: 1px solid rgba(255,255,255,.1); margin-bottom: 8px; }
+.logo b { color: var(--zloto); font-size: 18px; letter-spacing: .5px; }
+.logo span { display: block; font-size: 12px; opacity: .7; margin-top: 2px; }
+.menu button { width: 100%; text-align: left; background: none; border: 0; padding: 9px 20px; cursor: pointer;
+  font-weight: 600; color: #fff; display: flex; justify-content: space-between; gap: 8px; }
+.menu button:hover { background: var(--granat-2); }
+.menu .licznik { font-size: 11px; font-weight: 500; opacity: .75; white-space: nowrap; }
+.menu .pusto { padding: 9px 20px; font-size: 12px; opacity: .7; line-height: 1.5; }
+.aktywny { background: var(--granat-2) !important; box-shadow: inset 3px 0 0 var(--zloto); }
+.glowna { display: flex; flex-direction: column; min-width: 0; }
+.pasek { display: flex; align-items: center; gap: 14px; padding: 10px 24px; background: var(--karta); border-bottom: 1px solid var(--linia); flex-wrap: wrap; }
+.pasek h1 { font-size: 16px; margin: 0; }
+.postep { flex: 1; min-width: 180px; }
+.postep small { color: var(--szary); }
+.postep .tor { height: 6px; background: var(--linia); border-radius: 3px; overflow: hidden; margin-top: 4px; }
+.postep .tor div { height: 100%; background: var(--zloto); width: 0; transition: width .3s; }
+.btn { border: 1px solid var(--linia); background: var(--karta); border-radius: 8px; padding: 7px 14px; cursor: pointer; }
+.btn:hover { border-color: var(--granat); }
+.btn.glowny { background: var(--granat); color: #fff; border-color: var(--granat); }
+.btn.glowny:hover { background: var(--granat-2); }
+.btn:disabled { opacity: .4; cursor: default; }
+.tresc { flex: 1; overflow-y: auto; padding: 24px; }
+.karta { background: var(--karta); border: 1px solid var(--linia); border-radius: 12px; padding: 22px; max-width: 980px; margin: 0 auto 18px; }
+.okruszek { color: var(--szary); font-size: 12px; margin-bottom: 6px; }
+.karta h2 { margin: 0 0 14px; font-size: 20px; }
+.opis-sekcji { margin: -6px 0 6px; color: var(--szary); max-width: 760px; line-height: 1.5; }
+.wstep p, .wstep li { line-height: 1.6; max-width: 760px; }
+.wstep ul { padding-left: 20px; }
+.przypomnienie { max-width: 980px; margin: 0 auto 14px; background: var(--zloto-tlo); border: 1px solid var(--zloto); border-radius: 10px; padding: 10px 14px; line-height: 1.5; }
+.zapisano { color: var(--ok); font-size: 12px; min-width: 120px; }
+.kto { color: var(--szary); font-size: 12px; }
+textarea { width: 100%; min-height: 70px; border: 1px solid var(--linia); border-radius: 8px; padding: 10px 12px; resize: vertical; }
+textarea:focus, input[type=text]:focus { outline: 2px solid var(--zloto); border-color: var(--granat); }
+input[type=text] { border: 1px solid var(--linia); border-radius: 8px; padding: 8px 12px; width: 100%; max-width: 420px; }
+.sciezki { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin: 10px 0 16px; }
+.sciezka { border: 1px solid var(--linia); border-radius: 10px; padding: 12px 14px; cursor: pointer; display: block; background: var(--karta); }
+.sciezka input { position: absolute; opacity: 0; pointer-events: none; }
+.sciezka b { display: block; margin-bottom: 4px; }
+.sciezka span { color: var(--szary); font-size: 13px; line-height: 1.45; display: block; }
+.sciezka:has(input:checked) { border-color: var(--granat); background: var(--zloto-tlo); box-shadow: inset 0 0 0 1px var(--granat); }
+.sciezka:has(input:focus-visible) { outline: 2px solid var(--zloto); }
+.krok { border: 1px solid var(--linia); border-left: 5px solid var(--linia); border-radius: 10px; padding: 14px 16px; margin: 14px 0; background: var(--karta); }
+.krok-dziala { border-left-color: var(--ok); }
+.krok-nie-dziala { border-left-color: var(--zle); }
+.krok-uwagi { border-left-color: var(--uwaga); }
+.krok-gora { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.krok-gora h3 { margin: 0; font-size: 15px; }
+.numer { color: var(--szary); font-size: 12px; font-variant-numeric: tabular-nums; }
+.znacznik { font-size: 11px; color: var(--szary); border: 1px solid var(--linia); border-radius: 10px; padding: 1px 8px; }
+.krok h4 { margin: 12px 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .4px; color: var(--szary); }
+.krok ol { margin: 0; padding-left: 20px; line-height: 1.55; }
+.krok p { margin: 0; line-height: 1.55; }
+.oczekiwany p { background: #f8f9fc; border-radius: 8px; padding: 8px 12px; }
+.oceny { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 10px; }
+.ocena { border: 1px solid var(--linia); background: var(--karta); border-radius: 20px; padding: 7px 18px; cursor: pointer; min-height: 38px; }
+.ocena:hover { border-color: var(--granat); }
+.ocena-dziala.wybrana { background: var(--ok); border-color: var(--ok); color: #fff; font-weight: 600; }
+.ocena-nie-dziala.wybrana { background: var(--zle); border-color: var(--zle); color: #fff; font-weight: 600; }
+.ocena-uwagi.wybrana { background: var(--uwaga); border-color: var(--uwaga); color: #fff; font-weight: 600; }
+.blokada { color: var(--zle); font-size: 13px; margin: 0 0 8px; }
+.nawigacja { display: flex; justify-content: space-between; gap: 10px; max-width: 980px; margin: 0 auto; }
+.podsumowanie { border-collapse: collapse; width: 100%; }
+.podsumowanie td, .podsumowanie th { padding: 6px 12px; border-bottom: 1px solid var(--linia); text-align: left; }
+.problem { border-bottom: 1px solid var(--linia); padding: 8px 0; line-height: 1.5; }
+.problem small { color: var(--szary); }
+.podpowiedz { color: var(--szary); font-size: 12px; margin: 6px 0 0; }
+.pytanie h3 { margin: 18px 0 8px; font-size: 15px; }
+.tylko-telefon { display: none; }
+@media (max-width: 860px) {
+  .app { grid-template-columns: 1fr; height: auto; min-height: 100vh; }
+  .menu { display: none; }
+  .menu.otwarte { display: block; position: fixed; inset: 0; z-index: 40; }
+  .tylko-telefon { display: inline-block; }
+  .pasek { padding: 10px 14px; gap: 8px; }
+  .tresc { padding: 14px; overflow: visible; }
+  .karta { padding: 16px; }
+  .krok { padding: 12px; }
+  .ocena { flex: 1 1 30%; text-align: center; padding: 9px 8px; }
+  .podsumowanie { display: block; overflow-x: auto; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="menu" id="menu" aria-label="Części listy kontrolnej"></nav>
+  <div class="glowna">
+    <header class="pasek">
+      <button class="btn tylko-telefon" id="przyciskMenu" type="button">Menu</button>
+      <h1>Lista kontrolna testów LDIT</h1>
+      <div class="postep"><small id="postepTekst"></small><div class="tor"><div id="postepPasek"></div></div></div>
+      <span class="kto" id="kto"></span>
+      <span class="zapisano" id="zapisano" aria-live="polite"></span>
+      <button class="btn" id="wczytaj" type="button">Wczytaj JSON</button>
+      <button class="btn glowny" id="zapisz" type="button">Zapisz odpowiedzi (JSON)</button>
+      <input type="file" id="plik" accept="application/json,.json" hidden>
+    </header>
+    <main class="tresc" id="tresc" tabindex="-1"></main>
+  </div>
+</div>
+<script type="application/json" id="dane">
+{
+  "wersja": "2026-10-27",
+  "sciezki": [
+    { "id": "pracownik", "nazwa": "Pracownik LDIT", "czas": "około 40 minut, bez kroków opcjonalnych około 30",
+      "opis": "Codzienna praca zespołu: formularze, akceptacja, Baza, Nowy wniosek, statusy, zadania, filtry, premie i nabory." },
+    { "id": "admin", "nazwa": "Administrator LDIT", "czas": "około 35 minut",
+      "opis": "Najważniejsze procesy oraz rzeczy dostępne tylko dla administratora: czas sesji, źródła naborów, rejestr i import." },
+    { "id": "instytucja", "nazwa": "Instytucja (konto testowe instytucji)", "czas": "około 25 minut",
+      "opis": "Widok instytucji szkoleniowej: wysyłanie formularzy, poprawki, podgląd wniosku, komentarz, eksport i brak cudzych danych." }
+  ],
+  "sekcje": [
+    { "id": "start", "nazwa": "Start i konto", "opis": "Logowanie i pomoc w aplikacji." },
+    { "id": "formularz", "nazwa": "Nowy formularz", "opis": "Wprowadzenie formularza klienta na trzy sposoby: ręcznie, z Excela i z PDF. Dane tylko fikcyjne." },
+    { "id": "akceptacja", "nazwa": "Do akceptacji", "opis": "Praca na formularzach, które wpłynęły od instytucji albo z kroków wyżej." },
+    { "id": "baza", "nazwa": "Baza danych i formularze", "opis": "Klient i jego formularze w Bazie." },
+    { "id": "wniosek", "nazwa": "Nowy wniosek", "opis": "Panel zakładania wniosku z zaakceptowanego formularza." },
+    { "id": "statusy", "nazwa": "Statusy i usuwanie wniosku", "opis": "Pracuj na wniosku testowym z poprzedniej części." },
+    { "id": "zadania", "nazwa": "Zadania", "opis": "Zadania zespołu LDIT." },
+    { "id": "filtry", "nazwa": "Filtry, kolumny i eksport", "opis": "Listy wniosków i formularzy." },
+    { "id": "dashboard", "nazwa": "Dashboard i Moje premie", "opis": "Podsumowania i premie zespołu." },
+    { "id": "nabory", "nazwa": "Nabory", "opis": "Nabory urzędów pracy z arkuszy i wpisywane ręcznie." },
+    { "id": "admin", "nazwa": "Administracja", "opis": "Rzeczy dostępne tylko dla administratora." },
+    { "id": "instytucja", "nazwa": "Moja instytucja", "opis": "Formularze instytucji i katalog programów." },
+    { "id": "podglad", "nazwa": "Wniosek w widoku instytucji", "opis": "Instytucja widzi wniosek tylko do odczytu i tylko własne dane." },
+    { "id": "sesja", "nazwa": "Sesja i wylogowanie", "opis": "Ten krok zostaw na koniec. W czasie oczekiwania możesz uzupełniać listę w tej karcie." }
+  ],
+  "kroki": [
+    { "id": "start-logowanie", "sekcja": "start", "tytul": "Logowanie do aplikacji", "sciezki": ["pracownik", "admin", "instytucja"],
+      "instrukcja": ["Wejdź na adres aplikacji, który dostałeś od Pawła, i zaloguj się kontem testowym przypisanym do Twojej ścieżki.", "Jeśli pojawi się krótka wycieczka po ekranie, przejdź ją do końca albo ją zamknij."],
+      "oczekiwany": "Widzisz Dashboard, menu po lewej stronie i swoje konto w prawym górnym rogu. Nie widzisz niczego, co nie pasuje do Twojej roli." },
+    { "id": "start-przewodnik", "sekcja": "start", "tytul": "Pokaż i Przewodnik", "sciezki": ["pracownik", "admin", "instytucja"],
+      "instrukcja": ["W prawym górnym rogu kliknij Pokaż, a potem Przewodnik.", "Na innym ekranie spróbuj skrótów Shift+? oraz Shift+P."],
+      "oczekiwany": "Pokaż prowadzi po ekranie krok po kroku. Przewodnik otwiera panel z opisem ekranu i spisem treści. Escape zamyka oba." },
+    { "id": "start-haslo", "sekcja": "start", "tytul": "Zmiana hasła i logowanie kodem z e-maila", "opcjonalny": true, "sciezki": ["pracownik", "instytucja"],
+      "instrukcja": ["W Moim koncie zmień hasło (tylko na koncie, na którym wolno to zrobić, zapytaj Pawła).", "Wyloguj się i na ekranie logowania wybierz Zaloguj kodem z e-maila.", "Wpisz kod z wiadomości e-mail od Microsoft."],
+      "oczekiwany": "Logowanie kodem kończy się powodzeniem także po zmianie hasła: to samo konto, te same dane, bez błędu." },
+
+    { "id": "form-reczny", "sekcja": "formularz", "tytul": "Formularz wpisany ręcznie", "sciezki": ["pracownik", "admin", "instytucja"],
+      "instrukcja": ["Wejdź w Nowy formularz. Wpisz dane fikcyjnej firmy: nazwa z dopiskiem TEST i Twoim nazwiskiem, NIP testowy z prefiksem 999 (np. 9990000066).", "Dodaj dwie osoby z fikcyjnym PESEL-em (np. 92030300030 i 88040400048), wybierz urząd pracy i wyślij formularz."],
+      "oczekiwany": "Formularz dostaje numer F i status 01 Do akceptacji, widać go na liście wysłanych formularzy. Zapis nie kończy się błędem." },
+    { "id": "form-braki", "sekcja": "formularz", "tytul": "Braki na czerwono", "sciezki": ["instytucja"],
+      "instrukcja": ["W nowym formularzu zostaw puste jedno pole wymagane (np. NIP) i wpisz błędny PESEL.", "Kliknij Wyślij."],
+      "oczekiwany": "Puste wymagane i błędne pola są podświetlone na czerwono, nad przyciskiem jest lista braków, a widok przewija się do pierwszego z nich." },
+    { "id": "form-excel", "sekcja": "formularz", "tytul": "Import formularza z Excela", "sciezki": ["pracownik", "admin", "instytucja"],
+      "instrukcja": ["W Nowym formularzu pobierz wzór Excel i uzupełnij go jedną firmą i dwiema osobami.", "W polu telefonu wpisz dwa numery po przecinku: 500000000, 500000001.", "Wgraj plik i obejrzyj podgląd przed zapisem."],
+      "oczekiwany": "Podgląd pokazuje błędy przy polach. Pierwszy numer trafia do pola telefonu, drugi do uwag kontaktu, a zły numer daje ostrzeżenie, nie blokadę. Formularz zapisuje się dopiero po zatwierdzeniu podglądu." },
+    { "id": "form-excel-haslo", "sekcja": "formularz", "tytul": "Plik Excel zabezpieczony hasłem", "opcjonalny": true, "sciezki": ["pracownik", "instytucja"],
+      "instrukcja": ["Zabezpiecz hasłem plik z poprzedniego kroku (w Excelu: Plik, Informacje, Chroń skoroszyt) i wgraj go."],
+      "oczekiwany": "Pojawia się komunikat: Plik jest zabezpieczony hasłem. Użyj formularza pobranego z systemu. Nic się nie zapisuje." },
+    { "id": "form-pdf", "sekcja": "formularz", "tytul": "Import formularza z PDF", "sciezki": ["pracownik", "admin", "instytucja"],
+      "instrukcja": ["W Nowym formularzu wybierz import z PDF i wgraj wypełniony formularz PDF instytucji (wzór dostaniesz od Pawła).", "Obejrzyj podgląd."],
+      "oczekiwany": "Pola z PDF trafiają do tego samego podglądu co przy Excelu, z błędami przy polach. Zapis następuje dopiero po zatwierdzeniu." },
+    { "id": "form-nip", "sekcja": "formularz", "tytul": "Dane po NIP i rachunek bankowy", "opcjonalny": true, "sciezki": ["pracownik", "instytucja"],
+      "instrukcja": ["W formularzu wpisz NIP znanej firmy i kliknij pobranie danych po NIP.", "Sprawdź pole rachunku bankowego."],
+      "oczekiwany": "Dane firmy się uzupełniają, ale rachunek bankowy zostaje bez zmian. Przy polu jest opcja Pobierz rachunek z Wykazu VAT i działa dopiero po kliknięciu." },
+
+    { "id": "akc-lista", "sekcja": "akceptacja", "tytul": "Lista i godzina wpłynięcia", "sciezki": ["pracownik", "admin"],
+      "instrukcja": ["Wejdź w Do akceptacji i znajdź formularz z poprzednich kroków (po numerze F albo nazwie z dopiskiem TEST).", "Otwórz szczegóły formularza."],
+      "oczekiwany": "Na liście i w szczegółach jest data i godzina wpłynięcia w czasie polskim oraz numer F. Szczegóły pokazują wszystkie urzędy formularza." },
+    { "id": "akc-braki", "sekcja": "akceptacja", "tytul": "Akceptacja tylko kompletnego formularza", "sciezki": ["pracownik", "admin"],
+      "instrukcja": ["Otwórz formularz w statusie 01, kliknij Edytuj, wyczyść pole wymagane (np. NIP) i zapisz. Potem kliknij Akceptuj.", "Uzupełnij brakujące pole samodzielnie (zespół LDIT może uzupełnić każde pole, także PESEL) i kliknij Akceptuj jeszcze raz."],
+      "oczekiwany": "Za pierwszym razem akceptacja jest zablokowana: braki są na czerwono, nad przyciskiem jest ich lista, a widok przewija się do pierwszego. Po uzupełnieniu formularz ma status 03 Zaakceptowany, a klient jest w Bazie danych." },
+    { "id": "akc-odeslij", "sekcja": "akceptacja", "tytul": "Odesłanie do poprawy", "sciezki": ["pracownik", "admin"],
+      "instrukcja": ["Przy drugim formularzu kliknij Odeślij do instytucji z komentarzem i wpisz komentarz (jest wymagany).", "Wejdź w zakładkę Oczekuje na poprawę."],
+      "oczekiwany": "Formularz ma status 02. Na liście Oczekuje na poprawę są: data odesłania, kto odesłał, komentarz i liczba odesłań. Historia odesłań jest w szczegółach formularza." },
+    { "id": "akc-przejmij", "sekcja": "akceptacja", "tytul": "Przejmij", "sciezki": ["pracownik", "admin"],
+      "instrukcja": ["W zakładce Oczekuje na poprawę kliknij Przejmij przy swoim formularzu.", "Popraw formularz samodzielnie i zaakceptuj go."],
+      "oczekiwany": "Formularz wraca do statusu 01 i znika z listy Oczekuje na poprawę. Możesz go poprawić i zaakceptować sam, bez udziału instytucji." },
+    { "id": "akc-komentarz", "sekcja": "akceptacja", "tytul": "Komentarz instytucji do wniosku", "opcjonalny": true, "sciezki": ["pracownik", "admin"],
+      "instrukcja": ["Poproś testera ze ścieżki Instytucja o dodanie komentarza do wniosku (albo dodaj go sam na koncie instytucji).", "Wejdź w Do akceptacji i otwórz ten komentarz."],
+      "oczekiwany": "Komentarz do wniosku jest w Do akceptacji z oznaczeniem typu, a opiekunowie wniosku dostali powiadomienie. Po oznaczeniu jako przeczytany komentarz zostaje w przebiegu wniosku." },
+
+    { "id": "baza-rozwin", "sekcja": "baza", "tytul": "Formularze klienta w Bazie", "sciezki": ["pracownik", "admin"],
+      "instrukcja": ["W Bazie danych znajdź klienta z formularza zaakceptowanego w poprzednich krokach.", "Kliknij [+] na początku wiersza."],
+      "oczekiwany": "Rozwijają się formularze klienta: numer F, status 01-03, data, handlowiec i liczba wniosków. Przy formularzu 03 jest Nowy wniosek. Kolumna Wnioski pokazuje dymek z liczbą wniosków w grupach W trakcie, Zaakceptowane i Niezrealizowane." },
+    { "id": "baza-szczegoly", "sekcja": "baza", "tytul": "Szczegóły formularza z Bazy", "sciezki": ["pracownik"],
+      "instrukcja": ["Przy formularzu kliknij Szczegóły."],
+      "oczekiwany": "Otwierają się edytowalne szczegóły formularza. Przycisku Akceptuj tu nie ma: akceptuje się tylko w Do akceptacji." },
+    { "id": "baza-duplikuj", "sekcja": "baza", "tytul": "Duplikuj formularz", "sciezki": ["pracownik", "admin"],
+      "instrukcja": ["W Bazie albo w szczegółach formularza kliknij Duplikuj formularz."],
+      "oczekiwany": "Powstaje kopia z nowym numerem F, statusem 01 i osobami z oryginału, otwarta od razu w edycji. Oryginał się nie zmienia." },
+    { "id": "baza-bez-usuwania", "sekcja": "baza", "tytul": "Formularzy nie da się usunąć", "sciezki": ["pracownik", "admin"],
+      "instrukcja": ["Przejrzyj listę, szczegóły formularza i akcje zbiorcze w Bazie oraz w Do akceptacji."],
+      "oczekiwany": "Nigdzie nie ma przycisku ani akcji usunięcia formularza. Zamiast tego jest Duplikuj formularz." },
+
+    { "id": "wn-otworz", "sekcja": "wniosek", "tytul": "Otwarcie panelu Nowy wniosek", "sciezki": ["pracownik", "admin"],
+      "instrukcja": ["Otwórz panel z formularza 03 w Bazie (Nowy wniosek), a potem jeszcze raz z nagłówka karty klienta."],
+      "oczekiwany": "W obu przypadkach panel otwiera się z wybranym klientem i jego zaakceptowanym formularzem." },
+    { "id": "wn-pola", "sekcja": "wniosek", "tytul": "Nabór, szkolenia i osoby", "sciezki": ["pracownik", "admin"],
+      "instrukcja": ["Wybierz nabór i rok, dodaj szkolenie z katalogu i zaznacz osoby w tabeli osoba x szkolenie."],
+      "oczekiwany": "Szkolenie wybierasz tylko z katalogu instytucji (jest link Dodaj program w karcie instytucji). Osoba zajęta w aktywnym wniosku tego naboru jest wyszarzona z numerem tamtego wniosku." },
+    { "id": "wn-osoba", "sekcja": "wniosek", "tytul": "Dodanie osoby na miejscu", "sciezki": ["pracownik", "admin"],
+      "instrukcja": ["W panelu dodaj nową osobę z fikcyjnymi danymi i zapisz."],
+      "oczekiwany": "Osoba pojawia się w tabeli, a Ty zostajesz w panelu Nowy wniosek: bez przejścia do karty firmy lub wniosku i bez błędu zapisu." },
+    { "id": "wn-spoza", "sekcja": "wniosek", "tytul": "Nabór spoza listy", "opcjonalny": true, "sciezki": ["pracownik", "admin"],
+      "instrukcja": ["Zamiast naboru z listy wpisz nabór ręcznie: urząd, daty i nazwę."],
+      "oczekiwany": "Wniosek powstaje z naborem oznaczonym jako spoza listy. Oznaczenie widać na wniosku i w filtrach." },
+    { "id": "wn-podwojny", "sekcja": "wniosek", "tytul": "Podwójne kliknięcie Utwórz wniosek", "sciezki": ["pracownik", "admin"],
+      "instrukcja": ["Wypełnij panel i kliknij Utwórz wniosek dwa razy szybko, jeden raz po drugim.", "Wejdź w Dofinansowania i policz wnioski tego klienta."],
+      "oczekiwany": "Powstał dokładnie jeden wniosek ze statusem 01 Oczekujący. Przycisk blokuje się od kliknięcia do odpowiedzi serwera." },
+    { "id": "wn-robocze", "sekcja": "wniosek", "tytul": "Zapis roboczy po wylogowaniu", "sciezki": ["pracownik", "admin"],
+      "instrukcja": ["Zacznij nowy wniosek: wybierz klienta, nabór i szkolenie, ale go nie zapisuj.", "Poczekaj około pół minuty, wyloguj się i zaloguj ponownie."],
+      "oczekiwany": "Po zalogowaniu pojawia się informacja Masz niedokończony wniosek z godziną i przycisk powrotu. Po powrocie wybrane wcześniej pola są wypełnione." },
+    { "id": "wn-zatrudnieni", "sekcja": "wniosek", "tytul": "Zmień w formularzu przy liczbie zatrudnionych", "opcjonalny": true, "sciezki": ["pracownik"],
+      "instrukcja": ["We wniosku zmień liczbę zatrudnionych i obejrzyj pole Zmień w formularzu.", "Zaznacz je i wybierz formularz klienta do nadpisania."],
+      "oczekiwany": "Pole jest domyślnie wyłączone. Po zaznaczeniu wybierasz formularz do nadpisania, a zmiana trafia do rejestru aktywności z wartością przed i po." },
+
+    { "id": "st-lista", "sekcja": "statusy", "tytul": "Statusy 01-11", "sciezki": ["pracownik", "admin"],
+      "instrukcja": ["Otwórz wniosek testowy i rozwiń listę statusów.", "Przejdź kolejno przez 02 Piszemy, 03 Załączniki, 04 Zrobiony i 05 Złożony, potem ustaw 06 Korekta i wróć na 05."],
+      "oczekiwany": "Lista ma 11 statusów z numerami, od 01 Oczekujący do 11 Rezygnacja, bez statusu Anulowany. Każda zmiana jest w przebiegu wniosku ze statusem przed i po." },
+    { "id": "st-decyzje", "sekcja": "statusy", "tytul": "Decyzje, Rezygnacja i kolory", "sciezki": ["pracownik"],
+      "instrukcja": ["Ustaw status 07 Decyzja pozytywna, a potem 11 Rezygnacja.", "Na liście Dofinansowania sprawdź kolory wierszy dla statusów 07, 09, 10 i 11, kolumnę Grupa i filtr grup."],
+      "oczekiwany": "07 jest zielony, 09 łososiowy, 10 żółty, 11 szary. Grupy: W trakcie (01-06), Zaakceptowane (07-08), Niezrealizowane (09-11). Rezygnacja trafia do Niezrealizowanych. Jeśli kolor Rezygnacji Ci nie odpowiada, zaznacz Uwagi i napisz, jaki wolisz." },
+    { "id": "st-usun", "sekcja": "statusy", "tytul": "Usuń wniosek", "sciezki": ["pracownik", "admin"],
+      "instrukcja": ["W szczegółach wniosku testowego kliknij Usuń wniosek (przycisku nie ma w menu statusów).", "Przeczytaj okno potwierdzenia i potwierdź.", "Sprawdź listę Dofinansowania i Bazę danych."],
+      "oczekiwany": "Okno potwierdzenia podaje numer wniosku. Po potwierdzeniu wniosek znika z list, statystyk i Dashboardu, a formularz klienta zostaje w Bazie. Numer wniosku zostaje luką." },
+
+    { "id": "zad-dodaj", "sekcja": "zadania", "tytul": "Dodaj zadanie", "sciezki": ["pracownik", "admin"],
+      "instrukcja": ["W Zadaniach kliknij Dodaj zadanie (powinien być jeden taki przycisk).", "Wpisz tytuł, termin i opis, nie zmieniaj wykonawcy i zapisz."],
+      "oczekiwany": "Zadanie jest zapisane, a wykonawcą jesteś Ty. Zapis nie wymaga przełączania organizacji." },
+    { "id": "zad-przypisz", "sekcja": "zadania", "tytul": "Przypisanie i edycja zadania", "sciezki": ["pracownik", "admin"],
+      "instrukcja": ["Otwórz swoje zadanie, zmień wykonawcę na inną osobę z LDIT, zmień tytuł i termin, zapisz."],
+      "oczekiwany": "Pole wykonawcy jest aktywne, zmiany są zapisane, a zadanie jest w widoku wskazanej osoby.",
+      "warianty": { "admin": { "oczekiwany": "Pole wykonawcy jest aktywne, zmiany są zapisane, a zadanie jest w widoku wskazanej osoby. Administrator może przepisać zadanie dowolnej osobie z LDIT." } } },
+
+    { "id": "fl-drzewo", "sekcja": "filtry", "tytul": "Drzewo dat zakończenia szkolenia", "sciezki": ["pracownik", "admin"],
+      "instrukcja": ["Na liście Dofinansowania otwórz filtr daty zakończenia szkolenia.", "Wybierz cały miesiąc (np. październik), potem kilka dni z jednego tygodnia, a na końcu dołóż filtr statusu."],
+      "oczekiwany": "Filtr ma drzewo rok, miesiąc, dzień. Wybór miesiąca albo kilku dni zawęża listę i łączy się z innymi filtrami. Filtr daty złożenia działa jak dotąd." },
+    { "id": "fl-szukaj", "sekcja": "filtry", "tytul": "Wyszukiwarka urzędów i instytucji", "sciezki": ["pracownik"],
+      "instrukcja": ["Otwórz listę urzędów w filtrze (ok. 340 pozycji) i wpisz fragment nazwy.", "Powtórz to w przełączniku instytucji."],
+      "oczekiwany": "Lista zawęża się podczas pisania, w obu miejscach." },
+    { "id": "fl-kolumny", "sekcja": "filtry", "tytul": "Kolumny, Przygotował i eksport", "sciezki": ["pracownik", "admin"],
+      "instrukcja": ["Posortuj listę wniosków po kolumnie Szkolenie do. Sprawdź, że są kolumny Szkolenie od i Szkolenie do.", "Ustaw filtr Przygotował i wyeksportuj listę do CSV oraz XLSX."],
+      "oczekiwany": "Sortowanie po Szkolenie do działa. Filtr Przygotował pokazuje imię i nazwisko, nie identyfikator. Eksport ma te same wiersze co lista po filtrach, z kolumnami Szkolenie od i do oraz z imieniem i nazwiskiem w polu Przygotował." },
+    { "id": "fl-odswiez", "sekcja": "filtry", "tytul": "Odświeżanie i edycja w dwóch oknach", "sciezki": ["pracownik"],
+      "instrukcja": ["Otwórz tę samą listę w dwóch oknach przeglądarki. W pierwszym zacznij edytować wiersz, w drugim zmień ten sam rekord i zapisz.", "Poczekaj do minuty albo kliknij Odśwież."],
+      "oczekiwany": "Listy odświeżają się co minutę, ale nie nadpisują wiersza, który edytujesz. Zamiast tego pojawia się pasek Ten rekord zmienił się w międzyczasie z wyborem Wczytaj zmiany albo Zostaw moje." },
+
+    { "id": "dash-instytucje", "sekcja": "dashboard", "tytul": "Dashboard i tabela instytucji", "sciezki": ["pracownik", "admin"],
+      "instrukcja": ["Na Dashboardzie wybierz wszystkie instytucje i obejrzyj tabelę porównawczą instytucji.", "Posortuj ją po kilku kolumnach, ustaw filtr instytucji i porównaj liczby z listą Dofinansowania z tymi samymi filtrami."],
+      "oczekiwany": "Tabela pokazuje dla każdej instytucji złożone, zaakceptowane, wartość i procent odrzuconych. Liczby zgadzają się z listą wniosków. W menu i nagłówkach nie ma już słowa Projekty: jest Wnioski." },
+    { "id": "dash-premie", "sekcja": "dashboard", "tytul": "Moje premie", "sciezki": ["pracownik", "admin"],
+      "instrukcja": ["Wejdź w Moje premie (pod Dashboardem) i obejrzyj oś czasu kamieni milowych.", "Otwórz opis etapu Rozliczenie."],
+      "oczekiwany": "Widać progi i daty ich osiągnięcia. Opis etapu Rozliczenie mówi o przygotowaniu dokumentacji rozliczeniowej dofinansowania dla klienta. Jeśli masz własne wyliczenie premii dla 2-3 wniosków, liczby się z nim zgadzają." },
+
+    { "id": "nab-lista", "sekcja": "nabory", "tytul": "Lista naborów i Odśwież", "sciezki": ["pracownik", "admin"],
+      "instrukcja": ["Wejdź w Nabory, kliknij Odśwież i obejrzyj listy naborów ogłoszonych i prognozowanych."],
+      "oczekiwany": "Na liście są nabory z arkuszy: urząd, daty od i do, status. Odświeżenie nie kończy się błędem." },
+    { "id": "nab-nowy", "sekcja": "nabory", "tytul": "Nowy nabór", "opcjonalny": true, "sciezki": ["pracownik", "admin"],
+      "instrukcja": ["Kliknij Nowy nabór, wpisz urząd, daty i nazwę, zapisz."],
+      "oczekiwany": "Nabór zapisuje się bez błędu, jest od razu na liście i można go wybrać w panelu Nowy wniosek." },
+    { "id": "nab-zrodla", "sekcja": "nabory", "tytul": "Nabory z arkuszy", "sciezki": ["admin"],
+      "instrukcja": ["Wejdź w Źródła naborów i kliknij Pobierz próbkę, a potem Odśwież teraz.", "Sprawdź log pobrania i listę naborów."],
+      "oczekiwany": "Próbka pokazuje poprawnie zmapowane kolumny (urząd, daty, status). Po odświeżeniu nabory z obu arkuszy są na liście, a log pobrania i archiwum wersji mają wpis." },
+
+    { "id": "adm-cofnij", "sekcja": "admin", "tytul": "Cofnięcie usunięcia z Rejestru", "sciezki": ["admin"],
+      "instrukcja": ["W Rejestrze aktywności znajdź wpis o usuniętym wniosku.", "Cofnij usunięcie z poziomu tego wpisu."],
+      "oczekiwany": "Wpis ma kopię danych wniosku. Po cofnięciu wniosek wraca na listę ze starym numerem i statusem." },
+    { "id": "adm-import", "sekcja": "admin", "tytul": "Import administratora z pliku Excel", "opcjonalny": true, "sciezki": ["admin"],
+      "instrukcja": ["W Imporcie danych pobierz wzór z arkuszami Formularze, Uczestnicy, Wnioski i Pozycje wniosku. Jeśli nie widzisz tego ekranu, zaznacz Uwagi i napisz, czego brakuje.", "Uzupełnij po jednym wierszu (fikcyjne dane) i wgraj plik. W osobnej próbie wprowadź celowy błąd."],
+      "oczekiwany": "Cały plik jest sprawdzany przed zapisem, a błędy są wypisane z wierszem i polem. Plik z błędem nie zapisuje nic. Poprawny plik zakłada formularze i wnioski w jednej operacji." },
+
+    { "id": "is-wyslane", "sekcja": "instytucja", "tytul": "Lista wysłanych formularzy", "sciezki": ["instytucja"],
+      "instrukcja": ["W Nowym formularzu otwórz Moje wysłane formularze, a w Mojej instytucji zakładkę Formularze."],
+      "oczekiwany": "Widzisz numer F, status 01-03 i komentarz LDIT (jeśli jest) dla formularzy swojej instytucji. Przy zakładce jest licznik formularzy do poprawy." },
+    { "id": "is-poprawa", "sekcja": "instytucja", "tytul": "Popraw i wyślij ponownie", "sciezki": ["instytucja"],
+      "instrukcja": ["Poproś testera ze ścieżki Pracownik LDIT albo Pawła o odesłanie Twojego formularza z komentarzem. Jeśli nikt nie jest dostępny, zaznacz Uwagi i przejdź dalej.", "Otwórz powiadomienie, przeczytaj komentarz, kliknij Popraw i wyślij ponownie, popraw formularz i wyślij."],
+      "oczekiwany": "Formularz ma status 02 i komentarz LDIT, a powiadomienie otwiera go w edycji. Po ponownym wysłaniu status wraca na 01." },
+    { "id": "is-katalog", "sekcja": "instytucja", "tytul": "Unikalne nazwy programów", "opcjonalny": true, "sciezki": ["instytucja"],
+      "instrukcja": ["W katalogu instytucji skopiuj program dwa razy i spróbuj zapisać program o nazwie, która już istnieje (inna wielkość liter albo podwójna spacja). Jeśli nie masz dostępu do katalogu, pomiń krok."],
+      "oczekiwany": "Pierwsza kopia dostaje dopisek kopia, druga kopia 2. Zapis powtórzonej nazwy jest odrzucony z komunikatem." },
+
+    { "id": "pod-podglad", "sekcja": "podglad", "tytul": "Podgląd wniosku bez edycji", "sciezki": ["instytucja"],
+      "instrukcja": ["W Dofinansowaniach otwórz wniosek swojej instytucji (jeśli go nie ma, poproś o utworzenie wniosku dla Twojego formularza).", "Poszukaj przycisków zmiany statusu, edycji pól i usuwania."],
+      "oczekiwany": "Widzisz dane wniosku i jego przebieg, ale nie możesz zmienić statusu, etapów ani pól, i nie ma przycisku Usuń wniosek." },
+    { "id": "pod-komentarz", "sekcja": "podglad", "tytul": "Dodaj komentarz", "sciezki": ["instytucja"],
+      "instrukcja": ["W karcie wniosku kliknij Dodaj komentarz, wpisz tekst i zapisz."],
+      "oczekiwany": "Komentarz zapisuje się i jest widoczny w przebiegu wniosku. Zespół LDIT dostaje go w Do akceptacji (potwierdzi to tester ze ścieżki Pracownik LDIT)." },
+    { "id": "pod-eksport", "sekcja": "podglad", "tytul": "Eksport wniosku i listy", "sciezki": ["instytucja"],
+      "instrukcja": ["Wyeksportuj wniosek i listę wniosków do CSV oraz XLSX."],
+      "oczekiwany": "Pliki się otwierają, zawierają tylko dane Twojej instytucji i nie mają prowizji ani pól zespołu LDIT." },
+    { "id": "pod-cudze", "sekcja": "podglad", "tytul": "Brak cudzych danych", "sciezki": ["instytucja"],
+      "instrukcja": ["Wpisz w wyszukiwarce nazwę firmy, o której wiesz, że należy do innej instytucji.", "Poproś kolegę z LDIT o adres wniosku innej instytucji i wklej go w pasek przeglądarki."],
+      "oczekiwany": "Wyszukiwarka nie zwraca cudzych firm. Adres cudzego rekordu pokazuje brak dostępu albo pustą stronę, nigdy dane." },
+    { "id": "pod-pesel", "sekcja": "podglad", "tytul": "Pokaż PESEL", "sciezki": ["instytucja"],
+      "instrukcja": ["W panelu instytucji otwórz listę osób, w której PESEL jest zakryty.", "Poszukaj przycisku Pokaż PESEL i, jeśli jest, kliknij go."],
+      "oczekiwany": "Administrator instytucji ma przycisk Pokaż PESEL: po kliknięciu widzi pełny numer, a odkrycie jest odnotowane w rejestrze. Pracownik instytucji i handlowiec nie mają tego przycisku, a PESEL zostaje zakryty." },
+    { "id": "pod-menu", "sekcja": "podglad", "tytul": "Czego nie widać", "sciezki": ["instytucja"],
+      "instrukcja": ["Przejrzyj menu i karty aplikacji."],
+      "oczekiwany": "Nie ma Administracji, Rejestru aktywności, Komunikacji LDIT ani zadań zespołu. Zakres zależy od roli Twojego konta." },
+
+    { "id": "ses-czas", "sekcja": "sesja", "tytul": "Ustawienie czasu bezczynności", "sciezki": ["admin"],
+      "instrukcja": ["W Administracji znajdź Czas bezczynności do wylogowania, ustaw 5 minut i zapisz.", "Wykonaj następny krok, a na końcu przywróć 15 minut."],
+      "oczekiwany": "Ustawienie przyjmuje wartości od 5 do 480 minut (domyślnie 15) i zapisuje się. Zmiana jest odnotowana w rejestrze." },
+    { "id": "ses-okno", "sekcja": "sesja", "tytul": "Okno Zostań zalogowany i wylogowanie", "sciezki": ["pracownik", "admin", "instytucja"],
+      "instrukcja": ["Zostaw kartę aplikacji bez dotykania myszy i klawiatury (domyślnie 15 minut).", "Minutę przed końcem kliknij Zostań zalogowany w oknie, które się pojawi.", "Potem znów nic nie rób i poczekaj na wylogowanie."],
+      "oczekiwany": "Minutę przed wylogowaniem pojawia się okno Zostań zalogowany. Kliknięcie przedłuża sesję, a bez kliknięcia zostajesz wylogowany z komunikatem o bezczynności. Odświeżanie list w tle nie przedłuża sesji.",
+      "warianty": { "admin": { "instrukcja": ["Po ustawieniu krótkiego czasu z poprzedniego kroku zostaw kartę aplikacji bez dotykania myszy i klawiatury.", "Minutę przed końcem kliknij Zostań zalogowany w oknie, które się pojawi.", "Potem znów nic nie rób i poczekaj na wylogowanie."] } } }
+  ]
+}
+</script>
+<script id="inicjalizacja">
+"use strict";
+const DANE = JSON.parse(document.getElementById("dane").textContent);
+</script>
+<script id="logika">
+"use strict";
+/* Logika bez dostepu do DOM: opisy krokow, stan, eksport i import JSON. */
+const WYNIKI = [["dziala", "Działa"], ["nie-dziala", "Nie działa"], ["uwagi", "Uwagi"]];
+const DOKUMENT = "ldit-lista-testow";
+
+const esc = (t) => String(t).replace(/[&<>"']/g, (z) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[z]));
+const znajdzSciezke = (id) => DANE.sciezki.find((s) => s.id === id) || null;
+const krokiSciezki = (idSciezki) => DANE.kroki.filter((k) => k.sciezki.includes(idSciezki));
+
+function sekcjeSciezki(idSciezki) {
+  const kroki = krokiSciezki(idSciezki);
+  return DANE.sekcje
+    .map((s) => Object.assign({}, s, { kroki: kroki.filter((k) => k.sekcja === s.id) }))
+    .filter((s) => s.kroki.length > 0);
+}
+
+function pustyStan() { return { tester: "", sciezka: "", odpowiedzi: {}, ogolne: "" }; }
+
+function odczytajOdpowiedz(stan, idSciezki, idKroku) {
+  const o = (stan.odpowiedzi[idSciezki] || {})[idKroku];
+  return { wynik: o && o.wynik ? o.wynik : null, komentarz: o && o.komentarz ? o.komentarz : "" };
+}
+
+function zapiszOdpowiedz(stan, idSciezki, idKroku, zmiana) {
+  if (!stan.odpowiedzi[idSciezki]) stan.odpowiedzi[idSciezki] = {};
+  stan.odpowiedzi[idSciezki][idKroku] = Object.assign(odczytajOdpowiedz(stan, idSciezki, idKroku), zmiana);
+}
+
+function tekstKroku(krok, idSciezki) {
+  return Object.assign({ instrukcja: krok.instrukcja, oczekiwany: krok.oczekiwany }, (krok.warianty || {})[idSciezki]);
+}
+
+function krokHtml(krok, numer, odp, idSciezki) {
+  const t = tekstKroku(krok, idSciezki);
+  const lista = t.instrukcja.map((l) => "<li>" + esc(l) + "</li>").join("");
+  const przyciski = WYNIKI.map(([w, etykieta]) => '<button type="button" class="ocena ocena-' + w + (odp.wynik === w ? " wybrana" : "")
+    + '" data-krok="' + esc(krok.id) + '" data-wynik="' + w + '" aria-pressed="' + (odp.wynik === w) + '">' + etykieta + "</button>").join("");
+  return '<article class="krok' + (odp.wynik ? " krok-" + odp.wynik : "") + '" id="krok-' + esc(krok.id) + '">'
+    + '<header class="krok-gora"><span class="numer">' + esc(numer) + "</span><h3>" + esc(krok.tytul) + "</h3>"
+    + (krok.opcjonalny ? '<span class="znacznik">opcjonalny</span>' : "") + "</header>"
+    + '<div class="co"><h4>Co zrobić</h4><ol>' + lista + "</ol></div>"
+    + '<div class="oczekiwany"><h4>Oczekiwany wynik</h4><p>' + esc(t.oczekiwany) + "</p></div>"
+    + '<div class="oceny" role="group" aria-label="Wynik kroku">' + przyciski + "</div>"
+    + (odp.wynik === "nie-dziala" ? '<p class="blokada">Jeśli błąd uniemożliwia dalszą pracę, zgłoś go też od razu w aplikacji, w module Zgłoszenia.</p>' : "")
+    + '<textarea data-komentarz="' + esc(krok.id) + '" aria-label="Komentarz do kroku: ' + esc(krok.tytul)
+    + '" placeholder="Komentarz: co zobaczyłeś, na którym ekranie, na jakim koncie">' + esc(odp.komentarz) + "</textarea></article>";
+}
+
+function podsumuj(stan, idSciezki) {
+  const kroki = krokiSciezki(idSciezki);
+  const licz = (w) => kroki.filter((k) => odczytajOdpowiedz(stan, idSciezki, k.id).wynik === w).length;
+  const wynik = { razem: kroki.length, dziala: licz("dziala"), nieDziala: licz("nie-dziala"), uwagi: licz("uwagi") };
+  wynik.bezOdpowiedzi = wynik.razem - wynik.dziala - wynik.nieDziala - wynik.uwagi;
+  return wynik;
+}
+
+function listaProblemow(stan, idSciezki) {
+  return sekcjeSciezki(idSciezki).flatMap((s) => s.kroki.map((k) => ({ sekcja: s.nazwa, krok: k, odp: odczytajOdpowiedz(stan, idSciezki, k.id) })))
+    .filter((p) => p.odp.wynik === "nie-dziala" || p.odp.wynik === "uwagi");
+}
+
+function dataLokalna(d) {
+  const dwie = (n) => String(n).padStart(2, "0");
+  return d.getFullYear() + "-" + dwie(d.getMonth() + 1) + "-" + dwie(d.getDate());
+}
+
+function nazwaPliku(stan, teraz) {
+  const nazwisko = (stan.tester || "anonim").toLowerCase().replace(/[^a-z0-9ąćęłńóśźż]+/g, "-").replace(/^-+|-+$/g, "") || "anonim";
+  return "lista-testow-" + nazwisko + "-" + stan.sciezka + "-" + dataLokalna(teraz) + ".json";
+}
+
+function zbudujEksport(stan, idSciezki, teraz) {
+  const kroki = sekcjeSciezki(idSciezki).flatMap((s) => s.kroki.map((k) => {
+    const o = odczytajOdpowiedz(stan, idSciezki, k.id);
+    return { id: k.id, sekcja: s.nazwa, krok: k.tytul, opcjonalny: Boolean(k.opcjonalny), wynik: o.wynik, komentarz: o.komentarz };
+  }));
+  return {
+    dokument: DOKUMENT, wersja: DANE.wersja, tester: stan.tester.trim(), sciezka: idSciezki, sciezkaNazwa: znajdzSciezke(idSciezki).nazwa,
+    data: dataLokalna(teraz), zapisano: teraz.toISOString(), uwagiOgolne: stan.ogolne, podsumowanie: podsumuj(stan, idSciezki), kroki,
+  };
+}
+
+/* Wczytanie wczesniej wyeksportowanego pliku: tylko znane kroki wybranej sciezki, reszta pliku jest ignorowana. */
+function wczytajEksport(tekst, stan) {
+  const d = JSON.parse(tekst);
+  if (!d || d.dokument !== DOKUMENT || !Array.isArray(d.kroki) || !znajdzSciezke(d.sciezka)) throw new Error("To nie jest plik tej listy kontrolnej.");
+  const znane = new Set(krokiSciezki(d.sciezka).map((k) => k.id));
+  const odpowiedzi = {};
+  d.kroki.filter((k) => k && znane.has(k.id)).forEach((k) => {
+    odpowiedzi[k.id] = { wynik: WYNIKI.some(([w]) => w === k.wynik) ? k.wynik : null, komentarz: typeof k.komentarz === "string" ? k.komentarz : "" };
+  });
+  return Object.assign({}, stan, {
+    tester: String(d.tester || ""), sciezka: d.sciezka, ogolne: String(d.uwagiOgolne || ""),
+    odpowiedzi: Object.assign({}, stan.odpowiedzi, { [d.sciezka]: odpowiedzi }),
+  });
+}
+</script>
+<script id="aplikacja">
+"use strict";
+const KLUCZ = "ldit-lista-testow";
+const PRZYPOMNIENIE = "Błąd blokujący, po którym nie da się pracować dalej, zgłoś od razu w aplikacji, w module Zgłoszenia. Tu zaznacz Nie działa i dopisz krótki komentarz.";
+
+let stan = wczytajStan();
+let biezacaId = location.hash.slice(1) || "start";
+
+function wczytajStan() {
+  let zapisany = {};
+  try { zapisany = JSON.parse(localStorage.getItem(KLUCZ) || "{}"); } catch (e) { zapisany = {}; }
+  const nowy = Object.assign(pustyStan(), zapisany);
+  if (!znajdzSciezke(nowy.sciezka)) nowy.sciezka = "";
+  return nowy;
+}
+
+let zegarZapisu = null;
+function zapiszStan() {
+  const z = document.getElementById("zapisano");
+  try {
+    localStorage.setItem(KLUCZ, JSON.stringify(stan));
+    z.textContent = "Zapisano w przeglądarce";
+  } catch (e) {
+    z.textContent = "Brak autozapisu, zapisz plik JSON";
+  }
+  clearTimeout(zegarZapisu);
+  zegarZapisu = setTimeout(() => { z.textContent = ""; }, 2200);
+  odswiezMenu(); odswiezPostep();
+}
+
+function strony() {
+  const lista = [{ id: "start", typ: "start" }];
+  if (!stan.sciezka) return lista;
+  sekcjeSciezki(stan.sciezka).forEach((s, i) => lista.push({ id: "sekcja-" + s.id, typ: "sekcja", sekcja: s, numer: i + 1 }));
+  lista.push({ id: "koniec", typ: "koniec" });
+  return lista;
+}
+
+function odpowiedziSekcji(sekcja) {
+  return sekcja.kroki.filter((k) => odczytajOdpowiedz(stan, stan.sciezka, k.id).wynik).length;
+}
+
+function odswiezPostep() {
+  const tekst = document.getElementById("postepTekst");
+  const kto = document.getElementById("kto");
+  const sciezka = znajdzSciezke(stan.sciezka);
+  kto.textContent = sciezka ? (stan.tester.trim() ? stan.tester.trim() + ", " : "") + sciezka.nazwa : "";
+  if (!sciezka) { tekst.textContent = "Wybierz ścieżkę na stronie Start"; document.getElementById("postepPasek").style.width = "0"; return; }
+  const p = podsumuj(stan, stan.sciezka);
+  const gotowe = p.razem - p.bezOdpowiedzi;
+  tekst.textContent = "Ocenione kroki: " + gotowe + " z " + p.razem;
+  document.getElementById("postepPasek").style.width = Math.round((gotowe / p.razem) * 100) + "%";
+}
+
+function odswiezMenu() {
+  const lista = strony();
+  const przycisk = (s, etykieta, licznik) => '<button type="button" data-strona="' + s.id + '" class="' + (biezacaId === s.id ? "aktywny" : "") + '"><span>'
+    + esc(etykieta) + "</span>" + (licznik ? '<span class="licznik">' + licznik + "</span>" : "") + "</button>";
+  const sciezka = znajdzSciezke(stan.sciezka);
+  let html = '<div class="logo"><b>LDIT</b><span>Lista kontrolna testów, wersja ' + esc(DANE.wersja) + "</span></div>";
+  html += lista.map((s) => {
+    if (s.typ === "start") return przycisk(s, "Start i wybór ścieżki", "");
+    if (s.typ === "koniec") return przycisk(s, "Podsumowanie i eksport", "");
+    return przycisk(s, s.numer + ". " + s.sekcja.nazwa, odpowiedziSekcji(s.sekcja) + "/" + s.sekcja.kroki.length);
+  }).join("");
+  if (!sciezka) html += '<p class="pusto">Po wyborze ścieżki pojawią się tu części listy.</p>';
+  document.getElementById("menu").innerHTML = html;
+}
+
+function nawigacjaHtml(indeks, wszystkie) {
+  return '<div class="nawigacja"><button class="btn" type="button" data-krok-nawigacja="-1"' + (indeks > 0 ? "" : " disabled") + ">← Wstecz</button>"
+    + '<button class="btn glowny" type="button" data-krok-nawigacja="1"' + (indeks < wszystkie - 1 ? "" : " disabled") + ">Dalej →</button></div>";
+}
+
+function stronaStart() {
+  const karty = DANE.sciezki.map((s) => '<label class="sciezka"><input type="radio" name="sciezka" value="' + s.id + '"' + (stan.sciezka === s.id ? " checked" : "")
+    + "><b>" + esc(s.nazwa) + "</b><span>" + esc(s.opis) + "</span><span>Czas: " + esc(s.czas) + ".</span></label>").join("");
+  return '<section class="karta wstep"><h2>Lista kontrolna testów systemu LDIT</h2>'
+    + "<p>Dziękujemy za pomoc w testach. Wpisz imię i nazwisko, wybierz ścieżkę zgodną z Twoim kontem i przejdź po krokach. Cała lista to 30-40 minut. Kroki oznaczone jako opcjonalne możesz pominąć, jeśli brakuje Ci czasu.</p>"
+    + '<p><label>Imię i nazwisko testera<br><input type="text" data-pole="tester" autocomplete="name" value="' + esc(stan.tester) + '"></label></p>'
+    + '<h3>Ścieżka</h3><div class="sciezki" role="radiogroup" aria-label="Ścieżka testów">' + karty + "</div>"
+    + "<ul>"
+    + "<li>Przy każdym kroku zaznacz <b>Działa</b>, <b>Nie działa</b> albo <b>Uwagi</b> (działa, ale coś jest niejasne lub niewygodne) i dopisz komentarz: na którym ekranie, na jakim koncie, co zobaczyłeś.</li>"
+    + "<li>Odpowiedzi zapisują się automatycznie w tej przeglądarce. Na końcu kliknij <b>Zapisz odpowiedzi (JSON)</b> i odeślij plik do Clickless. <b>Wczytaj JSON</b> przywraca wcześniejszy zapis, także na innym komputerze.</li>"
+    + "<li>" + esc(PRZYPOMNIENIE) + "</li>"
+    + "<li>Dane testowe są fikcyjne (nazwy z dopiskiem TEST, NIP z prefiksem 999). Nie wpisuj prawdziwych danych osobowych. Loginu i hasła do konta testowego ta strona nie zawiera, dostajesz je osobno.</li>"
+    + "</ul>" + (stan.sciezka ? '<p><button class="btn glowny" type="button" data-krok-nawigacja="1">Zacznij testy →</button></p>' : "") + "</section>";
+}
+
+function stronaSekcji(strona, indeks, wszystkie) {
+  const s = strona.sekcja;
+  const kroki = s.kroki.map((k, j) => krokHtml(k, strona.numer + "." + (j + 1), odczytajOdpowiedz(stan, stan.sciezka, k.id), stan.sciezka)).join("");
+  return '<div class="przypomnienie">' + esc(PRZYPOMNIENIE) + "</div>"
+    + '<section class="karta"><div class="okruszek">Część ' + strona.numer + " z " + (wszystkie - 2) + "</div><h2>" + esc(s.nazwa) + "</h2>"
+    + (s.opis ? '<p class="opis-sekcji">' + esc(s.opis) + "</p>" : "") + kroki + "</section>" + nawigacjaHtml(indeks, wszystkie);
+}
+
+function stronaKonca(indeks, wszystkie) {
+  const wiersze = sekcjeSciezki(stan.sciezka).map((s) => {
+    const licz = (w) => s.kroki.filter((k) => odczytajOdpowiedz(stan, stan.sciezka, k.id).wynik === w).length;
+    return "<tr><td>" + esc(s.nazwa) + "</td><td>" + licz("dziala") + "</td><td>" + licz("nie-dziala") + "</td><td>" + licz("uwagi") + "</td><td>"
+      + (s.kroki.length - odpowiedziSekcji(s)) + "</td></tr>";
+  }).join("");
+  const problemy = listaProblemow(stan, stan.sciezka).map((p) => '<div class="problem"><b>' + esc(p.krok.tytul) + "</b> <small>(" + esc(p.sekcja) + ", "
+    + (p.odp.wynik === "nie-dziala" ? "Nie działa" : "Uwagi") + ")</small><br>" + (p.odp.komentarz.trim() ? esc(p.odp.komentarz) : "<small>bez komentarza</small>") + "</div>").join("");
+  return '<section class="karta"><h2>Podsumowanie</h2><table class="podsumowanie"><thead><tr><th>Część</th><th>Działa</th><th>Nie działa</th><th>Uwagi</th><th>Bez odpowiedzi</th></tr></thead><tbody>'
+    + wiersze + "</tbody></table>"
+    + '<div class="pytanie"><h3>Do sprawdzenia przy wysyłce: Nie działa i Uwagi</h3>' + (problemy || '<p class="podpowiedz">Brak zgłoszonych problemów.</p>') + "</div>"
+    + '<div class="pytanie"><h3>Uwagi ogólne</h3><textarea data-pole="ogolne" placeholder="Co działa dobrze, co przeszkadza, czego brakuje w całym systemie?">' + esc(stan.ogolne) + "</textarea></div>"
+    + '<p><button class="btn glowny" type="button" data-akcja="zapisz">Zapisz odpowiedzi (JSON)</button></p>'
+    + '<p class="podpowiedz">' + esc(PRZYPOMNIENIE) + " Plik JSON odeślij do Clickless. Odpowiedzi zostają też w tej przeglądarce, więc możesz wrócić i dokończyć później.</p></section>"
+    + nawigacjaHtml(indeks, wszystkie);
+}
+
+function pokaz(id, przewin) {
+  const lista = strony();
+  const indeks = Math.max(0, lista.findIndex((s) => s.id === id));
+  const strona = lista[indeks];
+  biezacaId = strona.id;
+  history.replaceState(null, "", "#" + strona.id);
+  const tresc = document.getElementById("tresc");
+  tresc.innerHTML = strona.typ === "start" ? stronaStart() : strona.typ === "sekcja" ? stronaSekcji(strona, indeks, lista.length) : stronaKonca(indeks, lista.length);
+  if (przewin !== false) tresc.scrollTop = 0;
+  if (przewin !== false) window.scrollTo(0, 0);
+  document.getElementById("menu").classList.remove("otwarte");
+  odswiezMenu(); odswiezPostep();
+}
+
+function przejdzO(delta) {
+  const lista = strony();
+  const indeks = lista.findIndex((s) => s.id === biezacaId);
+  pokaz(lista[Math.min(Math.max(indeks + delta, 0), lista.length - 1)].id);
+}
+
+function odswiezKrok(idKroku, aktywnyWynik) {
+  const krok = DANE.kroki.find((k) => k.id === idKroku);
+  const el = document.getElementById("krok-" + idKroku);
+  el.outerHTML = krokHtml(krok, el.querySelector(".numer").textContent, odczytajOdpowiedz(stan, stan.sciezka, idKroku), stan.sciezka);
+  const nowy = document.getElementById("krok-" + idKroku);
+  const cel = aktywnyWynik === "uwagi" ? nowy.querySelector("textarea") : nowy.querySelector('[data-wynik="' + aktywnyWynik + '"]');
+  if (cel) cel.focus();
+}
+
+function obsluzWynik(przycisk) {
+  const idKroku = przycisk.dataset.krok;
+  const wybrany = przycisk.dataset.wynik;
+  const obecny = odczytajOdpowiedz(stan, stan.sciezka, idKroku).wynik;
+  zapiszOdpowiedz(stan, stan.sciezka, idKroku, { wynik: obecny === wybrany ? null : wybrany });
+  odswiezKrok(idKroku, wybrany);
+  zapiszStan();
+}
+
+function pobierzJson() {
+  if (!stan.tester.trim() || !stan.sciezka) {
+    alert("Zanim zapiszesz odpowiedzi, wpisz imię i nazwisko oraz wybierz ścieżkę na stronie Start.");
+    pokaz("start");
+    return;
+  }
+  const teraz = new Date();
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(zbudujEksport(stan, stan.sciezka, teraz), null, 2)], { type: "application/json" }));
+  a.download = nazwaPliku(stan, teraz);
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+document.addEventListener("click", (ev) => {
+  const cel = ev.target.closest("[data-strona],[data-krok-nawigacja],[data-akcja],[data-wynik]");
+  if (!cel) return;
+  if (cel.dataset.strona) pokaz(cel.dataset.strona);
+  else if (cel.dataset.krokNawigacja) przejdzO(Number(cel.dataset.krokNawigacja));
+  else if (cel.dataset.akcja === "zapisz") pobierzJson();
+  else if (cel.dataset.wynik) obsluzWynik(cel);
+});
+document.addEventListener("input", (ev) => {
+  const t = ev.target;
+  if (t.dataset.komentarz) zapiszOdpowiedz(stan, stan.sciezka, t.dataset.komentarz, { komentarz: t.value });
+  else if (t.dataset.pole) stan[t.dataset.pole] = t.value;
+  else if (t.name === "sciezka") { stan.sciezka = t.value; zapiszStan(); pokaz("start", false); return; }
+  else return;
+  zapiszStan();
+});
+document.getElementById("zapisz").addEventListener("click", pobierzJson);
+document.getElementById("wczytaj").addEventListener("click", () => document.getElementById("plik").click());
+document.getElementById("plik").addEventListener("change", (ev) => {
+  const plik = ev.target.files[0];
+  if (!plik) return;
+  plik.text()
+    .then((tekst) => { stan = wczytajEksport(tekst, stan); zapiszStan(); pokaz(biezacaId); })
+    .catch((e) => alert("Nie udało się wczytać pliku: " + e.message));
+  ev.target.value = "";
+});
+document.getElementById("przyciskMenu").addEventListener("click", () => document.getElementById("menu").classList.toggle("otwarte"));
+pokaz(biezacaId);
+</script>
+</body>
+</html>
